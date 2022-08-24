@@ -2,6 +2,8 @@
 
 *Discover a better approach to building, testing, and packaging your software*
 
+<a href="https://www.packtpub.com/product/modern-cmake-for-c/9781801070058"><img src="https://static.packt-cdn.com/products/9781801070058/cover/smaller" height="256px" align="right"></a>
+
 * 作者：Rafał Świdziński
 * 译者：陈晓伟
 * 首次发布时间：2022年2月28日([来源](https://www.amazon.com/Modern-CMake-Discover-approach-packaging/dp/1801070059))
@@ -76,5 +78,5 @@ Holding an engineering degree from ENSEEIHT and a Ph.D. in computer science from
 * github地址：https://github.com/xiaoweiChen/Modern-CMake-for-Cpp
 * 译文的LaTeX 环境配置：https://www.cnblogs.com/1625--H/p/11524968.html 
 * vscode中配置latex：https://blog.csdn.net/Ruins_LEE/article/details/123555016
-* 开源示例：https://github.com/PacktPublishing/Modern-CMake-for-Cpp
+* 原书示例：https://github.com/PacktPublishing/Modern-CMake-for-Cpp
 
