@@ -1,0 +1,997 @@
+
+\documentclass[11pt,a4paper,UTF8]{book}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{authblk}
+
+\usepackage{fontspec}                  %引入字体设置宏包
+\setmainfont{Times New Roman}             %设置英文正文字体
+% Courier New
+% Book Antique
+\setsansfont{Arial}                    %英文无衬线字体
+\setmonofont{Courier New}              %英文等宽字体
+
+\usepackage{ctex} %导入中文包
+%\usepackage{ulem}
+\usepackage{tocvsec2}
+\usepackage{verbatim}
+
+\usepackage{tabularx}
+\usepackage{booktabs} 
+\usepackage{multirow}
+\usepackage{bbding}
+\usepackage{float}
+\usepackage{xspace}
+\usepackage[none]{hyphenat}
+
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{pifont}
+
+\usepackage{hyperref}  %制作pdf的目录
+\usepackage{subfiles} %使用多文件方式进行
+
+\usepackage{geometry} %设置页边距的包
+\geometry{left=2.5cm,right=2cm,top=2.54cm,bottom=2.54cm} %设置书籍的页边距
+
+\usepackage{url}
+\hypersetup{hidelinks, %去红框
+	colorlinks=true,
+	allcolors=black,
+	pdfstartview=Fit,
+	breaklinks=true
+}
+
+% 调整itemlist中的行间距
+\usepackage{enumitem}
+\setenumerate[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=5pt}
+\setitemize[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=5pt}
+\setdescription{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=5pt}
+
+% 超链接样式设置
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=blue,
+	filecolor=blue,
+	urlcolor=blue,
+	citecolor=cyan,
+}
+
+\usepackage{indentfirst}
+
+\usepackage{listings}
+\usepackage[usenames,dvipsnames,svgnames, x11names]{xcolor}
+
+\usepackage[most]{tcolorbox}
+
+%展示代码
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{keywordcolor}{rgb}{0.8,0.1,0.5}
+\definecolor{webgreen}{rgb}{0,.5,0}
+\definecolor{bgcolor}{rgb}{0.92,0.92,0.92}
+
+%定义CMake
+\lstdefinelanguage{CMake}
+{morekeywords={
+		cmake\_minimum\_required,
+		project,
+		add\_executable,
+		add\_library,
+		target\_link\_libraries,
+		cmake\_parse\_arguments,
+		cmake\_language,
+		set, unset,
+		option,
+		string,
+		list,
+		math,
+		message,
+		if, elseif, else, endif,
+		mark\_as\_advanced,
+		foreach, endforeach,
+		while, endwhile,
+		add\_subdirectory, include, return, include\_gurad,
+		function, endfunction,
+		macro, endmacro,
+		find\_package,
+		cmake\_push\_check\_state,
+		cmake\_pop\_check\_state,
+		cmake\_reset\_check\_state,
+		add\_test,
+		set\_tests\_properties, 
+		check\_c\_source\_runs,
+		check\_cxx\_source\_runs,
+		check\_fortran\_source\_runs,
+		check\_source\_runs,
+		check\_compiler\_flag,
+		check\_c\_compiler\_flag,
+		check\_cxx\_compiler\_flag,
+		check\_fortran\_compiler\_flag,
+		check\_symbol\_exists,
+		check\_cxx\_symbol\_exists,
+		check\_linker\_flag,
+		cmake\_policy,
+		set\_property,
+		get\_property,
+		define\_property,
+		get\_cmake\_property,
+		set\_cmake\_property,
+		set\_target\_properties,
+		get\_target\_property,
+		set\_directory\_properties,
+		get\_directory\_property,
+		set\_source\_files\_properties,
+		get\_source\_file\_property,
+		set\_tests\_properties,
+		get\_tests\_property,
+		get\_test\_property,
+		cmake\_print\_properties,
+		cmake\_print\_variables,
+		variable\_watch,
+		include\_guard,
+		target\_link\_options,
+		target\_compile\_definitions,
+		target\_compile\_options,
+		include\_directories,
+		add\_definitions,
+		remove\_definitions,
+		add\_compile\_definitions,
+		add\_compile\_options,
+		link\_libraries,
+		link\_directories,
+		add\_link\_options,
+		target\_include\_directories,
+		target\_compile\_features,
+		add\_custom\_command,
+		add\_custom\_target,
+		execute\_process,
+		cmake\_path,
+		get\_filename\_component,
+		file,
+		configure\_file,
+		generate\_export\_header,
+		export,
+		find\_file,
+		find\_library,
+		find\_package,
+		find\_program,
+		pkg\_check\_modules,
+		pkg\_search\_module,
+		pkg\_get\_variable,
+		add\_test,
+		enable\_testing,
+		set\_tests\_properties,
+		site\_name,
+		ctest\_empty\_binary\_directory,
+		ctest\_start,
+		ctest\_configure,
+		ctest\_submit,
+		ctest\_build,
+		ctest\_memcheck,
+		ctest\_upload,
+		ctest\_test,
+		gtest\_add\_tests,
+		gtest\_discover\_tests,
+		install,
+		write\_basic\_package\_version\_file,
+		configure\_package\_config\_file,
+		cpack\_add\_component,
+		cpack\_add\_install\_type,
+		cpack\_add\_component\_group,
+		ExternalProject\_Add,
+		ExternalProject\_Add\_StepDependencies,
+		ExternalProject\_Get\_Property,
+		ExternalProject\_Add\_Step,
+		FetchContent\_Declare,
+		FetchContent\_GetProperties,
+		FetchContent\_Populate,
+		source\_group,
+		target\_precompile\_headers,
+		qt5\_wrap\_cpp,
+		qt5\_wrap\_ui,
+		qt5\_add\_resources,
+		qt5\_add\_big\_resources,
+		qt5\_add\_binary\_resources,
+		qt5\_add\_translation,
+		qt5\_create\_translation,
+		compile\_definitions,
+		add\_llvm\_component\_library,
+		add\_llvm\_tool,
+		llvm\_multisource,
+		llvm\_test\_data,
+		doxygen\_add\_docs,
+	}, %定义关键字
+	sensitive=false, %是否大小写敏感
+	morecomment=[l]{\#},
+	morestring=[b]",
+	morestring=[d]',
+}
+
+\lstdefinestyle{styleCXX}{
+	language = C++,  
+	backgroundcolor=\color{blue!3!white}, 
+	%basicstyle = \footnotesize,  
+	basicstyle      =   \zihao{-5}\ttfamily,
+	numberstyle     =   \zihao{-5}\ttfamily,   
+	%breakatwhitespace = false,    
+	basewidth       =   0.5em,    
+	breaklines = true,                 
+	captionpos = b,                    
+	commentstyle = \color{mygray}\bfseries,
+	%extendedchars = false,             
+	frame =shadowbox, 
+	framerule=0.5pt,
+	%frameround = fttt,
+	keepspaces=true,
+	keywordstyle=\color{blue}\bfseries, % keyword style
+	otherkeywords={string}, 
+	numbers=left, 
+	numbersep=5pt,
+	numberstyle=\tiny\color{mygray},
+	rulecolor=\color{black},         
+	%showspaces=false,  
+	%showstringspaces=false, 
+	%showtabs=false,    
+	%stepnumber=1,         
+	stringstyle=\color{mymauve},        % string literal style
+	tabsize=2,          
+	columns         =   fixed,
+	flexiblecolumns,                   
+}
+
+
+\lstdefinestyle{styleCMake}{
+	language=CMake,
+	backgroundcolor=\color{blue!3!white}, 
+	basicstyle=\tt, 
+	breakatwhitespace = false,
+	breaklines = true,
+	captionpos = b,
+	commentstyle = \color{mygray}\bfseries, 
+	extendedchars =false,             
+	frame=shadowbox, 
+	tabsize=2,
+	framerule=0.5pt,
+	keepspaces=true,
+	keywordstyle=\color{blue}\bfseries, % keyword style
+	otherkeywords={string}, 
+	rulecolor=\color{black},
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	stepnumber=1,
+	stringstyle=\color{purple},        % string literal style
+}
+
+\lstdefinestyle{stylePython}{
+	language        =   Python, % 语言选Python
+	backgroundcolor=\color{blue!3!white}, 
+	basicstyle      =   \zihao{-5}\ttfamily,
+	numberstyle     =   \zihao{-5}\ttfamily,
+	keywordstyle    =   \color{blue},
+	keywordstyle    =   [2] \color{teal},
+	stringstyle     =   \color{magenta},
+	commentstyle    =   \color{red}\ttfamily,
+	frame = shadowbox, 
+	breaklines      =   true,   % 自动换行，建议不要写太长的行
+	columns         =   fixed,  % 如果不加这一句，字间距就不固定，很丑，必须加
+	basewidth       =   0.5em,
+	%basicstyle          =   \sffamily,          % 基本代码风格
+	%keywordstyle        =   \bfseries,          % 关键字风格
+	%commentstyle        =   \rmfamily\itshape,  % 注释的风格，斜体
+	%stringstyle         =   \ttfamily,  % 字符串风格
+	flexiblecolumns,                % 别问为什么，加上这个
+	%numbers             =   left,   % 行号的位置在左边
+	showspaces          =   false,  % 是否显示空格，显示了有点乱，所以不现实了
+	numberstyle         =   \zihao{-5}\ttfamily,    % 行号的样式，小五号，tt等宽字体
+	showstringspaces    =   false,
+	captionpos          =   t,      % 这段代码的名字所呈现的位置，t指的是top上面
+	frame               =   lrtb,   % 显示边框
+	tabsize=2,  
+}
+
+\tcbset{
+	commandshell/.style={
+		listing only,
+		colback=black!75!white,
+		colupper=white,
+		lowerbox=ignored,
+		listing options={
+			language={bash},
+			basicstyle=\ttfamily,
+			columns = fixed,
+			flexiblecolumns
+		}
+}}
+
+\usepackage{tikz}
+
+% URL 正确换行
+% https://liam.page/2017/05/17/help-the-url-command-from-hyperref-to-break-at-line-wrapping-point/
+\makeatletter
+\def\UrlAlphabet{%
+	\do\a\do\b\do\c\do\d\do\e\do\f\do\g\do\h\do\i\do\j%
+	\do\k\do\l\do\m\do\n\do\o\do\p\do\q\do\r\do\s\do\t%
+	\do\u\do\v\do\w\do\x\do\y\do\z\do\A\do\B\do\C\do\D%
+	\do\E\do\F\do\G\do\H\do\I\do\J\do\K\do\L\do\M\do\N%
+	\do\O\do\P\do\Q\do\R\do\S\do\T\do\U\do\V\do\W\do\X%
+	\do\Y\do\Z}
+\def\UrlDigits{\do\1\do\2\do\3\do\4\do\5\do\6\do\7\do\8\do\9\do\0}
+\g@addto@macro{\UrlBreaks}{\UrlOrds}
+\g@addto@macro{\UrlBreaks}{\UrlAlphabet}
+\g@addto@macro{\UrlBreaks}{\UrlDigits}
+\makeatother
+
+% enable subsubsubsection
+% from https://tex.stackexchange.com/questions/274212/correct-hierarchy-levels-of-pdf-bookmarks-for-custom-section-subsubsubsection
+\usepackage[depth=3]{bookmark}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{4}
+\hypersetup{bookmarksdepth=4}
+
+\makeatletter
+
+\newcommand{\toclevel@subsubsubsection}{4}
+\newcounter{subsubsubsection}[subsubsection]
+
+\renewcommand{\thesubsubsubsection}{\thesubsubsection.\arabic{subsubsubsection}}
+
+\newcommand{\subsubsubsection}{\@startsection{subsubsubsection}{4}{\z@}%
+	{-3.25ex\@plus -1ex \@minus -.2ex}%
+	{1.5ex \@plus .2ex}%
+	{\normalfont\normalsize\bf\bfseries}}
+
+\newcommand*{\l@subsubsubsection}{\@dottedtocline{4}{11em}{5em}}  
+
+\newcommand{\subsubsubsectionmark}[1]{}
+\makeatother
+
+\begin{document}
+\begin{sloppypar} %latex中一行文字出现溢出问题的解决方法
+	%\maketitle
+	
+	\begin{center}
+		\thispagestyle{empty}
+		%\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{cover.jpg}
+		\begin{tikzpicture}[remember picture, overlay, inner sep=0pt]
+			\node at (current page.center) 
+			{\includegraphics[width=\paperwidth, keepaspectratio=false]{cover.jpg}};
+		\end{tikzpicture}
+		\newpage
+		\thispagestyle{empty}
+		\huge
+		\textbf{Modern CMake for C++} 
+		\\[9pt]
+		\normalsize
+		Discover a better approach to building, testing, and packaging your software
+		\\[9pt]
+		\normalsize
+		了解构建、测试和打包软件更好的方法
+		\\[10pt]
+		\normalsize 
+		作者: Rafał Świdziński
+		\\[8pt]
+		\normalsize
+		译者：陈晓伟
+	\end{center}
+	
+	\hspace*{\fill} \\ %插入空行
+	\noindent\textbf{本书概述}
+	
+	创建一流的软件是一项极其困难的任务。研究这一主题的开发人员很难确定哪些建议是最新的，哪些方法已经可以用更简单、更好的实践所取代。与此同时，大多数在线资源提供的解释有限，也缺乏适当的上下文和结构。
+	
+	本书提供了一种更简单、更全面的体验，全面地介绍了如何构建C+解决方案。Modern CMake for C++是一个端到端的复杂任务自动化指南，包括构建、测试和打包。您不仅将可以了解如何在CMake项目中使用CMake语言，还将发现是什么使它们可维护，优雅和干净。本书还关注源目录、构建目标和包的结构。随着深入的了解进展，您将学习如何编译和链接可执行文件和库，这些过程如何工作，以及如何优化CMake中的构建以获得最佳结果。您将了解如何在您的项目中使用外部依赖项——第三方库、测试框架、程序分析工具和文档生成器。最后，将掌握用于内部和外部目标的导出、安装和打包的技术。
+	
+	读完这本书，将能够自信地以专业的水平使用CMake。
+	
+	
+	\hspace*{\fill} \\ %插入空行
+	\noindent\textbf{关键特性}
+	\begin{itemize}
+		\item 理解并自动化CMake编译和链接
+		\item 轻松管理内部和外部依赖关系
+		\item 添加质量检查和测试作为构建的固定步骤
+	\end{itemize}
+	
+	\hspace*{\fill} \\ %插入空行
+	\noindent\textbf{作者简介}
+	
+	\textbf{Rafał Świdziński}在Google公司担任专职工程师。作为一名拥有超过10年专业经验的全栈开发人员，能够尝试大量的编程语言和技术。期间，他一直在自己的公司和包括Cisco Meraki、Amazon和Ericsson在内的公司开发软件。他来自波兰的罗兹(Łódź)，现在住在英国伦敦，在那里他经营一个YouTube频道“Smok”，讨论与软件开发相关的话题。他很喜欢处理技术问题，包括许多人在该领域遇到挑战。在他的整个工作中，他详细解释了技术概念，并揭开了软件工程师角色背后的艺术和科学的神秘面纱。他的主要关注代码质量和编程技巧。
+	
+	\hspace*{\fill} \\ %插入空行
+	\noindent\textbf{本书相关}
+	\begin{itemize}
+		\item Github地址：\\\url{https://github.com/xiaoweiChen/Modern-CMake-For-CXX}
+	\end{itemize}
+	\newpage
+	
+	%前言
+	\pagestyle{empty}
+	\subfile{content/preface.tex}
+	\newpage
+	
+	\tableofcontents
+	\newpage
+
+	\setsecnumdepth{section}
+	
+	\color{white}
+	\section*{\zihao{1}第一部分：基础知识}
+	\pagecolor{mygray}
+	\addcontentsline{toc}{section}{第一部分：基础知识}
+	\textbf{\subfile{content/1/Section.tex}}
+	\newpage
+	\color{black}
+	\pagecolor{white}
+
+	\subsection*{\zihao{2} 第1章\hspace{0.5cm}First Steps with CMake}
+	\addcontentsline{toc}{subsection}{第1章\hspace{0.5cm}First Steps with CMake}
+	%\subfile{content/1/chapter1/0.tex}
+	
+	\subsubsection*{\zihao{3} 1.1.\hspace{0.2cm}初识函数模板}
+	\addcontentsline{toc}{subsubsection}{1.1.\hspace{0.2cm}初识函数模板}
+	%\subfile{content/1/chapter1/1.tex}
+	
+	\subsubsection*{\zihao{3} 1.2.\hspace{0.2cm}模板参数推导}
+	\addcontentsline{toc}{subsubsection}{1.2.\hspace{0.2cm}T模板参数推导}
+	%\subfile{content/1/chapter1/2.tex}
+	
+	\subsubsection*{\zihao{3} 1.3.\hspace{0.2cm}多模板参数}
+	\addcontentsline{toc}{subsubsection}{1.3.\hspace{0.2cm}多模板参数}
+	%\subfile{content/1/chapter1/3.tex}
+	
+	\subsubsection*{\zihao{3} 1.4.\hspace{0.2cm}默认模板参数}
+	\addcontentsline{toc}{subsubsection}{1.4.\hspace{0.2cm}默认模板参数}
+	%\subfile{content/1/chapter1/4.tex}
+	
+	\subsubsection*{\zihao{3} 1.5.\hspace{0.2cm}重载函数模板}
+	\addcontentsline{toc}{subsubsection}{1.5.\hspace{0.2cm}重载函数模板}
+	%\subfile{content/1/chapter1/5.tex}
+	
+	\subsubsection*{\zihao{3} 1.6.\hspace{0.2cm}常见问题}
+	\addcontentsline{toc}{subsubsection}{1.6.\hspace{0.2cm}常见问题}
+	%\subfile{content/1/chapter1/6.tex}
+	
+	\subsubsection*{\zihao{3} 1.7.\hspace{0.2cm}总结}
+	\addcontentsline{toc}{subsubsection}{1.7.\hspace{0.2cm}总结}
+	%\subfile{content/1/chapter1/7.tex}
+	\newpage
+	
+	\subsection*{\zihao{2} 第2章\hspace{0.5cm}类模板}
+	\addcontentsline{toc}{subsection}{第2章\hspace{0.5cm}类模板}
+	%\subfile{content/1/chapter2/0.tex}
+	
+	\subsubsection*{\zihao{3} 2.1.\hspace{0.2cm}实现栈类模板}
+	\addcontentsline{toc}{subsubsection}{2.1.\hspace{0.2cm}实现栈类模板}
+	%\subfile{content/1/chapter2/1.tex}
+	
+	\subsubsection*{\zihao{3} 2.2.\hspace{0.2cm}使用栈类模板}
+	\addcontentsline{toc}{subsubsection}{2.2.\hspace{0.2cm}使用栈类模板}
+	%\subfile{content/1/chapter2/2.tex}
+	
+	\subsubsection*{\zihao{3} 2.3.\hspace{0.2cm}部分使用栈类模板}
+	\addcontentsline{toc}{subsubsection}{2.3.\hspace{0.2cm}部分使用栈类模板}
+	%\subfile{content/1/chapter2/3.tex}
+	
+	\subsubsection*{\zihao{3} 2.4.\hspace{0.2cm}友元}
+	\addcontentsline{toc}{subsubsection}{2.4.\hspace{0.2cm}友元}
+	%\subfile{content/1/chapter2/4.tex}
+	
+	\subsubsection*{\zihao{3} 2.5.\hspace{0.2cm}类模板的特化}
+	\addcontentsline{toc}{subsubsection}{2.5.\hspace{0.2cm}类模板的特化}
+	%\subfile{content/1/chapter2/5.tex}
+	
+	\subsubsection*{\zihao{3} 2.6.\hspace{0.2cm}偏特化}
+	\addcontentsline{toc}{subsubsection}{2.6.\hspace{0.2cm}偏特化}
+	%\subfile{content/1/chapter2/6.tex}
+	
+	\subsubsection*{\zihao{3} 2.7.\hspace{0.2cm}类模板的默认参数}
+	\addcontentsline{toc}{subsubsection}{2.7.\hspace{0.2cm}类模板的默认参数}
+	%\subfile{content/1/chapter2/7.tex}
+	
+	\subsubsection*{\zihao{3} 2.8.\hspace{0.2cm}类型别名}
+	\addcontentsline{toc}{subsubsection}{2.8.\hspace{0.2cm}类型别名}
+	%\subfile{content/1/chapter2/8.tex}
+	
+	\subsubsection*{\zihao{3} 2.9.\hspace{0.2cm}类模板参数推断}
+	\addcontentsline{toc}{subsubsection}{2.9.\hspace{0.2cm}类模板参数推断}
+	%\subfile{content/1/chapter2/9.tex}
+	
+	\subsubsection*{\zihao{3} 2.10.\hspace{0.2cm}模板聚合}
+	\addcontentsline{toc}{subsubsection}{2.10.\hspace{0.2cm}模板聚合}
+	%\subfile{content/1/chapter2/10.tex}
+	
+	\subsubsection*{\zihao{3} 2.11.\hspace{0.2cm}总结}
+	\addcontentsline{toc}{subsubsection}{2.11.\hspace{0.2cm}总结}
+	%\subfile{content/1/chapter2/11.tex}
+	\newpage
+	
+	\subsection*{\zihao{2} 第3章\hspace{0.5cm}非类型模板参数}
+	\addcontentsline{toc}{subsection}{第3章\hspace{0.5cm}非类型模板参数}
+	%\subfile{content/1/chapter3/0.tex}
+	
+	\subsubsection*{\zihao{3} 3.1.\hspace{0.2cm}非类型类模板参数}
+	\addcontentsline{toc}{subsubsection}{3.1.\hspace{0.2cm}非类型类模板参数}
+	%\subfile{content/1/chapter3/1.tex}
+	
+	\subsubsection*{\zihao{3} 3.2.\hspace{0.2cm}非类型函数模板参数}
+	\addcontentsline{toc}{subsubsection}{3.2.\hspace{0.2cm}非类型函数模板参数}
+	%\subfile{content/1/chapter3/2.tex}
+	
+	\subsubsection*{\zihao{3} 3.3.\hspace{0.2cm}非类型模板参数的限制}
+	\addcontentsline{toc}{subsubsection}{3.3.\hspace{0.2cm}非类型模板参数的限制}
+	%\subfile{content/1/chapter3/3.tex}
+	
+	\subsubsection*{\zihao{3} 3.4.\hspace{0.2cm}模板参数类型auto}
+	\addcontentsline{toc}{subsubsection}{3.4.\hspace{0.2cm}模板参数类型auto}
+	%\subfile{content/1/chapter3/4.tex}
+	
+	\subsubsection*{\zihao{3} 3.5.\hspace{0.2cm}总结}
+	\addcontentsline{toc}{subsubsection}{3.5.\hspace{0.2cm}总结}
+	%\subfile{content/1/chapter3/5.tex}
+	\newpage
+	
+	\subsection*{\zihao{2} 第4章\hspace{0.5cm}可变参数模板}
+	\addcontentsline{toc}{subsection}{第4章\hspace{0.5cm}可变参数模板}
+	%\subfile{content/1/chapter4/0.tex}
+	
+	\subsubsection*{\zihao{3} 4.1.\hspace{0.2cm}介绍可变参数模板}
+	\addcontentsline{toc}{subsubsection}{4.1.\hspace{0.2cm}介绍可变参数模板}
+	%\subfile{content/1/chapter4/1.tex}
+	
+	\subsubsection*{\zihao{3} 4.2.\hspace{0.2cm}折叠表达式}
+	\addcontentsline{toc}{subsubsection}{4.2.\hspace{0.2cm}折叠表达式}
+	%\subfile{content/1/chapter4/2.tex}
+	
+	\subsubsection*{\zihao{3} 4.3.\hspace{0.2cm}可变参数模板的应用}
+	\addcontentsline{toc}{subsubsection}{4.3.\hspace{0.2cm}可变参数模板的应用}
+	%\subfile{content/1/chapter4/3.tex}
+	
+	\subsubsection*{\zihao{3} 4.4.\hspace{0.2cm}可变参数类模板和表达式}
+	\addcontentsline{toc}{subsubsection}{4.4.\hspace{0.2cm}可变参数类模板和表达式}
+	%\subfile{content/1/chapter4/4.tex}
+	
+	\subsubsection*{\zihao{3} 4.5.\hspace{0.2cm}总结}
+	\addcontentsline{toc}{subsubsection}{4.5.\hspace{0.2cm}总结}
+	%\subfile{content/1/chapter4/5.tex}
+	\newpage
+	
+	\subsection*{\zihao{2} 第5章\hspace{0.5cm}基础技巧}
+	\addcontentsline{toc}{subsection}{第5章\hspace{0.5cm}基础技巧}
+	%\subfile{content/1/chapter5/0.tex}
+	
+	\subsubsection*{\zihao{3} 5.1.\hspace{0.2cm}关键字typename}
+	\addcontentsline{toc}{subsubsection}{5.1.\hspace{0.2cm}关键字typename}
+	%\subfile{content/1/chapter5/1.tex}
+	
+	\subsubsection*{\zihao{3} 5.2.\hspace{0.2cm}零值初始化}
+	\addcontentsline{toc}{subsubsection}{5.2.\hspace{0.2cm}零值初始化}
+	%\subfile{content/1/chapter5/2.tex}
+	
+	\subsubsection*{\zihao{3} 5.3.\hspace{0.2cm}使用this\texttt{->}}
+	\addcontentsline{toc}{subsubsection}{5.3.\hspace{0.2cm}使用this\texttt{->}}
+	%\subfile{content/1/chapter5/3.tex}
+	
+	\subsubsection*{\zihao{3} 5.4.\hspace{0.2cm}原始数组和字符串字面量的模板}
+	\addcontentsline{toc}{subsubsection}{5.4.\hspace{0.2cm}原始数组和字符串字面量的模板}
+	%\subfile{content/1/chapter5/4.tex}
+	
+	\subsubsection*{\zihao{3} 5.5.\hspace{0.2cm}成员模板}
+	\addcontentsline{toc}{subsubsection}{5.5.\hspace{0.2cm}成员模板}
+	%\subfile{content/1/chapter5/5.tex}
+	
+	\subsubsection*{\zihao{3} 5.6.\hspace{0.2cm}变量模板}
+	\addcontentsline{toc}{subsubsection}{5.6.\hspace{0.2cm}变量模板}
+	%\subfile{content/1/chapter5/6.tex}
+	
+	\subsubsection*{\zihao{3} 5.7.\hspace{0.2cm}双重模板参数}
+	\addcontentsline{toc}{subsubsection}{5.7.\hspace{0.2cm}双重模板参数}
+	%\subfile{content/1/chapter5/7.tex}
+	
+	\subsubsection*{\zihao{3} 5.8.\hspace{0.2cm}总结}
+	\addcontentsline{toc}{subsubsection}{5.8.\hspace{0.2cm}总结}
+	%\subfile{content/1/chapter5/8.tex}
+	\newpage
+	
+	\subsection*{\zihao{2} 第6章\hspace{0.5cm}移动语义与enable\_if<>}
+	\addcontentsline{toc}{subsection}{第6章\hspace{0.5cm}移动语义与enable\_if<>}
+	%\subfile{content/1/chapter6/0.tex}
+	
+	\subsubsection*{\zihao{3} 6.1.\hspace{0.2cm}完美转发}
+	\addcontentsline{toc}{subsubsection}{6.1.\hspace{0.2cm}完美转发}
+	%\subfile{content/1/chapter6/1.tex}
+	
+	\subsubsection*{\zihao{3} 6.2.\hspace{0.2cm}特殊成员函数模板}
+	\addcontentsline{toc}{subsubsection}{6.2.\hspace{0.2cm}特殊成员函数模板}
+	%\subfile{content/1/chapter6/2.tex}
+	
+	\subsubsection*{\zihao{3} 6.3.\hspace{0.2cm}使用enable\_if<>禁用模板}
+	\addcontentsline{toc}{subsubsection}{6.3.\hspace{0.2cm}使用enable\_if<>禁用模板}
+	%\subfile{content/1/chapter6/3.tex}
+	
+	\subsubsection*{\zihao{3} 6.4.\hspace{0.2cm}使用enable\_if<>}
+	\addcontentsline{toc}{subsubsection}{6.4.\hspace{0.2cm}使用enable\_if<>}
+	%\subfile{content/1/chapter6/4.tex}
+	
+	\subsubsection*{\zihao{3} 6.5.\hspace{0.2cm}使用概念简化enable\_if<>表达式}
+	\addcontentsline{toc}{subsubsection}{6.5.\hspace{0.2cm}使用概念简化enable\_if<>表达式}
+	%\subfile{content/1/chapter6/5.tex}
+	
+	\subsubsection*{\zihao{3} 6.6.\hspace{0.2cm}总结}
+	\addcontentsline{toc}{subsubsection}{6.6.\hspace{0.2cm}总结}
+	%\subfile{content/1/chapter6/6.tex}
+	\newpage
+	
+	\subsection*{\zihao{2} 第7章\hspace{0.5cm}使用值还是引用?}
+	\addcontentsline{toc}{subsection}{第7章\hspace{0.5cm}使用值还是引用?}
+	%\subfile{content/1/chapter7/0.tex}
+	
+	\subsubsection*{\zihao{3} 7.1.\hspace{0.2cm}按值传递}
+	\addcontentsline{toc}{subsubsection}{7.1.\hspace{0.2cm}按值传递}
+	%\subfile{content/1/chapter7/1.tex}
+	
+	\subsubsection*{\zihao{3} 7.2.\hspace{0.2cm}按引用传递}
+	\addcontentsline{toc}{subsubsection}{7.2.\hspace{0.2cm}按引用传递}
+	%\subfile{content/1/chapter7/2.tex}
+	
+	\subsubsection*{\zihao{3} 7.3.\hspace{0.2cm}使用std::ref()和std::cref()}
+	\addcontentsline{toc}{subsubsection}{7.3.\hspace{0.2cm}使用std::ref()和std::cref()}
+	%\subfile{content/1/chapter7/3.tex}
+	
+	\subsubsection*{\zihao{3} 7.4.\hspace{0.2cm}处理字符串字面值和数组}
+	\addcontentsline{toc}{subsubsection}{7.4.\hspace{0.2cm}处理字符串字面值和数组}
+	%\subfile{content/1/chapter7/4.tex}
+	
+	\subsubsection*{\zihao{3} 7.5.\hspace{0.2cm}处理返回值}
+	\addcontentsline{toc}{subsubsection}{7.5.\hspace{0.2cm}处理返回值}
+	%\subfile{content/1/chapter7/5.tex}
+	
+	\subsubsection*{\zihao{3} 7.6.\hspace{0.2cm}推荐的模板参数声明}
+	\addcontentsline{toc}{subsubsection}{7.6.\hspace{0.2cm}推荐的模板参数声明}
+	%\subfile{content/1/chapter7/6.tex}
+	
+	\subsubsection*{\zihao{3} 7.7.\hspace{0.2cm}总结}
+	\addcontentsline{toc}{subsubsection}{7.7.\hspace{0.2cm}总结}
+	%\subfile{content/1/chapter7/7.tex}
+	\newpage
+	
+	\subsection*{\zihao{2} 第8章\hspace{0.5cm}编译时编程}
+	\addcontentsline{toc}{subsection}{第8章\hspace{0.5cm}编译时编程}
+	%\subfile{content/1/chapter8/0.tex}
+	
+	\subsubsection*{\zihao{3} 8.1.\hspace{0.2cm}模板元编程}
+	\addcontentsline{toc}{subsubsection}{8.1.\hspace{0.2cm}模板元编程}
+	%\subfile{content/1/chapter8/1.tex}
+	
+	\subsubsection*{\zihao{3} 8.2.\hspace{0.2cm}使用constexpr进行计算}
+	\addcontentsline{toc}{subsubsection}{8.2.\hspace{0.2cm}使用constexpr进行计算}
+	%\subfile{content/1/chapter8/2.tex}
+	
+	\subsubsection*{\zihao{3} 8.3.\hspace{0.2cm}使用偏特化的执行路径选择}
+	\addcontentsline{toc}{subsubsection}{8.3.\hspace{0.2cm}使用偏特化的执行路径选择}
+	%\subfile{content/1/chapter8/3.tex}
+	
+	\subsubsection*{\zihao{3} 8.4.\hspace{0.2cm}SFINAE(替换失败不为过)}
+	\addcontentsline{toc}{subsubsection}{8.4.\hspace{0.2cm}SFINAE(替换失败不为过)}
+	%\subfile{content/1/chapter8/4.tex}
+	
+	\subsubsection*{\zihao{3} 8.5.\hspace{0.2cm}编译时if}
+	\addcontentsline{toc}{subsubsection}{8.5.\hspace{0.2cm}编译时if}
+	%\subfile{content/1/chapter8/5.tex}
+	
+	\subsubsection*{\zihao{3} 8.6.\hspace{0.2cm}总结}
+	\addcontentsline{toc}{subsubsection}{8.6.\hspace{0.2cm}总结}
+	%\subfile{content/1/chapter8/6.tex}
+	\newpage
+	
+	\subsection*{\zihao{2} 第9章\hspace{0.5cm}实际使用模板}
+	\addcontentsline{toc}{subsection}{第9章\hspace{0.5cm}实际使用模板}
+	%\subfile{content/1/chapter9/0.tex}
+	
+	\subsubsection*{\zihao{3} 9.1.\hspace{0.2cm}包含模型}
+	\addcontentsline{toc}{subsubsection}{9.1.\hspace{0.2cm}包含模型}
+	%\subfile{content/1/chapter9/1.tex}
+	
+	\subsubsection*{\zihao{3} 9.2.\hspace{0.2cm}模板和内联}
+	\addcontentsline{toc}{subsubsection}{9.2.\hspace{0.2cm}模板和内联}
+	%\subfile{content/1/chapter9/2.tex}
+	
+	\subsubsection*{\zihao{3} 9.3.\hspace{0.2cm}预编译头文件}
+	\addcontentsline{toc}{subsubsection}{9.3.\hspace{0.2cm}预编译头文件}	
+	%\subfile{content/1/chapter9/3.tex}
+	
+	\subsubsection*{\zihao{3} 9.4.\hspace{0.2cm}解析编译错误}
+	\addcontentsline{toc}{subsubsection}{9.4.\hspace{0.2cm}解析编译错误}
+	%\subfile{content/1/chapter9/4.tex}
+	
+	\subsubsection*{\zihao{3} 9.5.\hspace{0.2cm}后记}
+	\addcontentsline{toc}{subsubsection}{9.5.\hspace{0.2cm}后记}
+	%\subfile{content/1/chapter9/5.tex}
+	
+	\subsubsection*{\zihao{3} 9.6.\hspace{0.2cm}总结}
+	\addcontentsline{toc}{subsubsection}{9.6.\hspace{0.2cm}总结}
+	%\subfile{content/1/chapter9/6.tex}
+	\newpage
+	
+	\subsection*{\zihao{2} 第10章\hspace{0.5cm}基本模板的术语}
+	\addcontentsline{toc}{subsection}{第10章\hspace{0.5cm}基本模板的术语}
+	%\subfile{content/1/chapter10/0.tex}
+	
+	\subsubsection*{\zihao{3} 10.1.\hspace{0.2cm}“类模板”还是“模板类”?}
+	\addcontentsline{toc}{subsubsection}{10.1.\hspace{0.2cm}“类模板”还是“模板类”?}
+	%\subfile{content/1/chapter10/1.tex}
+	
+	\subsubsection*{\zihao{3} 10.2.\hspace{0.2cm}替换、实例化和特化}
+	\addcontentsline{toc}{subsubsection}{10.2.\hspace{0.2cm}替换、实例化和特化}
+	%\subfile{content/1/chapter10/2.tex}
+	
+	\subsubsection*{\zihao{3} 10.3.\hspace{0.2cm}声明和定义}
+	\addcontentsline{toc}{subsubsection}{10.3.\hspace{0.2cm}声明和定义}
+	%\subfile{content/1/chapter10/3.tex}
+	
+	\subsubsection*{\zihao{3} 10.4.\hspace{0.2cm}定义规则}
+	\addcontentsline{toc}{subsubsection}{10.4.\hspace{0.2cm}定义规则}
+	%\subfile{content/1/chapter10/4.tex}
+	
+	\subsubsection*{\zihao{3} 10.5.\hspace{0.2cm}模板实参与模板形参}
+	\addcontentsline{toc}{subsubsection}{10.5.\hspace{0.2cm}模板实参与模板形参}
+	%\subfile{content/1/chapter10/5.tex}
+	
+	\subsubsection*{\zihao{3} 10.6.\hspace{0.2cm}总结}
+	\addcontentsline{toc}{subsubsection}{10.6.\hspace{0.2cm}总结}
+	%\subfile{content/1/chapter10/6.tex}
+	\newpage
+	
+	\subsection*{\zihao{2} 第11章\hspace{0.5cm}通用库}
+	\addcontentsline{toc}{subsection}{第11章\hspace{0.5cm}通用库}
+	%\subfile{content/1/chapter11/0.tex}
+	
+	\subsubsection*{\zihao{3} 11.1.\hspace{0.2cm}可调用}
+	\addcontentsline{toc}{subsubsection}{11.1.\hspace{0.2cm}可调用}
+	%\subfile{content/1/chapter11/1.tex}
+	
+	\subsubsection*{\zihao{3} 11.2.\hspace{0.2cm}实现通用库}
+	\addcontentsline{toc}{subsubsection}{11.2.\hspace{0.2cm}实现通用库}
+	%\subfile{content/1/chapter11/2.tex}
+	
+	\subsubsection*{\zihao{3} 11.3.\hspace{0.2cm}完美转发临时变量}
+	\addcontentsline{toc}{subsubsection}{11.3.\hspace{0.2cm}完美转发临时变量}
+	%\subfile{content/1/chapter11/3.tex}
+	
+	\subsubsection*{\zihao{3} 11.4.\hspace{0.2cm}模板形参的引用}
+	\addcontentsline{toc}{subsubsection}{11.4.\hspace{0.2cm}模板形参的引用}
+	%\subfile{content/1/chapter11/4.tex}
+	
+	\subsubsection*{\zihao{3} 11.5.\hspace{0.2cm}缓式评估}
+	\addcontentsline{toc}{subsubsection}{11.5.\hspace{0.2cm}缓式评估}
+	%\subfile{content/1/chapter11/5.tex}
+	
+	\subsubsection*{\zihao{3} 11.6.\hspace{0.2cm}编写泛型库时需要考虑的事情}
+	\addcontentsline{toc}{subsubsection}{11.6.\hspace{0.2cm}编写泛型库时需要考虑的事情}
+	%\subfile{content/1/chapter11/6.tex}
+	
+	\subsubsection*{\zihao{3} 11.7.\hspace{0.2cm}总结}
+	\addcontentsline{toc}{subsubsection}{11.7.\hspace{0.2cm}总结}
+	%\subfile{content/1/chapter11/7.tex}
+	\newpage
+	
+	\color{white}
+	\section*{\zihao{1}第二部分：进行构建}
+	\pagecolor{mygray}
+	\addcontentsline{toc}{section}{第二部分：进行构建}
+	%\textbf{\subfile{content/2/Section.tex}}
+	\newpage
+	\color{black}
+	\pagecolor{white}
+	
+	\subsection*{\zihao{2} 第12章\hspace{0.5cm}模板基础}
+	\addcontentsline{toc}{subsection}{第12章\hspace{0.5cm}模板基础}
+	%\subfile{content/2/chapter12/0.tex}
+	
+	\subsubsection*{\zihao{3} 12.1.\hspace{0.2cm}参数化的声明}
+	\addcontentsline{toc}{subsubsection}{12.1.\hspace{0.2cm}参数化的声明}
+	%\subfile{content/2/chapter12/1.tex}
+	
+	\subsubsection*{\zihao{3} 12.2.\hspace{0.2cm}模板形参}
+	\addcontentsline{toc}{subsubsection}{12.2.\hspace{0.2cm}模板形参}
+	%\subfile{content/2/chapter12/2.tex}
+	
+	\subsubsection*{\zihao{3} 12.3.\hspace{0.2cm}模板实参}
+	\addcontentsline{toc}{subsubsection}{12.3.\hspace{0.2cm}模板实参}
+	%\subfile{content/2/chapter12/3.tex}
+	
+	\subsubsection*{\zihao{3} 12.4.\hspace{0.2cm}可变参数模板}
+	\addcontentsline{toc}{subsubsection}{12.4.\hspace{0.2cm}可变参数模板}
+	%\subfile{content/2/chapter12/4.tex}
+	
+	\subsubsection*{\zihao{3} 12.5.\hspace{0.2cm}友元}
+	\addcontentsline{toc}{subsubsection}{12.5.\hspace{0.2cm}友元}
+	%\subfile{content/2/chapter12/5.tex}
+	
+	\subsubsection*{\zihao{3} 12.6.\hspace{0.2cm}后记}
+	\addcontentsline{toc}{subsubsection}{12.6.\hspace{0.2cm}后记}
+	%\subfile{content/2/chapter12/6.tex}
+	\newpage
+	
+	\subsection*{\zihao{2} 第13章\hspace{0.5cm}模板中的名称}
+	\addcontentsline{toc}{subsection}{第13章\hspace{0.5cm}模板中的名称}
+	%\subfile{content/2/chapter13/0.tex}
+	
+	\subsubsection*{\zihao{3} 13.1.\hspace{0.2cm}名称的分类}
+	\addcontentsline{toc}{subsubsection}{13.1.\hspace{0.2cm}名称的分类}
+	%\subfile{content/2/chapter13/1.tex}
+	
+	\subsubsection*{\zihao{3} 13.2.\hspace{0.2cm}查找名称}
+	\addcontentsline{toc}{subsubsection}{13.2.\hspace{0.2cm}查找名称}
+	%\subfile{content/2/chapter13/2.tex}
+	
+	\subsubsection*{\zihao{3} 13.3.\hspace{0.2cm}解析模板}
+	\addcontentsline{toc}{subsubsection}{13.3.\hspace{0.2cm}解析模板}
+	%\subfile{content/2/chapter13/3.tex}
+	
+	\subsubsection*{\zihao{3} 13.4.\hspace{0.2cm}派生和类模板}
+	\addcontentsline{toc}{subsubsection}{13.4.\hspace{0.2cm}派生和类模板}
+	%\subfile{content/2/chapter13/4.tex}
+	
+	\subsubsection*{\zihao{3} 13.5.\hspace{0.2cm}后记}
+	\addcontentsline{toc}{subsubsection}{13.5.\hspace{0.2cm}后记}
+	%\subfile{content/2/chapter13/5.tex}
+	\newpage
+	
+	\subsection*{\zihao{2} 第14章\hspace{0.5cm}实例化}
+	\addcontentsline{toc}{subsection}{第14章\hspace{0.5cm}实例化}
+	%\subfile{content/2/chapter14/0.tex}
+	
+	\subsubsection*{\zihao{3} 14.1.\hspace{0.2cm}按需实例化}
+	\addcontentsline{toc}{subsubsection}{14.1.\hspace{0.2cm}按需实例化}
+	%\subfile{content/2/chapter14/1.tex}
+	
+	\subsubsection*{\zihao{3} 14.2.\hspace{0.2cm}延迟实例化}
+	\addcontentsline{toc}{subsubsection}{14.2.\hspace{0.2cm}延迟实例化}
+	%\subfile{content/2/chapter14/2.tex}
+	
+	\subsubsection*{\zihao{3} 14.3.\hspace{0.2cm}C++实例化模型}
+	\addcontentsline{toc}{subsubsection}{14.3.\hspace{0.2cm}C++实例化模型}
+	%\subfile{content/2/chapter14/3.tex}
+	
+	\subsubsection*{\zihao{3} 14.4.\hspace{0.2cm}实现方案}
+	\addcontentsline{toc}{subsubsection}{14.4.\hspace{0.2cm}实现方案}
+	%\subfile{content/2/chapter14/4.tex}
+	
+	\subsubsection*{\zihao{3} 14.5.\hspace{0.2cm}显式实例化}
+	\addcontentsline{toc}{subsubsection}{14.5.\hspace{0.2cm}显式实例化}
+	%\subfile{content/2/chapter14/5.tex}
+	
+	\subsubsection*{\zihao{3} 14.6.\hspace{0.2cm}编译时if语句}
+	\addcontentsline{toc}{subsubsection}{14.6.\hspace{0.2cm}编译时if语句}
+	%\subfile{content/2/chapter14/6.tex}
+	
+	\subsubsection*{\zihao{3} 14.7.\hspace{0.2cm}标准库中的显式实例化}
+	\addcontentsline{toc}{subsubsection}{14.7.\hspace{0.2cm}标准库中的显式实例化}
+	%\subfile{content/2/chapter14/7.tex}
+	
+	\subsubsection*{\zihao{3} 14.8.\hspace{0.2cm}后记}
+	\addcontentsline{toc}{subsubsection}{14.8.\hspace{0.2cm}后记}
+	%\subfile{content/2/chapter14/8.tex}
+	\newpage
+	
+	\subsection*{\zihao{2} 第15章\hspace{0.5cm}模板参数推导}
+	\addcontentsline{toc}{subsection}{第15章\hspace{0.5cm}模板参数推导}
+	%\subfile{content/2/chapter15/0.tex}
+	
+	\subsubsection*{\zihao{3} 15.1.\hspace{0.2cm}推导过程}
+	\addcontentsline{toc}{subsubsection}{15.1.\hspace{0.2cm}推导过程}
+	%\subfile{content/2/chapter15/1.tex}
+	
+	\subsubsection*{\zihao{3} 15.2.\hspace{0.2cm}推导上下文}
+	\addcontentsline{toc}{subsubsection}{15.2.\hspace{0.2cm}推导上下文}
+	%\subfile{content/2/chapter15/2.tex}
+	
+	\subsubsection*{\zihao{3} 15.3.\hspace{0.2cm}特殊的推导情况}
+	\addcontentsline{toc}{subsubsection}{15.3.\hspace{0.2cm}特殊的推导情况}
+	%\subfile{content/2/chapter15/3.tex}
+	
+	\subsubsection*{\zihao{3} 15.4.\hspace{0.2cm}初始化列表}
+	\addcontentsline{toc}{subsubsection}{15.4.\hspace{0.2cm}初始化列表}
+	%\subfile{content/2/chapter15/4.tex}
+	
+	\subsubsection*{\zihao{3} 15.5.\hspace{0.2cm}参数包}
+	\addcontentsline{toc}{subsubsection}{15.5.\hspace{0.2cm}参数包}
+	%\subfile{content/2/chapter15/5.tex}
+	
+	\subsubsection*{\zihao{3} 15.6.\hspace{0.2cm}右值引用}
+	\addcontentsline{toc}{subsubsection}{15.6.\hspace{0.2cm}右值引用}
+	%\subfile{content/2/chapter15/6.tex}
+	
+	\subsubsection*{\zihao{3} 15.7.\hspace{0.2cm}SFINAE(替换失败不为过)}
+	\addcontentsline{toc}{subsubsection}{15.7.\hspace{0.2cm}SFINAE(替换失败不为过)}
+	%\subfile{content/2/chapter15/7.tex}
+	
+	\subsubsection*{\zihao{3} 15.8.\hspace{0.2cm}推导的限制}
+	\addcontentsline{toc}{subsubsection}{15.8.\hspace{0.2cm}推导的限制}
+	%\subfile{content/2/chapter15/8.tex}
+	
+	\subsubsection*{\zihao{3} 15.9.\hspace{0.2cm}显式函数模板参数}
+	\addcontentsline{toc}{subsubsection}{15.9.\hspace{0.2cm}显式函数模板参数}
+	%\subfile{content/2/chapter15/9.tex}
+	
+	\subsubsection*{\zihao{3} 15.10.\hspace{0.2cm}初始化式和表达式的推导}
+	\addcontentsline{toc}{subsubsection}{15.10.\hspace{0.2cm}初始化式和表达式的推导}
+	%\subfile{content/2/chapter15/10.tex}
+
+	\subsubsection*{\zihao{3} 15.11.\hspace{0.2cm}别名模板}
+	\addcontentsline{toc}{subsubsection}{15.11.\hspace{0.2cm}别名模板}
+	%\subfile{content/2/chapter15/11.tex}
+	
+	\subsubsection*{\zihao{3} 15.12.\hspace{0.2cm}类模板参数推导}
+	\addcontentsline{toc}{subsubsection}{15.12.\hspace{0.2cm}类模板参数推导}
+	%\subfile{content/2/chapter15/12.tex}
+	
+	\subsubsection*{\zihao{3} 15.13.\hspace{0.2cm}后记}
+	\addcontentsline{toc}{subsubsection}{15.13.\hspace{0.2cm}后记}
+	%\subfile{content/2/chapter15/13.tex}
+	\newpage
+	
+	\subsection*{\zihao{2} 第16章\hspace{0.5cm}模板的特化和重载}
+	\addcontentsline{toc}{subsection}{第16章\hspace{0.5cm}模板的特化和重载}
+	%\subfile{content/2/chapter16/0.tex}
+	
+	\subsubsection*{\zihao{3} 16.1.\hspace{0.2cm}“泛型代码”不完全契合时}
+	\addcontentsline{toc}{subsubsection}{16.1.\hspace{0.2cm}“泛型代码”不完全契合时}
+	%\subfile{content/2/chapter16/1.tex}
+	
+	\subsubsection*{\zihao{3} 16.2.\hspace{0.2cm}重载函数模板}
+	\addcontentsline{toc}{subsubsection}{16.2.\hspace{0.2cm}重载函数模板}
+	%\subfile{content/2/chapter16/2.tex}
+	
+	\subsubsection*{\zihao{3} 16.3.\hspace{0.2cm}显式特化}
+	\addcontentsline{toc}{subsubsection}{16.3.\hspace{0.2cm}显式特化}
+	%\subfile{content/2/chapter16/3.tex}
+	
+	\subsubsection*{\zihao{3} 16.4.\hspace{0.2cm}类模板偏特化}
+	\addcontentsline{toc}{subsubsection}{16.4.\hspace{0.2cm}类模板偏特化}
+	%\subfile{content/2/chapter16/4.tex}
+	
+	\subsubsection*{\zihao{3} 16.5.\hspace{0.2cm}变量模板偏特化}
+	\addcontentsline{toc}{subsubsection}{16.5.\hspace{0.2cm}变量模板偏特化}
+	%\subfile{content/2/chapter16/5.tex}
+	
+	\subsubsection*{\zihao{3} 16.6.\hspace{0.2cm}后记}
+	\addcontentsline{toc}{subsubsection}{16.6.\hspace{0.2cm}后记}
+	%\subfile{content/2/chapter16/6.tex}
+	\newpage
+	
+	\color{white}
+	\section*{\zihao{1}第三部分:自动化}
+	\pagecolor{mygray}
+	\addcontentsline{toc}{section}{第三部分:自动化}
+	%\textbf{\subfile{content/3/Section.tex}}
+	\newpage
+	\color{black}
+	\pagecolor{white}
+	\newpage
+	
+	\section*{\zihao{2} 附录A：定义原则}
+	\addcontentsline{toc}{section}{附录A：定义原则}
+	%\subfile{content/Appendix/A/0.tex}
+	
+	\subsubsection*{\zihao{3} A.1\hspace{0.2cm}翻译单元}
+	\addcontentsline{toc}{subsubsection}{A.1\hspace{0.2cm}翻译单元}
+	%\subfile{content/Appendix/A/1.tex}
+	
+	\subsubsection*{\zihao{3} A.2\hspace{0.2cm}声明和定义}
+	\addcontentsline{toc}{subsubsection}{A.2\hspace{0.2cm}声明和定义}
+	%\subfile{content/Appendix/A/2.tex}
+	
+	\subsubsection*{\zihao{3} A.3\hspace{0.2cm}定义原则的细节}
+	\addcontentsline{toc}{subsubsection}{A.3\hspace{0.2cm}定义原则的细节}
+	%\subfile{content/Appendix/A/3.tex}
+	\newpage
+
+\end{sloppypar}
+\end{document}
+

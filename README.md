@@ -2,6 +2,8 @@
 
 *Discover a better approach to building, testing, and packaging your software*
 
+*(了解构建、测试和打包软件更好的方法)*
+
 <a href="https://www.packtpub.com/product/modern-cmake-for-c/9781801070058"><img src="https://static.packt-cdn.com/products/9781801070058/cover/smaller" height="256px" align="right"></a>
 
 * 作者：Rafał Świdziński
@@ -14,62 +16,59 @@
 
 ## 本书概述
 
-Creating top-notch software is an extremely difficult undertaking. Developers researching the subject have difficulty determining which advice is up to date and which approaches have already been replaced by easier, better practices. At the same time, most online resources offer limited explanation, while also lacking the proper context and structure.
+创建一流的软件是一项极其困难的任务。研究这一主题的开发人员很难确定哪些建议是最新的，哪些方法已经可以用更简单、更好的实践所取代。与此同时，大多数在线资源提供的解释有限，也缺乏适当的上下文和结构。
 
-This book offers a simpler, more comprehensive, experience as it treats the subject of building C++ solutions holistically. Modern CMake for C++ is an end-to-end guide to the automatization of complex tasks, including building, testing, and packaging. You'll not only learn how to use the CMake language in CMake projects, but also discover what makes them maintainable, elegant, and clean. The book also focuses on the structure of source directories, building targets, and packages. As you progress, you'll learn how to compile and link executables and libraries, how those processes work, and how to optimize builds in CMake for the best results. You'll understand how to use external dependencies in your project – third-party libraries, testing frameworks, program analysis tools, and documentation generators. Finally, you'll get to grips with exporting, installing, and packaging for internal and external purposes.
+本书提供了一种更简单、更全面的体验，全面地介绍了如何构建C+解决方案。Modern CMake for C++是一个端到端的复杂任务自动化指南，包括构建、测试和打包。您不仅将可以了解如何在CMake项目中使用CMake语言，还将发现是什么使它们可维护，优雅和干净。本书还关注源目录、构建目标和包的结构。随着深入的了解进展，您将学习如何编译和链接可执行文件和库，这些过程如何工作，以及如何优化CMake中的构建以获得最佳结果。您将了解如何在您的项目中使用外部依赖项——第三方库、测试框架、程序分析工具和文档生成器。最后，将掌握用于内部和外部目标的导出、安装和打包的技术。
 
-By the end of this book, you'll be able to use CMake confidently on a professional level.
+读完这本书，将能够自信地以专业的水平使用CMake。
 
 #### 关键特性
 
-- Understand and automate compilation and linking with CMake
+- 理解并自动化CMake编译和链接
 
-- Manage internal and external dependencies easily
-- Add quality checks and tests as an inherent step for your builds
+- 轻松管理内部和外部依赖关系
+- 添加质量检查和测试作为构建的固定步骤
 
 #### 将会学到
 
-- Understand best practices for building C++ code
-- Gain practical knowledge of the CMake language by focusing on the most useful aspects
-- Use cutting-edge tooling to guarantee code quality with the help of tests and static and dynamic analysis
-- Discover how to manage, discover, download, and link dependencies with CMake
-- Build solutions that can be reused and maintained in the long term
-- Understand how to optimize build artifacts and the build process itself
+- 了解构建C++代码的最佳实践
+- 通过使用来获得CMake语言的实践知识
+- 在测试、静态和动态分析的帮助下，使用前沿工具来保证代码质量
+- 了解如何使用CMake管理、发现、下载和链接依赖关系
+- 构建可长期重用和维护的解决方案
+- 了解如何优化构建构件和构建过程本身
 
 
 
 ## 适读人群
 
-The book is for build engineers and software developers with knowledge of C/C++ programming who are looking to learn CMake to automate the process of building small and large software solutions. If you are someone who's just getting started with CMake, a long-time GNU Make user, or simply looking to brush up on the latest best practices, this book is for you.
+这本书是为具有C/ C++编程知识的工程师和软件开发人员所著，从而可以学习CMake，以了解自动化构建小型和大型软件的解决方案。若刚刚开始使用CMake，并长期使用GNU Make，或者只是想复习一下最新的最佳实践，那么本书非常适合您。
 
 ## 作者简介
 
-Rafał Świdziński works as a staff engineer at Google. With over 10 years of professional experience as a full stack developer, he has been able to experiment with a vast multitude of programming languages and technologies. During this time, he has been building software under his own company and for corporations including Cisco Meraki, Amazon, and Ericsson. 
+**Rafał Świdziński**在Google公司担任专职工程师。作为一名拥有超过10年专业经验的全栈开发人员，能够尝试大量的编程语言和技术。期间，他一直在自己的公司和包括Cisco Meraki、Amazon和Ericsson在内的公司开发软件。
 
-Originally from Łódź, Poland, he now lives in London, UK, from where he runs a YouTube channel, "Smok," discussing topics related to software development. He tackles technical problems, including real-life and work-related challenges encountered by many people in the field. Throughout his work, he explains the technical concepts in detail and demystifies the art and science behind the role of software engineer. His primary focus is on high-quality code and the craftsmanship of programming.
+他来自波兰的罗兹(Łódź)，现在住在英国伦敦，在那里他经营一个YouTube频道“Smok”，讨论与软件开发相关的话题。他很喜欢处理技术问题，包括许多人在该领域遇到挑战。在他的整个工作中，他详细解释了技术概念，并揭开了软件工程师角色背后的艺术和科学的神秘面纱。他的主要关注代码质量和编程技巧。
 
-> To my family: my parents, Bożena and Bogdan, my sisters, Ewelina and Justyna, and my wife, Katarzyna, for their ongoing support and advice.    
+> 感谢我的家人:我的父母Bożena和Bogdan，我的姐妹Ewelina和Justyna，以及我的妻子Katarzyna，感谢他们一直以来的支持和建议。
 >
 > <p align="right"> — Rafał Świdziński</p>
 
 ## 审评者介绍
 
-**Sergio Guidi Tabosa Pessoa** is a software engineer with more than 30 years of experience
-in software development and maintenance, from complex enterprise software projects to
-modern mobile applications. In the early days, he worked primarily with the Microsoft
-stack, but soon discovered the power of the UNIX and Linux operating systems. Even
-though he has worked with many languages over the years, C and C++ remain his favorite
-languages for their power and speed.
+**Sergio Guidi Tabosa Pessoa** 是一名软件工程师，在软件开发和维护方面有超过30年的经验，从复杂的企业软件项目到现代移动应用。他早期主要与Microsoft打交道，但很快就喜欢上了UNIX和Linux操作系统的强大功能。尽管他多年来使用过许多语言，但C和C++仍因其强大的功能和速度而成为他最喜欢的语言。
 
-He has a bachelor's degree in computer science and an MBA in IT management and is
-always hungry to learn new technologies, break code, and learn from his mistakes. He
-currently lives in Brazil with his wife, two Yorkshire Terriers, and two cockatiels.  
+他拥有计算机科学学士学位和IT管理工商管理硕士学位，总是渴望学习新技术，破解代码，从错误中学习。目前和妻子，两只约克郡犬和两只鹦鹉生活在巴西。
 
-> First and foremost, I would like to thank all the people involved in this project, including the author for crafting such a great piece of work, and Packt Publishing for giving me this opportunity. I also would like to thank my beautiful wife, Lucia, as well as Touché and Lion, for their patience and for allowing me the time needed to help  
+> 首先，我要感谢参与这个项目的所有人，包括精心制作了如此伟大作品的作者，以及给我这个机会的Packt  Publishing。我也要感谢我美丽的妻子Lucia，以及Touché和Lion，感谢他们的耐心和给我所需的时间来帮助
 
-Holding an engineering degree from ENSEEIHT and a Ph.D. in computer science from UVSQ in France, **Eric Noulard** has been writing and compiling source code in a variety of languages for 20 years. A user of CMake since 2006, he has also been an active contributor to the project for several years. During his career, Eric has worked for private companies and government agencies. He is now employed by Antidot, a software vendor responsible for developing and marketing high-end information retrieval technology and solutions.  
 
-**Mohammed Alqumairi** is a software engineer at Cisco Meraki with experience in developing critical and performant backend services using a variety of languages and frameworks, with a particular focus on modern C++, CMake, and the Poco libraries. Mohammed graduated with honors from City, University of London, with a B.Sc. in Computer Science.  
+
+**Eric Noulard**拥有法国ENSEEIHT的工程学学位和法国UVSQ的计算机科学博士学位。20年来，他一直在用各种语言编写和编译源代码。自2006年以来一直是CMake的用户，多年来一直是该项目的积极贡献者。他的职业生涯中，Eric曾为私人公司和政府机构工作。现在受雇于Antidot，这是一家软件供应商，负责开发和营销高端信息检索技术和解决方案。
+
+
+
+**Mohammed Alqumairi**是Cisco Meraki的软件工程师，使用各种语言和框架开发关键和性能后端服务方面有经验，尤其关注现代C++、CMake和Poco库。Mohammed以优异的成绩毕业于伦敦城市大学，获得计算机科学学士学位。
 
 
 
@@ -77,6 +76,8 @@ Holding an engineering degree from ENSEEIHT and a Ph.D. in computer science from
 
 * github地址：https://github.com/xiaoweiChen/Modern-CMake-for-Cpp
 * 译文的LaTeX 环境配置：https://www.cnblogs.com/1625--H/p/11524968.html 
+  * 禁用拼写检查：https://blog.csdn.net/weixin_39278265/article/details/87931348
+
 * vscode中配置latex：https://blog.csdn.net/Ruins_LEE/article/details/123555016
 * 原书示例：https://github.com/PacktPublishing/Modern-CMake-for-Cpp
 
