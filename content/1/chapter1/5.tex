@@ -1,30 +1,378 @@
 
 
-
+CMake uses quite a few files to manage its projects. Let's attempt to get a general idea of what each file does before tinkering with the contents. It's important to realize, that even though a file contains CMake language commands, it's not certain that it's meant for developers to edit. Some files are generated to be used by subsequent tools, and any changes made to those files will be written over at some stage. Other files are meant for advanced users to adjust your project to their individual needs. Finally, there are some temporary files that provide valuable information in specific contexts. This section will also specify which of them should be in the ignore file of your version control system.
 
 
 \subsubsubsection{1.5.1\hspace{0.2cm}The source tree}
 
+This is the directory where your project will live (it is also called the project root). It contains all of the C++ sources and CMake project files.
+
+Here are the key takeaways of this directory:
+
+\begin{itemize}
+\item 
+It is required that you provide a CMakeLists.txt configuration file in its top directory.
+
+\item 
+It should be managed with a VCS such as git.
+
+\item 
+The path to this directory is given by the user with a -S argument of the cmake command.
+
+\item 
+Avoid hardcoding any absolute paths to the source tree in your CMake code – users of your software can store the project under a different path.
+\end{itemize}
 
 \subsubsubsection{1.5.2\hspace{0.2cm}The build tree}
+
+CMake uses this directory to store everything that gets generated during the build: the artifacts of the project, the transient configuration, the cache, the build logs, and anything that your native build tool will create. Alternative names for this directory include build root and binary tree.
+
+Here are the key takeaways of this directory:
+
+\begin{itemize}
+\item 
+Your binary files will be created here, such as executables and libraries, along with object files and archives used for final linking.
+
+\item 
+Don't add this directory to your VCS – it's specific to your system. If you decide to put it inside the source tree, make sure to add it to the VCS ignore file.
+
+\item 
+CMake recommends out-of-source builds or builds that produce artifacts in a directory that is separate from all source files. This way, we can avoid polluting our project's source tree with temporary, system-specific files (or in-source builds).
+
+\item 
+It is specified with -B or as a last argument to the cmake command if you have provided a path to the source, for example, cmake -S ../project ./.
+
+\item 
+It's recommended that your projects include an installation stage that allows you to put the final artifacts in the correct place in the system, so all temporary files used for building can be removed.
+\end{itemize}
 
 
 \subsubsubsection{1.5.3\hspace{0.2cm}Listfiles}
 
+Files that contain the CMake language are called listfiles and can be included one in another, by calling include() and find\_package(), or indirectly with add\_subdirectory():
+
+\begin{itemize}
+\item 
+CMake doesn't enforce consistent naming for these files, but usually, they have a .cmake extension.
+
+\item 
+A very important naming exception is a file called CMakeLists.txt, which is the first file to be executed in the configuration stage. It is required at the top of the source tree.
+
+\item 
+As CMake walks the source tree and includes different listfiles, the following variables are set: CMAKE\_CURRENT\_LIST\_DIR, CMAKE\_CURRENT\_LIST\_FILE, CMAKE\_PARENT\_LIST\_FILE, and CMAKE\_CURRENT\_LIST\_LINE.
+\end{itemize}
 
 \subsubsubsection{1.5.4\hspace{0.2cm}CMakeLists.txt}
 
+CMake projects are configured with CMakeLists.txt listfiles. You are required to provide at least one in the root of the source tree. Such a top-level file is the first to be executed in the configuration stage, and it should contain at least two commands:
+
+\begin{itemize}
+\item 
+cmake\_minimum\_required(VERSION <x.xx>): Sets an expected version of CMake (and implicitly tells CMake what policies to apply with regard to legacy behaviors).
+
+\item 
+project(<name> <OPTIONS>): This is used to name the project (the provided name will be stored in the PROJECT\_NAME variable) and specify the options to configure it (we'll discuss this further in the Chapter 2, The CMake Language).
+\end{itemize}
+
+As your software grows, you might want to partition it into smaller units that can be configured and reasoned about separately. CMake supports this through the notion of subdirectories and their own CMakeLists.txt files. Your project structure might look similar to the following example:
+
+\begin{tcblisting}{commandshell={}}
+CMakeLists.txt
+api/CMakeLists.txt
+api/api.h
+api/api.cpp
+\end{tcblisting}
+
+A very simple CMakeLists.txt file can then be used to bring it all together:
+
+\begin{lstlisting}[style=styleCMake]
+cmake_minimum_required(VERSION 3.20)
+project(app)
+message("Top level CMakeLists.txt")
+add_subdirectory(api)
+\end{lstlisting}
+
+The main aspects of the project are covered in the top-level file: managing the dependencies, stating the requirements, and detecting the environment. In this file, we also have an add\_subdirectory(api) command to include another CMakeListst. txt file from the api directory to perform steps that are specific to the API part of our
+application.
 
 \subsubsubsection{1.5.5\hspace{0.2cm}CMakeCache.txt}
 
+Cache variables will be generated from listfiles and stored in CMakeCache.txt when the configure stage is run for the first time. This file resides in the root of the build tree and has a fairly simple format:
+
+\begin{lstlisting}[style=styleCMake]
+# This is the CMakeCache file.
+# For build in directory:
+c:/Users/rapha/Desktop/CMake/empty_project/build
+# It was generated by CMake: C:/Program
+Files/CMake/bin/cmake.exe
+# You can edit this file to change values found and used by
+cmake.
+# If you do want to change a value, simply edit, save, and
+exit the editor.
+# The syntax for the file is as follows:
+# KEY:TYPE=VALUE
+# KEY is the name of a variable in the cache.
+# TYPE is a hint to GUIs for the type of VALUE, DO NOT EDIT
+TYPE!.
+# VALUE is the current value for the KEY.
+########################
+# EXTERNAL cache entries
+########################
+//Flags used by the CXX compiler during DEBUG builds.
+CMAKE_CXX_FLAGS_DEBUG:STRING=/MDd /Zi /Ob0 /Od /RTC1
+// ... more variables here ...
+########################
+# INTERNAL cache entries
+########################
+//Minor version of cmake used to create the current loaded
+cache
+CMAKE_CACHE_MINOR_VERSION:INTERNAL=19
+// ... more variables here ...
+\end{lstlisting}
+
+As you can observe from comments in the heading, this format is pretty self-explanatory. Cache entries in the EXTERNAL section are meant for users to modify, while the INTERNAL section is managed by CMake. Note that it's not recommended that you change them manually.
+
+Here are several key takeaways to bear in mind:
+
+\begin{itemize}
+\item 
+You can manage this file manually, by calling cmake (please refer to Options for caching in the Mastering the command line section), or through ccmake/cmakegui.
+
+\item 
+You can reset the project to its default configuration by deleting this file; it will be regenerated from the listfiles.
+
+\item 
+Cache variables can be read and written from the listfiles. Sometimes, variable reference evaluation is a bit complicated; however, we will cover that in more detail in Chapter 2, The CMake Language.
+\end{itemize}
 
 \subsubsubsection{1.5.6\hspace{0.2cm}The Config-files for packages}
+
+A big part of the CMake ecosystem includes the external packages that projects can depend on. They allow developers to use libraries and tools in a seamless, cross-platform way. Packages that support CMake should provide a configuration file so that CMake understands how to use them.
+
+We'll learn how to write those files in Chapter 11, Installing and Packaging. Meanwhile, here's a few interesting details to bear in mind:
+
+\begin{itemize}
+\item 
+Config-files (original spelling) contain information regarding how to use the library binaries, headers, and helper tools. Sometimes, they expose CMake macros to use in your project.
+
+\item 
+Use the find\_package() command to include packages.
+
+\item 
+CMake files describing packages are named <PackageName>-config.cmake and <PackageName>Config.cmake.
+
+\item 
+When using packages, you can specify which version of the package you need. CMake will check this in the associated <Config>Version.cmake file.
+
+\item 
+Config-files are provided by package vendors supporting the CMake ecosystem. If a vendor doesn't provide such a config-file, it can be replaced with a Find-module (original spelling).
+
+\item 
+CMake provides a package registry to store packages system-wide and for each user.
+\end{itemize}
 
 
 \subsubsubsection{1.5.7\hspace{0.2cm}The cmake\_install.cmake, CTestTestfile.cmake, and CPackConfig.cmake files}
 
+These files are generated in the build tree by the cmake executable in the generation stage. As such, they shouldn't be edited manually. CMake uses them as a configuration for the cmake install action, CTest, and CPack. If you're implementing an in-source build (not recommended), it's probably a good idea to add them to the VCS ignore file.
+
 
 \subsubsubsection{1.5.8\hspace{0.2cm}CMakePresets.json and CMakeUserPresets.json}
 
+The configuration of the projects can become a relatively busy task when we need to be specific about things such as cache variables, chosen generators, the path of the build tree, and more – especially when we have more than one way of building our project. This is where the presets come in.
+
+Users can choose presets through the GUI or use the command line to -{}-listpresets and select a preset for the buildsystem with the -{}-preset=<preset> option. You'll find more details in the Mastering the command line section of this chapter.
+
+Presets are stored in the same JSON format in two files:
+
+\begin{itemize}
+\item 
+CMakePresets.json: This is meant for project authors to provide official presets.
+
+\item 
+CMakeUserPresets.json: This is dedicated to users who want to customize the
+project configuration to their liking (you can add it to your VCS ignore file).
+\end{itemize}
+
+Presets are project files, so their explanation belongs here. However, they are not required in projects, and they only become useful when we have completed the initial setup. So, feel free to skip to the next section and return here later, if needed:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter-01/02-presets/CMakePresets.json
+{
+	"version": 1,
+	"cmakeMinimumRequired": {
+		"major": 3, "minor": 19, "patch": 3
+	},
+	"configurePresets": [ ],
+	"vendor": {
+		"vendor-one.com/ExampleIDE/1.0": {
+			"buildQuickly": false
+		}
+	}
+}
+\end{lstlisting}
+
+CMakePresets.json specifies the following root fields:
+
+\begin{itemize}
+\item 
+Version: This is required, and it is always 1.
+
+\item 
+cmakeMinimumRequired: This is optional. It specifies the CMake version in form of a hash with three fields: major, minor, and patch.
+
+\item 
+vendor: An IDE can use this optional field to store its metadata. It's a map keyed with a vendor domain and slash-separated path. CMake virtually ignores this field.
+
+\item 
+configurePresets: This is an optional array of available presets.
+\end{itemize}
+
+Let's add two presets to our configurePresets array:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter-01/02-presets/CMakePresets.json : my-preset
+{
+	"name": "my-preset",
+	"displayName": "Custom Preset",
+	"description": "Custom build - Ninja",
+	"generator": "Ninja",
+	"binaryDir": "${sourceDir}/build/ninja",
+	"cacheVariables": {
+		"FIRST_CACHE_VARIABLE": {
+			"type": "BOOL", "value": "OFF"
+		},
+		"SECOND_CACHE_VARIABLE": "Ninjas rock"
+	},
+	"environment": {
+		"MY_ENVIRONMENT_VARIABLE": "Test",
+		"PATH": "$env{HOME}/ninja/bin:$penv{PATH}"
+	},
+	"vendor": {
+		"vendor-one.com/ExampleIDE/1.0": {
+			"buildQuickly": true
+		}
+	}
+},
+\end{lstlisting}
+
+This file supports a tree-like structure, where children presets inherit properties from multiple parent presets. This means that we can create a copy of the preceding preset and only override the fields we need. Here's an example of what a child preset might look like:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter-01/02-presets/CMakePresets.json : my-preset-multi
+{
+	"name": "my-preset-multi",
+	"inherits": "my-preset",
+	"displayName": "Custom Ninja Multi-Config",
+	"description": "Custom build - Ninja Multi",
+	"generator": "Ninja Multi-Config"
+}
+\end{lstlisting}
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
+The CMake documentation only labels a few fields as explicitly required. However, there are some other fields that are labeled as optional, which must be provided either in the preset or inherited from its parent.
+\end{tcolorbox}
+
+Presets are defined as maps with the following fields:
+
+\begin{itemize}
+\item 
+name: This is a required string that identifies the preset. It has to be machinefriendly and unique across both files.
+
+\item 
+Hidden: This is an optional Boolean hiding the preset from the GUI and command-line list. Such a preset can be a parent of another and isn't required to provide anything but its name.
+
+\item 
+displayName: This is an optional string with a human-friendly name.
+
+\item 
+description: This is an optional string describing the preset.
+
+\item 
+Inherits: This is an optional string or array of preset names to inherit from. Values from earlier presets will be preferred in the case of conflicts, and every preset is free to override any inherited field. Additionally, CMakeUserPresets.json can inherit from project presets but not the other way around.
+
+\item 
+Vendor: This is an optional map of vendor-specific values. It follows the same convention as a root-level vendor field.
+
+\item 
+Generator: This is a required or inherited string that specifies a generator to use for the preset.
+
+\item 
+architecture and toolset: These are optional fields for configuring generators that support these options (mentioned in the Generating a project buildsystem section). Each field can simply be a string or a hash with value and strategy fields, where strategy is either set or external. The strategy field, configured to set, will set the value and produce an error if the generator doesn't support this field. Configuring external means that the field value is set for an external IDE, and CMake should ignore it.
+
+\item 
+binaryDir: This is a required or inherited string that provides a path to the build tree directory (which is absolute or relative to the source tree). It supports macro expansion.
+
+\item 
+cacheVariables: This is an optional map of cache variables where keys denote variable names. Accepted values include null, "TRUE", "FALSE", a string value, or a hash with an optional type field and a required value field. value can be a string value of either "TRUE" or "FALSE". Cache variables are inherited with a union operation unless the value is specified as null – then, it remains unset. String values support macro expansion.
+
+\item 
+Environment: This is an optional map of environment variables where keys denote variable names. Accepted values include null or string values. Environment variables are inherited with a union operation unless the value is specified as null – then, it remains unset. String values support macro expansion, and variables might reference each other in any order, as long as there is no cyclic reference.
+\end{itemize}
+
+The following macros are recognized and evaluated:
+
+\begin{itemize}
+\item 
+\$\{sourceDir\}: This is the path to the source tree.
+
+\item 
+\$\{sourceParentDir\}: This is the path to the source tree's parent directory.
+
+\item 
+\$\{sourceDirName\}: This is the last filename component of \$\{sourceDir\}.
+For example, for /home/rafal/project, it would be project.
+
+\item 
+\$\{presetName\}: This is the value of the preset's name field.
+
+\item 
+\$\{generator\}: This is the value of the preset's generator field.
+
+\item 
+\$\{dollar\}: This is a literal dollar sign (\$).
+
+\item 
+\$env\{<variable-name>\}: This is an environment variable macro. It will return the value of the variable from the preset if defined; otherwise, it will return the value from the parent environment. Remember that variable names in presets are casesensitive (unlike in Windows environments).
+
+\item 
+\$penv\{<variable-name>\}: This option is just like \$env but always returns values from the parent environment. This allows you to resolve issues with circular references that are not allowed in the environment variables of the preset.
+
+\item 
+\$vendor\{<macro-name>\}: This enables vendors to insert their own macros.
+\end{itemize}
+
 
 \subsubsubsection{1.5.9\hspace{0.2cm}Ignoring files in Git}
+
+There are many VCSs; one of the most popular types out there is Git. Whenever we start a new project, it is good to make sure that we only check in to the repository files that need to be there. Project hygiene is easier to maintain if we just add generated, user, or temporary files to the .gitignore file. In this way, Git knows to automatically skip them when building new commits. Here's the file that I use in my projects:
+
+\begin{lstlisting}[style=styleCMake]	
+# chapter-01/01-hello/.gitignore
+	
+# If you put build tree in the source tree add it like so:
+build_debug/
+build_release/
+
+# Generated and user files
+**/CMakeCache.txt
+**/CMakeUserPresets.json
+**/CTestTestfile.cmake
+**/CPackConfig.cmake
+**/cmake_install.cmake
+**/install_manifest.txt
+**/compile_commands.json
+\end{lstlisting}
+
+Using the preceding file in your projects will allow for more flexibility for you and other contributors and users.
+
+The unknown territory of project files has now been charted. With this map, you'll soon be able to write your own listfiles, configure the cache, prepare presets, and more. Before you sail on the open sea of project writing, let's take a look at what other kinds of selfcontained units you can create with CMake.
+
+
+
+
+
+
+
+
+

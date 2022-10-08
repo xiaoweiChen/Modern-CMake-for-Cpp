@@ -1,7 +1,67 @@
+
+Work with CMake is primarily focused on projects that get built and the production of artifacts that get consumed by other systems, such as CI/CD pipelines and test platforms, or deployed to machines or artifact repositories. However, there are two other concepts of CMake that enable you to create with its language: scripts and modules. Let's take a closer look.
+
 \subsubsubsection{1.6.1\hspace{0.2cm}Scripts}
 
+To configure project building, CMake offers a platform-agnostic programming language. This comes with many useful commands. You can use this tool to write scripts that come with your project or are completely independent.
+ 
+Think of it as a consistent way to do cross-platform work: instead of using bash scripts on Linux and batch or PowerShell scripts on Windows, you can have one version. Sure, you could bring in external tools such as Python, Perl, or Ruby scripts, but this is yet another dependency and will increase the complexity of your C/C++ projects. Yes, sometimes, this will be the only thing that can get the job done, but more often than not, we can get away with something far simpler.
+
+We have already learned from the Mastering the command line section that we can execute scripts using the -P option: cmake -P script.cmake. But what are the actual requirements for the script file provided? Not that many: a script can be as complex as you like or an empty file. However, it is recommended that you call the cmake\_minimum\_required() command at the beginning of the script. This command tells CMake which policies should be applied to subsequent commands in this project (more details in Chapter 3, Setting Up Your First CMake Project).
+
+\begin{lstlisting}[style=styleCMake]	
+# chapter-01/03-script/script.cmake
+	
+# An example of a script
+cmake_minimum_required(VERSION 3.20.0)
+message("Hello world")
+file(WRITE Hello.txt "I am writing to a file")
+\end{lstlisting}
+
+When running scripts, CMake won't execute any of the usual stages (such as configuration or generation), and it won't use the cache. Since there is no concept of a source/build tree in scripts, variables that usually hold references to these paths will contain the current working directory instead: CMAKE\_BINARY\_DIR, CMAKE\_SOURCE\_DIR, CMAKE\_CURRENT\_BINARY\_DIR, and CMAKE\_CURRENT\_SOURCE\_DIR.
+
+Happy scripting!
 
 \subsubsubsection{1.6.2\hspace{0.2cm}Utility modules}
 
+CMake projects can use external modules to enhance their functionality. Modules are written in the CMake language and contain macro definitions, variables, and commands that perform all kinds of functions. They range from quite complex scripts (CPack and CTest also provide modules!) to fairly simple ones, such as AddFileDependencies or TestBigEndian.
+
+The CMake distribution comes packed with almost 90 different utility modules. If that's not enough, you can download more from the internet by browsing curated lists, such as the one found at \url{https://github.com/onqtam/awesome-cmake}, or write a module from scratch.
+
+To use a utility module, we need to call an include(<MODULE>) command. Here's a simple project showing this in action:
+
+\begin{lstlisting}[style=styleCMake]	
+# chapter-01/04-module/CMakeLists.txt
+	
+cmake_minimum_required(VERSION 3.20.0)
+
+project(ModuleExample)
+include (TestBigEndian)
+
+TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
+
+if(IS_BIG_ENDIAN)
+	message("BIG_ENDIAN")
+else()
+	message("LITTLE_ENDIAN")
+endif()
+\end{lstlisting}
+
+We'll learn what modules are available as they become relevant to the subject at hand. If you're curious, a full list of bundled modules can be found at \url{https://cmake.org/cmake/help/latest/manual/cmake-modules.7.html}.
 
 \subsubsubsection{1.6.3\hspace{0.2cm}Find-modules}
+
+In the The Config-files for packages section, I mentioned that CMake has a mechanism that allows it to find files belonging to external dependencies that don't support CMake and don't provide a CMake config-file (or haven't). That's what find-modules are for. CMake provides over 150 modules that are able to locate different packages in the system. As was the case with utility modules, there are plenty more find-modules available online and another option is to write your own as a last resort.
+
+You can use them by calling the find\_package() command and providing the name of the package in question. Such a find-module will then play a little game of hide and seek and check all known locations of the software it is looking for. Following this, it defines variables (as specified in that module's manual) that allow you to build against that dependency.
+
+For example, the FindCURL module searches for a popular Client URL library and defines the following variables: CURL\_FOUND, CURL\_INCLUDE\_DIRS, CURL\_LIBRARIES, and CURL\_VERSION\_STRING.
+
+We will cover find-modules in more depth in Chapter 7, Managing Dependencies with CMake.
+
+
+
+
+
+
+
