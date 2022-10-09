@@ -1,0 +1,37 @@
+Writing in the CMake Language is a bit tricky. When you read a CMake listfile for
+the first time, you may be under the impression that the language in it is so simple
+that it doesn't require any special training or preparation. What follows is very often
+a practical attempt to introduce changes and experiment with the code without
+a thorough understanding of how it works. We programmers are usually very busy and
+are overly keen to tackle any build-related issues with little investment. We tend to make
+gut-based changes hoping they just might do the trick. This approach to solving technical
+problems is called voodoo programming.
+
+The CMake Language appears simple: after we have completed our small addition, fix,
+or hack, or added a one-liner, we realize that something isn't working. The time spent on
+debugging is often longer than that spent on actually studying the subject. Luckily, this
+won't be our fate – because this chapter covers the vast majority of the critical knowledge
+needed to use the CMake Language in practice.
+
+In this chapter, we'll not only learn about the building blocks of the CMake Language – comments, commands, variables, and control structures – but we'll also give the necessary background and try them out in a clean and modern CMake example. CMake puts you in a bit of a unique position. On one hand, you perform a role of a build engineer; you need to understand all the intricacies of the compilers, the platforms, and everything else in-between. On the other hand, you're a developer; you're writing code that generates a buildsystem. Writing good code is hard and requires thinking on many levels at the same time – it should work and be easy to read, but it should also be easy to analyze, extend, and maintain. This is exactly what we're going to talk about here.
+
+Lastly, we'll introduce some of the most useful and common commands in CMake. Commands that aren't used that often will be placed in the Appendix section (this will include a complete reference guide for the string, list, and file manipulation commands).
+
+In this chapter, we're going to cover the following main topics:
+
+\begin{itemize}
+\item 
+The basics of the CMake Language syntax
+
+\item 
+Working with variables
+
+\item 
+Using lists
+
+\item 
+Understanding control structures in CMake
+
+\item 
+Useful commands
+\end{itemize}
