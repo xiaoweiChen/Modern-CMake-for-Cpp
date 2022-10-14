@@ -1,12 +1,333 @@
 
+Variables in CMake are a surprisingly complex subject. Not only are there three categories of variables – normal, cache, and environment – but they also reside in different scopes, with specific rules on how one scope affects the other. Very often, a poor understanding of all these rules becomes a source of bugs and headaches. I recommend you study this section with care and make sure you understand all of concepts before moving on.
+
+Let's start with some key facts about variables in CMake:
+
+\begin{itemize}
+\item 
+Variable names are case-sensitive and can include almost any character.
+
+\item 
+All variables are stored internally as strings, even if some commands can interpret them as values of other data types (even lists!).
+
+\item 
+The basic variable manipulation commands are set() and unset(), but there are other commands that can affect variables, such as string() and list().
+\end{itemize}
+
+To set a variable, we simply call set(), providing its name and the value:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter02/02-variables/set.cmake
+
+set(MyString1 "Text1")
+set([[My String2]] "Text2")
+set("My String 3" "Text3")
+message(${MyString1})
+message(${My\ String2})
+message(${My\ String\ 3})
+\end{lstlisting}
+
+As you can see, the use of brackets and quoted arguments allows for spaces to be included in the variable name. However, when referencing it later, we have to escape the whitespace with a backslash (\verb|\|). For that reason, it is recommended to use only alphanumeric characters, dashes (-), and underscores (\_) in variable names.
+
+Also avoid reserved names (in upper, lower, or mixed case) that begin with any of the following: CMAKE\_, \_CMAKE\_, or underscore (\_), followed by the name of any CMake command.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
+The set() command accepts a plain text variable name as its first argument, but the message() command uses a variable reference wrapped in the \$\{\} syntax. What would happen if we were to provide a variable wrapped in the \$\{\} syntax to the set() command? To answer that, we'll need to understand variable references better.
+\end{tcolorbox}
+
+To unset a variable, we can use unset() in the following way: unset(MyString1).
 
 \subsubsubsection{2.3.1\hspace{0.2cm}Variable references}
 
+I already mentioned references briefly in the Command arguments section, as they're evaluated for quoted and unquoted arguments. And we learned that to create a reference to a defined variable, we need to use the \$\{\} syntax, like so: message(\$\{MyString1\}).
+
+On evaluation, CMake will traverse the scope stack (I'll explain that in a second) and replace \$\{MyString1\} with a value, or an empty string if no variable is found (CMake won't generate any error messages). This process is called variable evaluation, expansion, or interpolation.
+
+Such interpolation is performed in an inside-out fashion. This means two things:
+
+\begin{itemize}
+\item 
+If the following reference is encountered – \$\{MyOuter\$\{MyInner\}\} – CMake will try to evaluate MyInner first, rather than searching for a variable named MyOuter \$\{MyInner\}.
+
+\item 
+If the MyInner variable is successfully expanded, CMake will repeat the expansion process until no further expansion is possible.
+\end{itemize}
+
+Let's consider an example with the following variables:
+
+\begin{itemize}
+\item 
+MyInner with a Hello value
+
+\item 
+MyOuter with a \$\{My value
+\end{itemize}
+
+If we call the message("\$\{MyOuter\}Inner\} World") command, the output we'll receive will be Hello World, and that is because \$\{MyOuter\} was replaced with a literal value, \$\{My, which, when combined with the top-level value, Inner\}, creates another variable reference – \$\{MyInner\}.
+
+CMake will perform this expansion to the full extent, and only then will it pass the resulting values as arguments to the command. This is why when we call set(\$\{MyInner\} "Hi"), we won't actually be changing the MyInner variable, but instead, we'll change the Hello variable. CMake expands \$\{MyInner\} to Hello and passes that string as the first argument to the set() command, along with a new value, Hi. Very often, this is not what we want.
+
+Variable references are a bit peculiar in how they work when it comes to variable categories, but in general, the following applies:
+
+\begin{itemize}
+\item 
+The \$\{\} syntax is used to reference normal or cache variables.
+
+\item 
+The \$ENV\{\} syntax is used to reference environment variables.
+
+\item 
+The \$CACHE\{\} syntax is used to reference cache variables.
+\end{itemize}
+
+That's right, with \$\{\}, you might get a value from one category or the other. I'll explain that in the How to correctly use the variable scope in CMake section, but first, let's introduce some other categories of variables so that we understand clearly what they are.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
+Remember that you can pass arguments to scripts through the command line after a -{}- token. Values will be stored in the CMAKE\_ARGV<n> variable and the count of the passed arguments will be in the CMAKE\_ARGC variable.
+\end{tcolorbox}
 
 \subsubsubsection{2.3.2\hspace{0.2cm}Using the environment variables}
 
+This is the least complicated kind of variable. CMake makes a copy of the variables that were in the environment used to start the cmake process and makes them available in a single, global scope. To reference these variables, use the \$ENV\{<name>\} syntax.
+
+CMake also allows you to set (set()) and unset (unset()) these variables, but changes will only be made to a local copy in the running cmake process and not the actual system environment; moreover, these changes won't be visible to subsequent runs of builds or tests.
+
+To modify or create a variable, use the set(ENV\{<variable>\} <value>) command, like so:
+
+\begin{lstlisting}[style=styleCMake]
+set(ENV{CXX} "clang++")
+\end{lstlisting}
+
+To clear an environment variable, use unset(ENV\{<variable>\}), like so:
+
+\begin{lstlisting}[style=styleCMake]
+unset(ENV{VERBOSE})
+\end{lstlisting}
+
+Be aware that there are a few environment variables that affect different aspects of CMake behavior. The CXX variable is one of them – it specifies what executable will be used for compiling C++ files. We'll cover other environmental variables, as they will become relevant for this book. A full list is available in the documentation:
+
+\url{https://cmake.org/cmake/help/latest/manual/cmake-envvariables.7.html}
+
+If you use ENV variables as arguments to your commands, the values will be interpolated during the generation of the buildsystem. This means that they will get baked into the build tree, and changing the environment for the build stage won't have any effect.
+
+For example, take the following project file:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter02/03-environment/CMakeLists.txt
+
+cmake_minimum_required(VERSION 3.20.0)
+project(Environment)
+message("generated with " $ENV{myenv})
+add_custom_target(EchoEnv ALL COMMAND echo "myenv in build
+	is" $ENV{myenv})
+\end{lstlisting}
+
+The preceding example has two steps: it will print the myenv environment variable during the configuration, and it will add a build stage through add\_custom\_target(), which echoes the same variable as part of the build process. We can test what happens with a bash script that uses one value for the configuration stage and another for the build stage:
+
+\begin{lstlisting}[style=stylePython]
+# chapter02/03-environment/build.sh
+	
+#!/bin/bash
+export myenv=first
+echo myenv is now $myenv
+cmake -B build .
+cd build
+export myenv=second
+echo myenv is now $myenv
+cmake --build .
+\end{lstlisting}
+
+Running the preceding code clearly shows that the value set during the configuration is persisted to the generated buildsystem:
+
+\begin{tcblisting}{commandshell={}}
+$ ./build.sh | grep -v "\-\-"
+myenv is now first
+generated with first
+myenv is now second
+Scanning dependencies of target EchoEnv
+myenv in build is first
+Built target EchoEnv
+\end{tcblisting}
 
 \subsubsubsection{2.3.3\hspace{0.2cm}Using the cache variables}
 
+We first mentioned cache variables when discussing command-line options for cmake in Chapter 1, First Steps with CMake. Essentially, they're persistent variables stored in a CMakeCache.txt file in your build tree. They contain information gathered during the project configuration stage, both from the system (path to compilers, linkers, tools, and others) and from the user through the GUI. Cache variables are not available in scripts (since there's no CMakeCache.txt file) – they only exist in projects.
+
+Cache variables can be referenced with the \$CACHE\{<name>\} syntax.
+To set a cache variable, use set() with the following syntax: 
+
+\begin{lstlisting}[style=styleCMake]
+set(<variable> <value> CACHE <type> <docstring> [FORCE]) 
+\end{lstlisting}
+
+As you can see, there are some new required arguments (in comparison to the set() command for normal variables), and it also introduces first keywords: CACHE and FORCE.
+
+Specifying CACHE as a set() argument means that we intend to change what was provided during the configuration stage, and it imposes a requirement to provide the variable <type> and <docstring> values. This is because these variables are configurable by the user and the GUI needs to know how to display it. The following types are accepted:
+
+\begin{itemize}
+\item 
+BOOL: A Boolean on/off value. The GUI will show a checkbox.
+
+\item 
+FILEPATH: A path to a file on a disk. The GUI will open a file dialog.
+
+\item 
+STRING: A line of text. The GUI offers a text field to be filled. It can be replaced by a drop-down control by calling 
+\begin{lstlisting}[style=styleCMake]
+set_property(CACHE <variable> STRINGS <values>)
+\end{lstlisting}
+
+\item 
+INTERNAL: A line of text. The GUI skips internal entries. The internal entries may be used to store variables persistently across runs. Use of this type implicitly adds the FORCE keyword.
+\end{itemize}
+
+The <doctring> value is simply a label that will be displayed by the GUI next to the field to provide more detail about this setting to the user. It is required even for an INTERNAL type.
+
+Setting cache variables follows the same rules as environmental variables to some extent – values are overwritten only for the current execution of CMake. Take a look at this example:
+
+\begin{lstlisting}[style=styleCMake]
+set(FOO "BAR" CACHE STRING "interesting value")
+\end{lstlisting}
+
+The above call has no permanent effect if the variable exists in the cache. However, if the value doesn't exist in cache or an optional FORCE argument is specified, the value will be persisted:
+
+\begin{lstlisting}[style=styleCMake]
+set(FOO "BAR" CACHE STRING "interesting value" FORCE)
+\end{lstlisting}
+
+Setting the cache variables has some unobvious implications. That is, any normal variable with the same name will be removed. We'll find out why in the next section.
+
+As a reminder, cache variables can be managed from the command line as well (check the appropriate section in Chapter 1, First Steps with CMake).
 
 \subsubsubsection{2.3.4\hspace{0.2cm}How to correctly use the variable scope in CMake}
+
+Variable scope is probably the hardest part of the whole concept of the CMake Language.This is maybe because we're so accustomed to how things are done in more advanced languages that support namespaces and scope operators. CMake doesn't have those mechanisms, so it deals with this issue in its own, somewhat unusual way.
+
+Just to clarify, variable scopes as a general concept are meant to separate different layers of abstraction so that when a user-defined function is called, variables set in that function are local to it. These local variables aren't affecting the global scope, even if the names of the local variables are exactly the same as the global ones. If explicitly needed, functions should have read/write access to global variables as well. This separation of variables (or scopes) has to work on many levels – when one function calls another, the same separation rules apply.
+
+CMake has two scopes:
+
+\begin{itemize}
+\item 
+Function scope: For when custom functions defined with function() are executed
+
+\item 
+Directory scope: For when a CMakeLists.txt listfile in a nested directory is executed from the add\_subdirectory() command
+\end{itemize}
+
+We'll cover the preceding commands later in this book, but first, we need to know how the concept of variable scope is implemented. When a nested scope is created, CMake simply fills it with copies of all the variables from the current scope. Subsequent commands will affect these copies. But as soon as the execution of the nested scope is completed, all copies are deleted and the original, parent scope is restored.
+
+Let's consider the following scenario:
+
+\begin{enumerate}
+\item 
+The parent scope sets the VAR variable to ONE.
+
+\item 
+The nested scope starts and VAR is printed to console.
+
+\item 
+The VAR variable is set to TWO, and VAR is printed to the console.
+
+\item 
+The nested scope ends, and VAR is printed to the console.
+\end{enumerate}
+
+The console's output will look like this: ONE, TWO, ONE. This is because the copied VAR variable is discarded after the nested scope ends.
+
+How the concept of scope works in CMake has interesting implications that aren't that common in other languages. If you unset (unset()) a variable created in the parent scope while executing in a nested scope, it will disappear, but only in the nested scope. When the nested scope is completed, the variable is restored to its previous value.
+
+This brings us to the behavior of variable referencing and the \$\{\} syntax. Whenever we try to access the normal variable, CMake will search for the variables from the current scope, and if the variable with such a name is defined, it will return its value. So far, so good. However, when CMake can't find a variable with that name (for example, if it didn't exist or was unset (unset())), it will search through the cache variables and return a value from there if a match is found.
+
+That's a possible gotcha if we have a nested scope calling unset(). Depending on where we reference that variable – in the inner or the outer scope – we'll be accessing the cache or the original value.
+
+But what can we do if we really need to change the variable in the calling (parent) scope?
+CMake has a PARENT\_SCOPE flag you can add at the end of the set() and unset() commands:
+
+\begin{lstlisting}[style=styleCMake]
+set(MyVariable "New Value" PARENT_SCOPE)
+unset(MyVariable PARENT_SCOPE)
+\end{lstlisting}
+
+That workaround is a bit limited, as it doesn't allow accessing variables more than one level up. Another thing worth noting is the fact that using PARENT\_SCOPE doesn't change variables in the current scope.
+
+Let's see how variable scope works in practice and consider the following example:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter02/04-scope/CMakeLists.txt
+
+function(Inner)
+	message(" > Inner: ${V}")
+	set(V 3)
+	message(" < Inner: ${V}")
+endfunction()
+
+function(Outer)
+	message(" > Outer: ${V}")
+	set(V 2)
+	Inner()
+	message(" < Outer: ${V}")
+endfunction()
+
+set(V 1)
+message("> Global: ${V}")
+Outer()
+message("< Global: ${V}")
+\end{lstlisting}
+
+We set the global variable, V, to 1, and then we call the Outer function; then set V to 2 and call the Inner function, and then set V to 3. After every step, we print the variable to the console:
+
+\begin{tcblisting}{commandshell={}}
+> Global: 1
+  > Outer: 1
+    > Inner: 2
+    < Inner: 3
+  < Outer: 2
+< Global: 1
+\end{tcblisting}
+
+As we explained previously, as we go deeper into the functions, the variable values are copied to the nested scope, but as we exit the scope, their original value is restored.
+
+What would the output be if we changed the set() command of the Inner function to operate in the parent scope: set(V 3 PARENT\_SCOPE)?
+
+\begin{tcblisting}{commandshell={}}
+> Global: 1
+  > Outer: 1
+    > Inner: 2
+    < Inner: 2
+  < Outer: 3
+< Global: 1
+\end{tcblisting}
+
+We affected the scope of the Outer function, but not the scope of the Inner function or the global scope!
+
+The CMake documentation also mentions that CMake scripts bind variables in one directory scope (which is a bit redundant, as the only command that effectively creates a directory scope, add\_subdirectory(), isn't allowed in scripts).
+
+Since all variables are stored as strings, CMake has to take a more creative approach to more complex data structures such as lists.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

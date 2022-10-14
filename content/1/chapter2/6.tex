@@ -1,8 +1,99 @@
 
-
+CMake offers many, many scripting commands that allow you to work with variables and the environment. Some of them are covered extensively in the Appendix section, for example, list(), string(), and file() (we'll leave these explanations there and concentrate on projects in the main chapters). Others, such as find\_...(), fit better in chapters that talk about managing dependencies. In this section, we'll briefly cover the most useful commands for scripts.
 
 \subsubsubsection{2.6.1\hspace{0.2cm}The message() command}
 
+We already know and love our trusty message() command, which prints text to standard output. However, there's a lot more to it than meets the eye. By providing a MODE argument, you can customize the style of the output, and in the case of an error, you can stop the execution of the code: message(<MODE> "text").
+
+The recognized modes are as follows:
+
+\begin{itemize}
+\item 
+FATAL\_ERROR: This stops processing and generation.
+
+\item 
+SEND\_ERROR: This continues processing, but skips generation.
+
+\item 
+WARNING: This continues processing.
+
+\item 
+AUTHOR\_WARNING: A CMake warning. This continues processing.
+
+\item 
+DEPRECATION: This works accordingly if either of the CMAKE\_ERROR\_DEPRECATED or CMAKE\_WARN\_DEPRECATED variables are enabled.
+
+\item 
+NOTICE or omitted mode (default): This prints a message to stderr to attract the user's attention.
+
+\item 
+STATUS: This continues processing and is recommended for main messages for users.
+
+\item 
+VERBOSE: This continues processing and should be used for more detailed information that usually isn't very necessary.
+
+\item 
+DEBUG: This continues processing and should contain any fine details that might be helpful when there's an issue with a project.
+
+\item 
+TRACE: This continues processing and is recommended to print messages during the project development. Usually, these sorts of messages would be removed before publishing the project.
+\end{itemize}
+
+The following example stops execution after the first message:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter02/10-useful/message_error.cmake
+
+message(FATAL_ERROR "Stop processing")
+message("Won't print this.")
+\end{lstlisting}
+
+This means messages will be printed depending on the current log level (which is STATUS by default). We discussed how to change this in the previous chapter in the Options for debugging and tracing section. At that point, I promised to talk about debugging with CMAKE\_MESSAGE\_CONTEXT, so let's get to it. Since then, we have acquired an understanding of three important pieces to this puzzle: lists, scopes, and functions.
+
+When we enable a command-line flag, cmake -{}-log-context, our messages will be decorated with dot-separated context and stored in the CMAKE\_MESSAGE\_CONTEXT list. Consider the following example:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter02/10-useful/message_context.cmake
+	
+function(foo)
+	list(APPEND CMAKE_MESSAGE_CONTEXT "foo")
+	message("foo message")
+endfunction()
+
+list(APPEND CMAKE_MESSAGE_CONTEXT "top")
+message("Before `foo`")
+foo()
+message("After `foo`")
+\end{lstlisting}
+
+The output of the preceding script will look like this:
+
+\begin{tcblisting}{commandshell={}}
+$ cmake -P message_context.cmake --log-context
+[top] Before `foo`
+[top.foo] foo message
+[top] After `foo`
+\end{tcblisting}
+
+The initial scope of the function is copied from the parent scope (which already has one item in the list: top). The first command in foo adds a new item with the foo function name to CMAKE\_MESSAGE\_CONTEXT. The message is printed, and the function scope ends, discarding the local, copied variables, and the previous scope (without foo) is restored.
+
+This approach is useful with many nested functions in very complex projects. Hopefully, you won't ever need it, but I thought it is a really good example of how a function scope works in practice.
+
+Another cool trick with message() is to add indentation to the CMAKE\_MESSAGE\_INDENT list (in exactly the same way as with CMAKE\_MESSAGE\_CONTEXT):
+
+\begin{lstlisting}[style=styleCMake]
+list(APPEND CMAKE_MESSAGE_INDENT " ")
+\end{lstlisting}
+
+The output from our scripts can then look a bit cleaner:
+
+\begin{tcblisting}{commandshell={}}
+Before `foo`
+  foo message
+After `foo`
+\end{tcblisting}
+
+Since CMake doesn't offer any real debugger with breakpoints or other tools, the ability to produce clean log messages comes in very handy when things don't go exactly as planned.
 
 \subsubsubsection{2.6.2\hspace{0.2cm}The include() command}
 

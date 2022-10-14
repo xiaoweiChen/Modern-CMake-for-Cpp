@@ -1,0 +1,70 @@
+To store a list, CMake concatenates all elements into a string, using a semicolon (;) as a delimiter: a;list;of;5;elements. You can escape a semicolon in an element with a backslash, like so: a\verb|\|;single\verb|\|;element.
+
+To create a list, we can use the set() command: set(myList a list of five elements). Because of how lists are stored, the following commands will have exactly the same effect:
+
+\begin{itemize}
+\item 
+set(myList "a;list;of;five;elements")
+
+\item 
+set(myList a list "of;five;elements")
+\end{itemize}
+
+CMake automatically unpacks lists in unquoted arguments. By passing an unquoted myList reference, we effectively send more arguments to the command:
+
+\begin{lstlisting}[style=styleCMake]
+message("the list is:" ${myList})
+\end{lstlisting}
+
+The message() command will receive here six arguments: "the list is:", "a", "list", "of", "five", "elements". This may have unintended consequences, as the output will be printed without any additional spaces between the arguments:
+
+\begin{tcblisting}{commandshell={}}
+the list is:alistoffiveelements
+\end{tcblisting}
+
+As you can see, this is a very simple mechanism, and it should be used carefully.
+
+CMake offers a list() command that provides a multitude of subcommands to read, search, modify, and order lists. Here's a short summary:
+
+\begin{lstlisting}[style=styleCMake]
+list(LENGTH <list> <out-var>)
+list(GET <list> <element index> [<index> ...] <out-var>)
+list(JOIN <list> <glue> <out-var>)
+list(SUBLIST <list> <begin> <length> <out-var>)
+list(FIND <list> <value> <out-var>)
+list(APPEND <list> [<element>...])
+list(FILTER <list> {INCLUDE | EXCLUDE} REGEX <regex>)
+list(INSERT <list> <index> [<element>...])
+list(POP_BACK <list> [<out-var>...])
+list(POP_FRONT <list> [<out-var>...])
+list(PREPEND <list> [<element>...])
+list(REMOVE_ITEM <list> <value>...)
+list(REMOVE_AT <list> <index>...)
+list(REMOVE_DUPLICATES <list>)
+list(TRANSFORM <list> <ACTION> [...])
+list(REVERSE <list>)
+list(SORT <list> [...])
+\end{lstlisting}
+
+Most of the time, we don't really need to use lists in our projects. However, if you find yourself in that rare case where this concept would be convenient, you'll find a more in-depth reference of the list() command in the Appendix section.
+
+Now that we know how to work with lists and variables of all kinds, let's shift our focus to controlling the execution flow and learn about control structures available in CMake.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
