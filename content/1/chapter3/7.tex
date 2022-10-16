@@ -1,0 +1,49 @@
+In Chapter 1, First Steps with CMake, we talked about in-source builds, and how it is recommended to always specify the build path to be out-of-source. This not only allows for a cleaner build tree and a simpler .gitignore file, but it also decreases the chances you'll accidentally overwrite or delete any source files.
+
+Searching for the solution online, you may stumble on a StackOverflow thread that asks the same question: \url{https://stackoverflow.com/q/1208681/6659218}. Here, the author notices that no matter what you do, it seems like CMake will still create a CMakeFiles/ directory and a CMakeCache.txt file. Some answers suggest using undocumented variables to make sure that the user can't write in the source directory under any circumstances:
+
+\begin{lstlisting}[style=styleCMake]
+# add this options before PROJECT keyword
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+\end{lstlisting}
+
+I'd say to be cautious when using undocumented features of any software, as they may go away without warning. Setting the preceding variables in CMake 3.20 terminates the build with a rather ugly error:
+
+\begin{tcblisting}{commandshell={}}
+CMake Error at /opt/cmake/share/cmake-3.20/Modules/
+CMakeDetermineSystem.cmake:203 (file):
+  file attempted to write a file:
+  /root/examples/chapter03/09-in-source/CMakeFiles/CMakeOutput.
+log into a source
+  directory.
+\end{tcblisting}
+
+However, it still creates the mentioned files anyway! Therefore, my recommendation is to go with an older – but fully supported – mechanism:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter03/09-in-source/CMakeLists.txt
+
+cmake_minimum_required(VERSION 3.20.0)
+project(NoInSource CXX)
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+	message(FATAL_ERROR "In-source builds are not allowed")
+endif()
+message("Build successful!")
+\end{lstlisting}
+
+If Kitware (company behind the CMake) ever decides to officially support CMAKE\_DISABLE\_SOURCE\_CHANGES or CMAKE\_DISABLE\_IN\_SOURCE\_BUILD, then by all means, switch to that solution.
+
+
+
+
+
+
+
+
+
+
+
+
+
+

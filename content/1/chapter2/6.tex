@@ -97,9 +97,74 @@ Since CMake doesn't offer any real debugger with breakpoints or other tools, the
 
 \subsubsubsection{2.6.2\hspace{0.2cm}The include() command}
 
+We can partition our CMake code into separate files to keep things ordered and, well, separate. Then, we can reference them from our parent listfile by calling include(), as shown in the following example:
+
+\begin{lstlisting}[style=styleCMake]
+include(<file|module> [OPTIONAL] [RESULT_VARIABLE <var>])
+\end{lstlisting}
+
+If we provide a filename (a path with a .cmake extension), CMake will try to open and execute it. Note that no nested, separate scope will be created, so any changes to variables done in that file will affect the calling scope.
+
+CMake will raise an error if a file doesn't exist unless we specify that it is optional with the OPTIONAL keyword. If we need to know if include() was successful, we can provide a RESULT\_VARIABLE keyword with the name of the variable. It will be filled with a full path to the included file on success or not found (NOTFOUND) on failure.
+
+When running in script mode, any relative paths will be resolved from the current working directory. To force searching in relation to the script itself, provide an absolute path:
+
+\begin{lstlisting}[style=styleCMake]
+include("${CMAKE_CURRENT_LIST_DIR}/<filename>.cmake")
+\end{lstlisting}
+
+If we don't provide a path but do provide the name of a module (without .cmake or otherwise), CMake will try to find a module and include it. CMake will search for a file with the name of <module>.cmake in CMAKE\_MODULE\_PATH and then in the CMake module directory.
 
 \subsubsubsection{2.6.3\hspace{0.2cm}The include\_guard() command}
 
+When we include files that have side effects, we might want to restrict them so that they're only included once. This is where include\_guard([DIRECTORY|GLOBAL]) comes in.
+
+Put include\_guard() at the top of the included file. When CMake encounters it for the first time, it will make a note of this fact in the current scope. If the file gets included again (maybe because we don't control all of the files in our project), it won't be processed any further.
+
+If we want to protect against inclusion in unrelated function scopes that won't share variables with each other, we should provide DIRECTORY or GLOBAL arguments. As the names suggest, the DIRECTORY keyword will apply the protection within the current directory and below, and the GLOBAL keyword applies the protection to the whole build.
+
 \subsubsubsection{2.6.4\hspace{0.2cm}The file() command}
 
+To give you an idea of what you can do with CMake scripts, let's take a quick glance at the most useful variants of the file manipulation command:
+
+\begin{lstlisting}[style=styleCMake]
+file(READ <filename> <out-var> [...])
+file({WRITE | APPEND} <filename> <content>...)
+file(DOWNLOAD <url> [<file>] [...])
+\end{lstlisting}
+
+In short, the file() command will let you read, write, and transfer files, and work with the filesystem, file locks, paths, and archives, all in a system-independent manner. Please see the Appendix section for more details.
+
 \subsubsubsection{2.6.5\hspace{0.2cm}The execute\_process() command}
+
+Every now and then, you'll need to resort to using tools available in the system (after all, CMake is primarily a buildsystem generator). CMake offers a command for this purpose: you can use execute\_process() to run other processes and collect their output. This command is a great fit for scripts, and it can also be used in projects during the configuration stage. Here's the general form of the command:
+
+\begin{lstlisting}[style=styleCMake]
+execute_process(COMMAND <cmd1> [<arguments>]… [OPTIONS])
+\end{lstlisting}
+
+CMake will use the API of the operating system to create a child process (so, shell operators such as \&\&, ||, and > won't work). However, you can still chain commands and pass the output of one to another simply by providing the COMMAND <cmd> <arguments> arguments more than once.
+
+Optionally, you may use a TIMEOUT <seconds> argument to terminate the process if it hasn't finished the task within the required limit, and you can set the WORKING\_DIRECTORY <directory> as you need.
+
+The exit codes of all tasks can be collected in a list by providing RESULTS\_VARIABLE <variable> arguments. If you're only interested in the result of the last executed command, use the singular form: RESULT\_VARIABLE <variable>.
+
+To collect the output, CMake provides two arguments: OUTPUT\_VARIABLE and ERROR\_VARIABLE (which are used in a similar fashion). If you would like to merge both stdout and stderr, use the same variable for both arguments.
+
+Remember that when writing projects for other users, you should make sure that the command you're planning to use is available on the platforms you claim to support.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

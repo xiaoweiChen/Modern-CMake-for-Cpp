@@ -1,0 +1,11 @@
+We introduced a lot of valuable concepts in this chapter that will give us a strong foundation to go forward and build hardened, future-proof projects. We discussed how to set the minimum CMake version and how to configure the key aspects of the project – that is, the name, languages, and metadata fields.
+
+Laying good foundations will help ensure that our projects can grow quickly. This is why we discussed the partitioning of projects. We analyzed naïve code partitioning using include() and compared it with add\_subdirectory(). At this point, we learned about the benefits of managing the directory scope of variables, and we explored the use of simpler paths and increased modularity. Having an option to create a nested project and build it separately is very useful when we need to slowly break code down into more independent units.
+
+After an overview of the partitioning mechanisms we have at our disposal, we explored how we want to use them – for example, how to make transparent, resilient, and extensible project structures. Specifically, we analyzed how CMake will traverse the listfiles and the correct order of the different configuration steps.
+
+Next, we studied how we can scope the environment of our target and host machines, what the differences are between them, and what kind of information about the platform and system is available through different queries.
+
+Finally, we found out how to configure the toolchain – for example, how to specify the required C++ version, how to address the issue of vendor-specific compiler extensions, and how to enable important optimization. We wrapped up by discovering how to test our compiler for the required features and compile test files.
+
+While this is all that a project technically requires, it's still not a very useful project. To change that, we need to introduce targets. So far, we've mentioned them here and there, but I tried to avoid the subject until we had learned more about some general concepts first. Now that's done, we'll look at them in detail.

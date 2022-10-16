@@ -1,17 +1,129 @@
 
+CMake provides multiple ways of querying the environment with CMAKE\_ variables, ENV variables, and special commands. For example, collected information can be used to support cross-platform scripts. These mechanisms allow us to avoid using platformspecific shell commands that may not be easily portable or differ in naming across environments.
+
+For performance-critical applications, it will be useful to know all the features of the destination platform (for example, instruction sets, CPU core count, and more). This information can then be passed to the compiled binaries so that they can be tuned to perfection (we'll learn how to do that in the next chapter). Let's see what information is available in CMake natively.
 
 \subsubsubsection{3.5.1\hspace{0.2cm}Discovering the operating system}
 
+There are many occasions when it is useful to know what the target operating system is. Even as mundane a thing as a filesystem differs greatly between Windows and Unix in things such as case sensitivity, file path structures, the presence of extensions, privileges, and so on. Most commands present on one system won't be available on another, or they could be named differently (even if it's by a single letter – for example, the ifconfig and ipconfig commands).
+
+If you ever need to support multiple target operating systems with a single CMake script, just check the CMAKE\_SYSTEM\_NAME variable so that you can act accordingly. Here's a simple example:
+
+\begin{lstlisting}[style=styleCMake]
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	message(STATUS "Doing things the usual way")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+	message(STATUS "Thinking differently")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	message(STATUS "I'm supported here too.")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "AIX")
+	message(STATUS "I buy mainframes.")
+else()
+	message(STATUS "This is ${CMAKE_SYSTEM_NAME} speaking.")
+endif()
+\end{lstlisting}
+
+If needed, there's a variable containing the operating system version: CMAKE\_SYSTEM\_VERSION. However, my recommendation is to try and make your solutions as systemagnostic as possible and use the built-in CMake cross-platform functionality. Especially for operations on filesystems, you should use the file() command described in the Appendix section.
 
 \subsubsubsection{3.5.2\hspace{0.2cm}Cross-compilation – what are host and target systems?}
 
+Compiling code on one machine to be run on another is called cross-compilation. You can (with the right toolset) compile applications for Android by running CMake on a Windows machine. Cross-compilation isn't in the scope of this book, but it's important to understand how it impacts some parts of CMake.
+
+One of the necessary steps to allow cross-compilation is setting the CMAKE\_SYSTEM\_NAME and CMAKE\_SYSTEM\_VERSION variables to the values appropriate for the operating system that you're compiling for targets (the CMake documentation refers to it as the target system). The operating system used to perform the build is called a host system.
+
+Regardless of the configuration, the information on the host system is always accessible in variables with a HOST keyword in their name: CMAKE\_HOST\_SYSTEM, CMAKE\_HOST\_SYSTEM\_NAME, CMAKE\_HOST\_SYSTEM\_PROCESSOR, and CMAKE\_HOST\_SYSTEM\_VERSION.
+
+There are a few more variables with a HOST keyword in their name, so just keep in mind that they're explicitly referencing the host system. Otherwise, all variables reference the target system (which normally is the host system anyway, unless we're cross-compiling).
+
+If you're interested in reading more about cross-compilation, I suggest referencing the CMake documentation at \url{https://cmake.org/cmake/help/latest/manual/ cmake-toolchains.7.html}.
 
 \subsubsubsection{3.5.3\hspace{0.2cm}Abbreviated variables}
 
+CMake will predefine a few variables that will provide information about the host and target systems. If a specific system is used, an appropriate variable will be set to a non-false value (that is, 1 or true):
+
+\begin{itemize}
+\item 
+ANDROID, APPLE, CYGWIN, UNIX, IOS, WIN32, WINCE, WINDOWS\_PHONE
+
+\item 
+CMAKE\_HOST\_APPLE, CMAKE\_HOST\_SOLARIS, CMAKE\_HOST\_UNIX, CMAKE\_
+HOST\_WIN32
+\end{itemize}
+
+The WIN32 and CMAKE\_HOST\_WIN32 variables will be true for 32- and 64-bit versions of Windows and MSYS (this value is kept for legacy reasons). Also, UNIX will be true for Linux, macOS, and Cygwin.
+
 \subsubsubsection{3.5.4\hspace{0.2cm}Host system information}
 
+CMake could provide more variables, but to save time, it doesn't query the environment for rarely needed information, such as whether a processor supports MMX or what the total physical memory is. That doesn't mean this information isn't available – you just need to ask for it explicitly with the following command:
+
+\begin{lstlisting}[style=styleCMake]
+cmake_host_system_information(RESULT <VARIABLE> QUERY <KEY>…)
+\end{lstlisting}
+
+We need to provide a target variable and a list of keys we're interested in. If we provide just one key, the variable will contain a single value; otherwise, it will be a list of values. We can ask for many details about the environment and the OS:
+
+\begin{table}[H]
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{Key}                & \textbf{Retured value}                              \\ \hline
+		HOSTNAME                    & The hostname.                                       \\ \hline
+		FQDN                        & The fully qualified dimian name                     \\ \hline
+		TOTAL\_VIRTUAL\_MEMORY      & The total virtual memory in MiB.                    \\ \hline
+		AVAILABLE\_VIRTUAL\_MEMORY  & The available virtual memory in MiB.                \\ \hline
+		TOTAL\_PHYSICAL\_MEMORY     & The total physical memory in MiB.                   \\ \hline
+		AVAILABLE\_PHYSICAL\_MEMORY & The available physical memory in MiB.               \\ \hline
+		OS\_NAME &
+		\begin{tabular}[c]{@{}l@{}}The output of uname -s if this command is present,\\ or one of Windows, Linux, or Darwin if it is not.\end{tabular} \\ \hline
+		OS\_RELEASE                 & The OS sub-type, for example, Windows Professional. \\ \hline
+		OS\_VERSION                 & The OS build ID.                                    \\ \hline
+		OS\_PLATFORM &
+		\begin{tabular}[c]{@{}l@{}}On Windows the PROCESSOR\_ARCHITECTURE\\ environment variable is returned. On Unix and macOS,\\ the value contains the output of the uname -m command.\end{tabular} \\ \hline
+	\end{tabular}
+\end{table}
+
+If needed, we can even query processor-specific information:
+
+\begin{table}[H]
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{Key}                & \textbf{Returned value}                          \\ \hline
+		NUMBER\_OF\_LOGICAL\_CORES  & The number of logical cores                      \\ \hline
+		NUMBER\_OF\_PHYSICAL\_CORES & The number of physical cores                     \\ \hline
+		HAS\_SERIAL\_NUMBER         & 1 if the processor has a serial number           \\ \hline
+		PROCESSOR\_SERIAL\_NUMBER   & The processor serial number                      \\ \hline
+		PROCESSOR\_NAME             & The human-readable processor name                \\ \hline
+		PROCESSOR\_DESCRIPTION      & The human-readable full processor description    \\ \hline
+		IS\_64BIT                   & 1 if the processor is 64 bit                     \\ \hline
+		HAS\_FPU                    & 1 if the proceesor has a floating-point unit     \\ \hline
+		HAS\_MMX                    & 1 if the processor support MMX instructions      \\ \hline
+		HAS\_MMX\_PLUS              & 1 if the processor support Ext. MMX instructions \\ \hline
+		HAS\_SSE                    & 1 if the processor support SSE instructions      \\ \hline
+		HAS\_SSE2                   & 1 if the processor support SSE2 instructions     \\ \hline
+		HAS\_SSE\_FP                & 1 if the processor support SSE FP instructions   \\ \hline
+		HAS\_SSE\_MMX               & 1 if the processor support SSE MMX instructions  \\ \hline
+		HAS\_AMD\_3DNOW             & 1 if the processor support 3DNow instructions    \\ \hline
+		HAS\_AMD\_3DNOW\_PLUS       & 1 if the processor support 3DNow+ instructions   \\ \hline
+		HAS\_IA64                   & 1 if it is an IA-64 processor emulating x86      \\ \hline
+	\end{tabular}
+\end{table}
 
 \subsubsubsection{3.5.5\hspace{0.2cm}Does the platform have 32-bit or 64-bit architecture?}
 
+In 64-bit architecture, memory addresses, processor registers, processor instructions, address busses, and data buses are 64 bits wide. While this is a simplified definition, it gives a rough idea of how 64-bit platforms are different from 32-bit platforms.
+
+In C++, different architectures mean different bit widths for some fundamental data types (int and long) and pointers. CMake utilizes the pointer size to gather information about the target machine. This information is available through the CMAKE\_SIZEOF\_VOID\_P variable, and it will contain a value of 8 for 64 bits (because a pointer is 8 bytes wide) and 4 for 32 bits (4 bytes):
+
+\begin{lstlisting}[style=styleCMake]
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	message(STATUS "Target is 64 bits")
+endif()
+\end{lstlisting}
 
 \subsubsubsection{3.5.6\hspace{0.2cm}What is the endianness of the system?}
+
+Architectures can be big-endian or little-endian. Endianness is the order of bytes in a word or the natural unit of data for a processor. A big-endian system stores the most significant byte at the lowest memory address and the least significant byte at the highest memory address. A little-endian system is the opposite of this.
+
+In most cases, endianness doesn't matter, but when you're writing bit-wise code that needs to be portable, CMake will provide you with a BIG\_ENDIAN or LITTLE\_ENDIAN value stored in the CMAKE\_<LANG>\_BYTE\_ORDER variable, where <LANG> is C, CXX, OBJC, or CUDA.
+
+Now that we know how to query the environment, let's shift our focus to the key settings of the project.
+

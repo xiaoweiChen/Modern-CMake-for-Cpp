@@ -1,0 +1,36 @@
+We have now gathered enough information to start talking about the core function of CMake: building projects. In CMake, a project contains all the source files and configuration necessary to manage the process of bringing our solutions to life.
+
+Configuration starts by performing all the checks: whether the target platform is supported, whether it has all the necessary dependencies and tools, and whether the provided compiler works and supports required features.
+
+When that's done, CMake will generate a buildsystem for the build tool of our choice and run it. Source files will be compiled and linked with each other and their dependencies to produce output artifacts.
+
+Projects can be used internally by a group of developers to produce packages that users can install on their systems through package managers or they can be used to provide single-executable installers. Projects can also be shared in an open-source repository so that users can use CMake to compile projects on their machines and install them directly.
+
+Using CMake projects to their full potential will improve the developing experience and the quality of the produced code because we can automate many dull tasks, such as running tests after the build, checking code coverage, formatting the code, and checking source code with linters and other tools.
+
+To unlock the power of CMake projects, we'll go over some key decisions first – these are how to correctly configure the project as a whole and how to partition it and set up the source tree so that all files are neatly organized in the right directories.
+
+We'll then learn how to query the environment the project is built on – for example, what architecture it is? What tools are available? What features do they support? And what standard of the language is in use? Finally, we'll learn how to compile a test C++ file to verify if the chosen compiler meets the standard requirements set in our project.
+
+In this chapter, we're going to cover the following main topics:
+
+\begin{itemize}
+\item 
+Basic directives and commands
+
+\item 
+How to partition your project
+
+\item 
+Thinking about the project structure
+
+\item 
+Scoping the environment
+
+\item 
+Configuring the toolchain
+
+\item 
+Disabling in-source builds
+\end{itemize}
+

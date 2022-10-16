@@ -1,5 +1,91 @@
 
+In Chapter 1, First Steps with CMake, we already looked at a simple project definition. Let's revisit it. It is a directory with a CMakeLists.txt file that contains a few commands configuring the language processor:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter01/01-hello/CMakeLists.txt: Hello world in CMake language
+
+cmake_minimum_required(VERSION 3.20)
+project(Hello)
+add_executable(Hello hello.cpp)
+\end{lstlisting}
+
+In the same chapter, in the Project files section, we learned about a few basic commands. Let's explain them in depth.
+
 \subsubsubsection{3.2.1\hspace{0.2cm}Specifying the minimum CMake version – cmake\_minimum\_required()}
 
+This isn't strictly a project-specific command, as it should be used with scripts as well, but it is so important that we repeat it here. As you know, cmake\_minimum\_required() will check whether the system has the right CMake version, but implicitly, it will also call another command, cmake\_policy(VERSION), which will tell CMake what the right policies are to use for this project. What are these policies?
+
+Over the last 20 years of CMake's development, there have been many changes to how commands behave as CMake and the languages it supports have evolved. To keep the syntax clean and simple, CMake's team decided to introduce policies to reflect these changes. Whenever a backward-incompatible change was introduced, it came with a policy that enabled the new behavior.
+
+By calling cmake\_minimum\_required(), we tell CMake that it needs to apply the policies up to the version provided in the argument. When CMake gets upgraded with new policies, we don't need to worry about them breaking our project, as the new policies won't be enabled. If we test the project with the newest version and if we're happy with the outcome, we can send the updated project to our users.
+
+Policies can affect every single aspect of CMake, including other important commands like project(). For that reason, it is important to start your CMakeLists.txt file by setting the version you're working with. Otherwise, you will get warnings and errors.
+
+Every version introduces quite a few policies – there isn't any real value in describing them unless you're having issues with upgrading legacy projects to the latest CMake version. In that case, refer to the official documentation on policies: \url{https://cmake.org/cmake/help/latest/manual/cmake-policies.7.html}.
 
 \subsubsubsection{3.2.2\hspace{0.2cm}Defining languages and metadata – project()}
+
+Technically, CMake doesn't need the project() command. Any directory containing the CMakeLists.txt file will be parsed in project mode. CMake implicitly adds that command to the top of the file. But we already know that we need to start by specifying the minimum version, so it's best not to forget about calling project(). We can use one of its two forms:
+
+\begin{lstlisting}[style=styleCMake]
+project(<PROJECT-NAME> [<language-name>...])
+project(<PROJECT-NAME>
+		[VERSION <major>[.<minor>[.<patch>[.<tweak>]]]]
+		[DESCRIPTION <project-description-string>]
+		[HOMEPAGE_URL <url-string>]
+		[LANGUAGES <language-name>...])
+\end{lstlisting}
+
+We need to specify <PROJECT-NAME>, but the other arguments are optional. Calling this command will implicitly set the following variables:
+
+\begin{itemize}
+\item 
+PROJECT\_NAME
+
+\item 
+CMAKE\_PROJECT\_NAME (only in the top-level CMakeLists.txt)
+
+\item 
+PROJECT\_SOURCE\_DIR, <PROJECT-NAME>\_SOURCE\_DIR
+
+\item 
+PROJECT\_BINARY\_DIR, <PROJECT-NAME>\_BINARY\_DIR
+\end{itemize}
+
+What languages are supported? Quite a few. Here's a list of language keywords you can use to configure your project: C, CXX (C++), CUDA, OBJC (Objective-C), OBJCXX (Objective C++), Fortran, ISPC, ASM, as well as CSharp (C\#) and Java.
+
+CMake enables C and C++ by default, so you may want to explicitly specify only CXX for your C++ projects. Why? The project() command will detect and test the available compilers for your chosen language, so choosing the correct ones will allow you to save time during the configuration stage by skipping any checks for unused languages.
+
+Specifying VERSION will make the following variables available:
+
+\begin{itemize}
+\item 
+PROJECT\_VERSION, <PROJECT-NAME>\_VERSION
+
+\item 
+CMAKE\_PROJECT\_NAME (only in the top-level CMakeLists.txt)
+
+\item 
+PROJECT\_VERSION\_MAJOR, <PROJECT-NAME>\_VERSION\_MAJOR
+
+\item 
+PROJECT\_VERSION\_MINOR, <PROJECT-NAME>\_VERSION\_MINOR
+
+\item 
+PROJECT\_VERSION\_PATCH, <PROJECT-NAME>\_VERSION\_PATCH
+
+\item 
+PROJECT\_VERSION\_TWEAK, <PROJECT-NAME>\_VERSION\_TWEAK
+\end{itemize}
+
+
+The preceding variables will be useful for configuring packages or for passing to compiled files to make the version available in the final executable.
+
+Following this principle, we can set DESCRIPTION and HOMEPAGE\_URL, which will set the variables in the same way.
+
+CMake also allows specification of the used languages with enable\_language(<lang>), which will not create any metadata variables.
+
+The preceding commands will allow us to create a basic listfile and initialize an empty project. Now, we can start adding things to build. Structure doesn't really matter for the tiny, single-file projects we have used in our examples so far. But what happens when there's more code?
+
+
+
