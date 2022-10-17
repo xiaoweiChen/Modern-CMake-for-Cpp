@@ -1,0 +1,27 @@
+Simple compilation scenarios are usually handled by a default configuration of a toolchain or just provided out of the box by an IDE. However, in a professional setting, business needs often call for something more advanced. It could be a requirement for higher performance, smaller binaries, more portability, testing support, or extensive debugging capabilities – you name it. Managing all of these in a coherent, future-proof way quickly becomes a complex, tangled mess (especially when there are multiple platforms to support).
+
+The process of compilation is often not explained well enough in books on C++ (in-depth subjects such as virtual base classes seem to be more interesting). In this chapter, we'll go through the basics to ensure success when things don't go as planned. We'll discover how compilation works, what its internal stages are, and how they affect the binary output.
+
+After that, we will focus on the prerequisites – we'll discuss what commands we can employ to tweak a compilation, how to require specific features from a compiler, and how to provide the compiler with the input files that it has to process.
+
+Then, we'll focus on the first stage of compilation – the preprocessor. We'll be providing paths for included headers, and we'll study how to plug in variables from CMake and environments with preprocessor definitions. We'll cover some interesting use cases and learn how to expose CMake variables to C++ code in bulk.
+
+Right after that, we'll talk about the optimizer and how different flags can affect performance. We'll also become painfully aware of the costs of optimization – how hard it is to debug mangled code.
+
+Lastly, we'll explain how to manage the compilation process in terms of reducing the compilation time using precompiled headers and unity builds, preparing for the discovery of mistakes, debugging a build, and storing the debugging information in the final binary.
+
+In this chapter, we're going to cover the following main topics:
+
+\begin{itemize}
+\item 
+The basics of compilation
+
+\item 
+Preprocessor configuration
+
+\item 
+Configuring the optimizer
+
+\item 
+Managing the process of compilation
+\end{itemize}

@@ -1,9 +1,253 @@
 
+The preprocessor plays a huge role in the process of building. Maybe this is a little surprising, given how simple and limited its functionality is. In following sections, we'll cover providing paths to included files and using the preprocessor definitions. We'll also explain how we can use CMake to configure included headers.
 
 \subsubsubsection{5.3.1\hspace{0.2cm}Providing paths to included files}
 
+The most basic feature of the preprocessor is the ability to include .h/.hpp header files with the \#include directive. It comes in two forms:
+
+\begin{itemize}
+\item 
+\#include <path-spec>: Angle-bracket form
+
+\item 
+\#include "path-spec": Quoted form
+\end{itemize}
+
+As we know, the preprocessor will replace these directives with the contents of the file specified in path-spec. Finding these files may be an issue. Which directories do we search and in what order? Unfortunately, the C++ standard doesn't exactly specify that; we need to check the manual for the compiler we use.
+
+Typically, the angle-bracket form will check standard include directories, including the directories where standard C++ library and standard C library headers are stored in the system.
+
+The quoted form will start searching for the included file in the directory of the current file and then check directories for the angle-bracket form.
+
+CMake provides a command to manipulate paths being searched for the included files:
+
+\begin{lstlisting}[style=styleCMake]
+target_include_directories(<target> [SYSTEM] [AFTER|BEFORE]
+	<INTERFACE|PUBLIC|PRIVATE> [item1...]
+	[<INTERFACE|PUBLIC|PRIVATE> [item2...] ...])
+\end{lstlisting}
+
+We can add custom paths that we'd like the compiler to check. CMake will add them to compiler invocations in the generated buildsystem. They will be provided with a flag appropriate for the specific compiler (usually, it's -I).
+
+Using BEFORE or AFTER determines whether the path should be prepended or appended to the target INCLUDE\_DIRECTORIES property. It's still up to the compiler to decide whether directories provided here will be checked before or after the default ones (usually, it's before).
+
+The SYSTEM keyword informs the compiler that the provided directories are meant as standard system directories (to be used with the angle-bracket form). For many compilers, this value will be provided as a -isystem flag.
 
 \subsubsubsection{5.3.2\hspace{0.2cm}Preprocessor definitions}
 
+Remember how I mentioned the preprocessor's \#define and \#if, \#elif, and \#endif directives when describing the stages of compilation? Let's consider the following example:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter05/02-definitions/definitions.cpp
+
+#include <iostream>
+int main() {
+#if defined(ABC)
+	std::cout << "ABC is defined!" << std::endl;
+#endif
+
+#if (DEF < 2*4-3)
+	std::cout << "DEF is greater than 5!" << std::endl;
+#endif
+}
+\end{lstlisting}
+
+As it is, this example does nothing; neither ABC nor DEF is defined (DEF would default to 0 in this example). We can easily change that by adding two lines at the top of this code:
+
+\begin{lstlisting}[style=styleCXX]
+#define ABC
+#define DEF 8
+\end{lstlisting}
+
+After compiling and executing this code, we can see both messages in the console:
+
+\begin{lstlisting}[style=styleCXX]
+ABC is defined!
+DEF is greater than 5!
+\end{lstlisting}
+
+This seems easy enough, but what happens if we want to condition these sections based on external factors, such as an operating system, architecture, or something else? Good news! You can pass values from CMake to a C++ compiler, and it's not complicated at all.
+
+The target\_compile\_definitions() command will do the trick:
+
+\begin{lstlisting}[style=styleCMake]
+#chapter05/02-definitions/CMakeLists.txt
+
+set(VAR 8)
+add_executable(defined definitions.cpp)
+target_compile_definitions(defined PRIVATE ABC
+	"DEF=${VAR}")
+\end{lstlisting}
+
+The preceding code will behave exactly like the two \#define statements, but we have the freedom to use CMake's variables and generator expressions, and we can put the command in a conditional block.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Important Note]
+These definitions are traditionally passed to the compiler with the -D flag – -DFOO=1 – and some programmers still use that flag in this command:
+\begin{lstlisting}[style=styleCMake]
+target_compile_definitions(hello PRIVATE -DFOO)
+\end{lstlisting}  
+CMake recognizes this and will remove any leading -D flags. It will also ignore empty strings, so it's even okay to write the following:
+\begin{lstlisting}[style=styleCMake]
+target_compile_definitions(hello PRIVATE -D FOO)
+\end{lstlisting}   
+-D is a separate argument; it will become an empty string after removal, and then get ignored, correctly behaving as a result.
+\end{tcolorbox}
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Common gotchas in unit-testing private class fields}
+
+Some online resources recommend using a combination of specific -D definitions with \#ifdef/ifndef directives for the purposes of unit testing. The simplest possible approach is to wrap access specifiers in conditional inclusion and ignore them when UNIT\_TEST is defined:
+
+\begin{lstlisting}[style=styleCXX]
+class X {
+#ifndef UNIT_TEST
+	private:
+#endif
+	int x_;
+}
+\end{lstlisting}
+
+While this use case is very convenient (it allows tests to directly access private members), it's not very clean code. Unit tests should only test whether methods in the public interface work as expected and treat underlying implementation as a black-box mechanism. I recommend that you only use this as a last resort.
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Using git commit to track a compiled version}
+
+Let's think about use cases that benefit from knowing details about the environment or filesystem. One great example for professional settings might be passing the revision or commit SHA that was used to build the binary:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter05/03-git/CMakeLists.txt
+
+add_executable(print_commit print_commit.cpp)
+execute_process(COMMAND git log -1 --pretty=format:%h
+				OUTPUT_VARIABLE SHA)
+target_compile_definitions(print_commit PRIVATE
+	"SHA=${SHA}")
+\end{lstlisting}  
+
+We can then use it in our application, like so:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter05/03-git/print_commit.cpp
+	
+#include <iostream>
+// special macros to convert definitions into c-strings:
+#define str(s) #s
+#define xstr(s) str(s)
+int main()
+{
+#if defined(SHA)
+	std::cout << "GIT commit: " << xstr(SHA) << std::endl;
+#endif
+}
+\end{lstlisting}  
+
+Of course, the preceding code requires a user to have git installed and available in their PATH. This is useful when programs running on our production hosts come from a continuous integration/deployment pipeline. If there's an issue with our software, we can quickly check which exact Git commit was used to build the faulty product.
+
+Keeping track of an exact commit is really useful for debugging purposes. For a single variable, it's not a lot of work, but what happens when we have dozens of variables we'd like to pass to our headers?
 
 \subsubsubsection{5.3.3\hspace{0.2cm}Configuring the headers}
+
+Passing definitions through target\_compile\_definitions() can be a bit of overhead if we have multiple variables. Can't we just provide a header file with placeholders referencing various variables and get CMake to fill them in?
+
+Sure we can! With the configure\_file(<input> <output>) command, we can generate new files from templates like this one:
+
+\begin{lstlisting}[style=styleCXX]
+//chapter05/04-configure/configure.h.in
+
+#cmakedefine FOO_ENABLE
+#cmakedefine FOO_STRING1 "@FOO_STRING@"
+#cmakedefine FOO_STRING2 "${FOO_STRING}"
+#cmakedefine FOO_UNDEFINED "@FOO_UNDEFINED@"
+\end{lstlisting}  
+
+We can then use the command, like so:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter05/04-configure/CMakeLists.txt
+
+add_executable(configure configure.cpp)
+set(FOO_ENABLE ON)
+set(FOO_STRING1 "abc")
+set(FOO_STRING2 "def")
+configure_file(configure.h.in configured/configure.h)
+target_include_directories(configure PRIVATE
+							${CMAKE_CURRENT_BINARY_DIR})
+\end{lstlisting}  
+
+We can have CMake build an output file, like this:
+
+\begin{lstlisting}[style=styleCXX]
+//chapter05/04-configure/<build_tree>/configure.h
+	
+#define FOO_ENABLE
+#define FOO_STRING1 "abc"
+#define FOO_STRING2 "def"
+/* #undef FOO_UNDEFINED "@FOO_UNDEFINED@" */
+\end{lstlisting}  
+
+As you can see, the @VAR@ and \$\{VAR\} variable placeholders were replaced with the values from the CMake list file. Additionally, \#cmakedefine was replaced with \#define for defined variables and /* \#undef VAR */ for undefined.
+
+If you need an explicit \#define 1 or \#define 0 for \#if blocks, use \#cmakedefine01 instead.
+
+How do we use such a configured header in the application? We can simply include it in our implementation file:
+
+\begin{lstlisting}[style=styleCXX]
+//chapter05/04-configure/configure.cpp
+
+#include <iostream>
+#include "configured/configure.h"
+// special macros to convert definitions into c-strings:
+#define str(s) #s
+
+#define xstr(s) str(s)
+using namespace std;
+int main()
+{
+#ifdef FOO_ENABLE
+	cout << "FOO_ENABLE: ON" << endl;
+#endif
+	cout << "FOO_ENABLE1: " << xstr(FOO_ENABLE1) << endl;
+	cout << "FOO_ENABLE2: " << xstr(FOO_ENABLE2) << endl;
+	cout << "FOO_UNDEFINED: " << xstr(FOO_UNDEFINED) << endl;
+}
+\end{lstlisting}
+
+And because we have added the binary tree to our include paths with the target\_include\_directories() command, we can compile the example and receive output populated from CMake:
+
+\begin{tcblisting}{commandshell={}}
+FOO_ENABLE: ON
+FOO_ENABLE1: FOO_ENABLE1
+FOO_ENABLE2: FOO_ENABLE2
+FOO_UNDEFINED: FOO_UNDEFINED
+\end{tcblisting}
+
+The configure\_file() command also has a number of formatting and filepermission options. Describing them here would be a bit too lengthy. If you're interested, check out the online documentation for details (the link is in the Further reading section).
+
+After preparing a complete composite of our headers and source file, we can talk about how the output code is shaped during the next steps. As we can't influence the linguistic analysis or assembling directly (these steps follow strict standards), we definitely have access to the configuration of the optimizer. Let's learn how it can affect the end result.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

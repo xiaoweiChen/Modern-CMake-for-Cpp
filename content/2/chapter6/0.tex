@@ -1,0 +1,31 @@
+You might think that after we have successfully compiled the source code into a binary file, our job as build engineers is done. That's almost the case – binary files contain all the code for a CPU to execute, but the code is scattered across multiple files in a very complex way. Linking is a process that simplifies things and makes machine code neat and quick to consume.
+
+A quick glance at the list of commands will tell you that CMake doesn't provide that many related to linking. Admittedly, target\_link\_libraries() is the only one that actually configures this step. Why dedicate a whole chapter to a single command then? Unfortunately, almost nothing is ever easy in computer science, and linking is no exception.
+
+To achieve the correct results, we need to follow the whole story – understand how exactly a linker works and get the basics right. We'll talk about the internal structure of object files, how the relocation and reference resolution works, and what it is for. We'll discuss how the final executable differs from its components and how the process image is built by the system.
+
+Then, we'll introduce you to all kinds of libraries – static, shared, and shared modules.
+They all are called libraries, but in reality, they are almost nothing alike. Building a correctly linked executable heavily depends on a valid configuration (and taking care of such minute details as position-independent code (PIC).
+
+We'll learn about another nuisance of linking – the One Definition Rule (ODR). We need to get the amount of definitions exactly right. Dealing with duplicated symbols can sometimes be very tricky, especially when shared libraries come into play. Then, we'll learn why linkers sometimes can't find external symbols, even when the executable is linked with the appropriate library.
+
+Finally, we'll discover how we can save time and use a linker to prepare our solution for testing with dedicated frameworks.
+
+In this chapter, we're going to cover the following main topics:
+
+\begin{itemize}
+\item 
+Getting the basics of linking right
+
+\item 
+Building different library types
+
+\item 
+Solving problems with the One Definition Rule
+
+\item 
+The order of linking and unresolved symbols
+
+\item 
+Separating main() for testing
+\end{itemize}

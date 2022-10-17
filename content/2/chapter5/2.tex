@@ -1,10 +1,191 @@
 
+Compilation can be roughly described as a process of translating instructions written in a higher-level programming language to a low-level machine code. This allows us to create our applications using abstract concepts such as classes and objects and not bother with the tedious details of processor-specific assembly languages. We don't need to work directly with CPU registers, think about short or long jumps, and manage stack frames. Compiled languages are more expressive, readable, secure, and foster more maintainable code (but are still as performant as possible).
 
+In C++, we rely on static compilation – an entire program has to be translated into native code before it is executed. This is an alternative approach to languages such as Java or Python, which compile a program on the fly with a special, separate interpreter every time a user runs it. There are certain advantages to each method. The policy of C++ is to provide as many high-level tools as possible while still being able to deliver native performance in a complete, self-contained application for almost every architecture out there.
+
+It takes a few steps to create and run a C++ program:
+
+\begin{enumerate}
+\item 
+Design your application and carefully write the source code.
+
+\item 
+Compile individual .cpp implementation files (called translation units) to object files.
+
+\item 
+Link object files together in a single executable and add all other dependencies – dynamic and static libraries.
+
+\item 
+To run the program, the OS will use a tool called loader to map its machine code and all required dynamic libraries to the virtual memory. The loader then reads the headers to check where the program starts and hands over control to the code.
+
+\item 
+C++ runtime kicks in; a special\_start function is executed to collect the command-line arguments and environment variables. It starts threading, initializes static symbols, and registers cleanup callbacks. Only then will it call main(), which is filled with code by the programmer.
+\end{enumerate}
+
+As you can see, quite a lot of work happens behind the scenes. This chapter is about the second step in the preceding list. By taking the whole picture into consideration, we can understand better where some of the possible issues come from. After all, there's no black magic in software (even if the impenetrable complexity makes it seem that way). Everything has an explanation and a reason. Things may fail during the runtime of a program because of how we compiled it (even if the compilation step itself has passed successfully). It's just not possible for a compiler to check all the edge cases during its work.
 
 \subsubsubsection{5.2.1\hspace{0.2cm}How compilation works}
 
+As mentioned before, compilation is the process of translating a higher-level language into a lower-level language – specifically, by producing machine code (instructions that a specific processor can directly execute) in a binary object file format specific for a given platform. On Linux, the most popular format is the Executable and Linkable Format (ELF). Windows uses a PE/COFF format specification. On macOS, we'll find Mach objects (the Mach-O format).
+
+Object files are the direct translation of a single source file. Each one of them has to be compiled separately and later joined by a linker into one executable or library. Thanks to this, when you change your code, you can save time by recompiling only the affected files.
+
+The compiler has to execute the following stages to create an object file:
+
+\begin{enumerate}
+\item 
+Preprocessing
+
+\item 
+Linguistic analysis
+
+\item 
+Assembly
+
+\item 
+Optimization
+
+\item 
+Code emission
+\end{enumerate}
+
+Preprocessing (despite being automatically invoked by most compilers) is thought of as a preliminary step to actual compilation. Its role is to manipulate source code in a very rudimentary way; it executes \#include directives, replaces identifiers with defined values (\#define directives and -D flags), invokes simple macros, and conditionally includes or excludes parts of code based on the \#if, \#elif, and \#endif directives. The preprocessor is blissfully unaware of the actual C++ code and, in general, is just a slightly more advanced find-and-replace tool. Nevertheless, its job is critical in building advanced programs; the ability to break code up into parts and share declarations across multiple translation units is the foundation of code reusability.
+
+Next up is linguistic analysis. This is where more interesting things happen. The compiler will scan the file (containing all the headers included by the preprocessor) character by character and perform lexical analysis, grouping them into meaningful tokens – keywords, operators, variable names, and so on. Then, tokens are grouped into token chains and verified if their order and presence follow the rules of C++ – this process is called syntax analysis or parsing (usually, it's the most vocal part in terms of printed errors). Finally, semantic analysis is performed – the compiler tries to detect whether statements in a file actually make sense. For example, they have to meet type correctness checks (you can't assign an integer to a string variable).
+
+Assembly is nothing more than a translation of these tokens to CPU-specific instructions based on an instruction set available for the platform. Some compilers actually create an assembler output file, which is later passed to a dedicated assembler program to produce machine code that the CPU can execute. Others produce the same machine code directly from memory. Usually, such compilers include an option to produce a textual output of human-readable assembly code (although, just because you can read it, it doesn't mean that it's worth it).
+
+Optimization happens throughout the whole compilation, little by little, at every stage.
+There's an explicit stage after producing the first assembly version, which is responsible for minimizing the usage of registers and removing unused code. One interesting and important optimization is in-line expansion or inlining. The compiler will "cut" the body of a function and "paste" it instead of its call (standard doesn't define in which cases this happens – it depends on the implementation of the compiler). This process speeds up execution and reduces memory usage but has significant disadvantages for debugging (the executed code is no longer at the original line).
+
+Code emission consists of writing the optimized machine code into an object file according to the format specified by the target platform. This object file is not ready to be executed – it has to be passed to the next tool, the linker, which will appropriately relocate the sections of our object file and resolve references to external symbols. This is the transformation from the ASCII source code into binary object files that are digestible by processors.
+
+Each of these stages is significant and can be configured to meet our specific needs. Let's look at how we can manage this process with CMake.
 
 \subsubsubsection{5.2.2\hspace{0.2cm}Initial configuration}
 
+CMake offers multiple commands to affect each stage:
+
+\begin{itemize}
+\item 
+target\_compile\_features(): Require a compiler with specific features to compile this target.
+
+\item 
+target\_sources(): Add sources to an already defined target.
+
+\item 
+target\_include\_directories(): Set up the preprocessor include paths.
+
+\item 
+target\_compile\_definitions(): Set up preprocessor definitions.
+
+\item 
+target\_compile\_options(): Compiler-specific options for the command line.
+
+\item 
+target\_precompile\_headers(): Optimize the compilation of external headers.
+\end{itemize}
+
+All of the preceding commands accept similar arguments:
+
+\begin{lstlisting}[style=styleCMake]
+target_...(<target name> <INTERFACE|PUBLIC|PRIVATE>
+	<value>)
+\end{lstlisting}
+
+This means that they support property propagation, as discussed in the previous chapter, and can be used both for executables and libraries. Also, a reminder here – all of these commands support generator expressions.
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Requiring specific features from the compiler}
+
+As discussed in the Checking for supported compiler features section in Chapter 3, Setting Up Your First CMake Project, prepare for things going wrong and aim to provide the user of your software with a clear message – available compiler X isn't providing required feature Y. This is a much better experience than the user deciphering whatever error is produced by the incompatible toolchain they might have. We don't want users to assume that your code is at fault instead of their outdated environment.
+
+The following command allows you to specify all the features that your target needs to build:
+
+\begin{lstlisting}[style=styleCMake]
+target_compile_features(<target> <PRIVATE|PUBLIC|INTERFACE>
+						<feature> [...])
+\end{lstlisting}
+
+CMake understands C++ standards and supported compiler features for these compiler\_ids:
+
+\begin{itemize}
+\item 
+AppleClang: Apple Clang for Xcode versions 4.4+
+
+\item 
+Clang: Clang Compiler versions 2.9+
+
+\item 
+GNU: GNU Compiler versions 4.4+
+
+\item 
+MSVC: Microsoft Visual Studio versions 2010+
+
+\item 
+SunPro: Oracle Solaris Studio versions 12.4+
+
+\item 
+Intel: Intel Compiler versions 12.1+
+\end{itemize}
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Important Note]
+You can, of course, use any of the CMAKE\_CXX\_KNOWN\_FEATURES variable, but I recommend sticking to a general C++ standard – cxx\_std\_98, cxx\_std\_11, cxx\_std\_14, cxx\_std\_17, cxx\_std\_20, or cxx\_std\_23. Check out the Further reading section for more details.
+\end{tcolorbox}
 
 \subsubsubsection{5.2.3\hspace{0.2cm}Managing sources for targets}
+
+We already know how to tell CMake which source files make up a single target – an executable or a library. We provide the list of files whenever we use add\_executable() or add\_library().
+
+As you grow your solution, the list of files for each target grows too. We can end up with some really lengthy add\_...() commands. How do we deal with that? One temptation might be to utilize the file() command in GLOB mode – it can collect all the files from subdirectories and store them in a variable. We could pass it as an argument to the target declaration and not bother with list files again:
+
+\begin{lstlisting}[style=styleCMake]
+file(GLOB helloworld_SRC "*.h" "*.cpp")
+add_executable(helloworld ${helloworld_SRC})
+\end{lstlisting}
+
+However, the previously mentioned approach is not recommended. Let's figure out why.
+CMake generates buildsystems based on changes in the list files, so if no changes are made, your builds might break without any warning (which, as we know from long hours spent debugging, is the worst kind of breakage). Other than that, not having all sources listed in the target declaration will break code inspection in IDEs such as CLion (CLion only parses some of the commands to understand your project).
+
+If it's not recommended to use variables in target declarations, how can we add source files conditionally, for example, when dealing with platform-specific implementation files such as gui\_linux.cpp and gui\_windows.cpp?
+
+We can use the target\_sources() command to append files to a previously created target:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter05/01-sources/CMakeLists.txt
+
+add_executable(main main.cpp)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	target_sources(main PRIVATE gui_linux.cpp)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	target_sources(main PRIVATE gui_windows.cpp)
+endif()
+\end{lstlisting}
+
+This way, each platform gets its own set of compatible files. That's great, but what about long lists of sources? Well, we'll just have to accept that some things aren't perfect just yet and keep adding them manually.
+
+Now that we have established the key facts about compilation, let's take a closer look at the first step – preprocessing. As with all things in computer science, the devil is in the details.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,3 +1,83 @@
 
+We have completed yet another chapter! There is no doubt that compilation is a complex process. With all its edge cases and specific requirements, it can be difficult to manage without a good tool. Thankfully, CMake is doing a great job in supporting us here.
+
+What have we learned so far? We started by discussing what compilation is and where it fits in the larger story of building and running applications in the operating system. We then examined what the stages of compilation are and the internal tools that manage them. This is very useful in resolving all the issues in more advanced cases that we might encounter down the line.
+
+Then, we looked at how to ask CMake to verify whether the compiler available on the host is meeting all the necessary requirements for our code to build. As we have already established, it's a much better experience for users of our solution to see a friendly message asking them to upgrade, rather than some arcane error printed by an old compiler that is confused by the new features of the language.
+
+We shortly discussed how to add sources to already defined targets, and moved on to the configuration of the preprocessor. This was quite a big subject, as this stage brings all bits of the code together and decides which of them will be ignored. We talked about providing paths to files and adding custom definitions as single arguments and in bulk (along with some use cases).
+
+Then, we discussed the optimizer; we explored all the general levels of optimization and what kind of flags they imply, but we also went into details about a few of them – finline, floop-unroll, and ftree-vectorize.
+
+Finally, it was time to research the bigger picture again and study how to manage the viability of compilation. We tackled two main aspects here – reducing the time of compilation (and, by extension, strengthening the focus of the programmer) and finding mistakes. The latter is extremely important for discovering what is broken and how.
+
+Setting the tools correctly and understanding why things happen goes a long way in ensuring the quality of the code (and our mental health).
+
+In the next chapter, we'll learn about linking, and all the things we need to consider to build libraries and use them in our projects
 
 \subsubsubsection{5.6.1\hspace{0.2cm}Further reading}
+
+
+\begin{itemize}
+\item 
+For more information on the topics covered in this chapter, you can refer to the following: CMake-supported compile features and compilers:
+
+\url{https:// cmake.org/cmake/help/latest/manual/cmake-compilefeatures.7.html\#supported-compilers}
+
+\item 
+CMake target properties:
+
+\begin{itemize}
+\item 
+\url{https://stackoverflow.com/questions/32411963/why-iscmake-file-glob-evil}
+
+\item 
+\url{https://cmake.org/cmake/help/latest/command/target_sources.html}
+\end{itemize}
+
+\item 
+Providing paths to included files:
+
+\begin{itemize}
+\item 
+\url{https://en.cppreference.com/w/cpp/preprocessor/include}
+
+\item 
+\url{https://cmake.org/cmake/help/latest/command/target_include_directories.html}
+\end{itemize}
+
+\item 
+Configuring headers: \url{https://cmake.org/cmake/help/latest/command/configure_file.html}
+
+\item 
+Pre-compilation of headers: \url{https://cmake.org/cmake/help/latest/command/target_precompile_headers.html}
+
+\item 
+Unity builds:
+
+\begin{itemize}
+\item 
+\url{https://cmake.org/cmake/help/latest/prop_tgt/UNITY_BUILD.html}
+
+\item 
+\url{https://www.qt.io/blog/2019/08/01/precompiled-headersand-unity-jumbo-builds-in-upcoming-cmake}
+\end{itemize}
+
+\item 
+Finding mistakes – compiler flags: \url{https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags}
+
+\item 
+Why use libraries and not object files: \url{https://stackoverflow.com/questions/23615282/object-files-vs-library-files-and-why}
+
+\item 
+Separation of concerns: \url{https://nalexn.github.io/separation-ofconcerns/}
+\end{itemize}
+
+
+
+
+
+
+
+
+

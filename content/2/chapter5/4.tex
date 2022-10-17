@@ -1,13 +1,212 @@
 
+The optimizer will analyze the output of previous stages and use a multitude of tricks, which programmers would consider dirty, as they don't adhere to clean-code principles.
+That's okay – the critical role of the optimizer is to make code performant (that is, use few CPU cycles, few registers, and less memory). As the optimizer goes through the source code, it will transform it heavily so that it almost becomes unrecognizable. It turns into a specially prepared version for the target CPU.
+The optimizer will not only decide which functions could be removed or compacted; it will also move code around or even significantly duplicate it! If it can determine with full certainty that some lines of code are meaningless, it will wipe them out from the middle of an important function (you won't even notice). It will reuse memory, so numerous variables can occupy the same slot in different periods of time. And it will transform your control structures into totally different ones if that means it can shave off a few cycles here and there.
 
+The techniques described here, if applied manually to source code by a programmer, would turn it into a horrible, unreadable mess. It would be hard to write and reason about.
+
+On the other hand, they are great if applied by compilers, which will follow the orders exactly as written. The optimizer is a ruthless beast that serves only one purpose: make the execution fast, no matter how mangled the output will be. Such output may contain some debugging information if we are running it in our test environment, or it may not, in order to make it difficult for unauthorized people to tamper with it.
+
+Each compiler has its own tricks up its sleeve, aligned with the platform and philosophy it follows. We'll take a look at the most common ones, available in GNU GCC and LLVM Clang, so that we can understand what is useful and possible.
+
+Here's the thing – many compilers won't enable any optimization by default (GCC included). This is okay in some cases but not so much in others. Why go slow when you can go fast? To change things, we can use the target\_compile\_options() command and specify exactly what we want from the compiler.
+
+The syntax of this command is similar to others in this chapter:
+
+\begin{lstlisting}[style=styleCMake]
+target_compile_options(<target> [BEFORE]
+	<INTERFACE|PUBLIC|PRIVATE> [items1...]
+	[<INTERFACE|PUBLIC|PRIVATE> [items2...] ...])
+\end{lstlisting}  
+
+We provide the target command-line options to add and we specify the propagation keyword. When this command is executed, CMake will append the given options to the appropriate COMPILE\_OPTIONS variable of the target. The optional BEFORE keyword may be used to specify that we'd like to prepend them instead. Order matters in some cases, so it's good that we can choose.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Important Note]
+target\_compile\_options() is a general command. It can also be used to provide other arguments to compiler-like -D definitions, for which CMake offers the target\_compile\_definition() command as well. It is always recommended to use the CMake commands wherever possible, as they work the same way across all supported compilers.
+\end{tcolorbox}
+
+Time to discuss the details. The subsequent sections will introduce various kinds of optimizations you can enable in most compilers.
 
 \subsubsubsection{5.4.1\hspace{0.2cm}General level}
 
+All the different behaviors of the optimizer can be configured in depth by specific flags that we can pass as compile options. Getting to know all of them is time-consuming and requires a lot of knowledge about the internal workings of compilers, processors, and memory. What can we do if we just want the best possible scenario that works well in most cases? We can reach for a general solution – an optimization-level specifier.
+
+Most compilers offer four basic levels of optimization, from 0 to 3. We specify them with the -O<level> option. -O0 means no optimization and, usually, it's the default level for compilers. On the other hand, -O2 is considered a full optimization, one that generates highly optimized code but at the cost of the slowest compilation time.
+
+There's an in-between -O1 level, which (depending on your needs) can be a good compromise – it enables a reasonable amount of optimization mechanisms without slowing the compilation too much.
+
+Finally, we can reach for -O3, which is full optimization, like -O2, but with a more aggressive approach to subprogram inlining and loop vectorization.
+
+There are also some variants of the optimization that will optimize for the size (not necessarily the speed) of the produced file – -Os. There is a super-aggressive optimization, -Ofast, which is an -O3 optimization that doesn't comply strictly with C++ standards.
+The most obvious difference is the usage of -ffast-math and -ffinite-math flags, meaning that if your program is about precise calculations (as most are), you might want to avoid it.
+
+CMake knows that not all compilers are made equal, and for that reason, it standardizes the experience for developers by providing some default flags for compilers. They are stored in system-wide (not target-specific) variables for used language (CXX for C++) and build configuration (DEBUG or RELEASE):
+
+\begin{itemize}
+\item 
+CMAKE\_CXX\_FLAGS\_DEBUG equals -g.
+
+\item 
+CMAKE\_CXX\_FLAGS\_RELEASE equals -O3 -DNDEBUG.
+\end{itemize}
+
+As you can see, the debug configuration doesn't enable any optimizations and the release configuration goes straight for O3. If you like, you can change them directly with the set() command or just add a target compilation option, which will override this default behavior. The other two flags (-g, -DNDEBUG) are related to debugging – we'll discuss them in the Providing information for the debugger section.
+
+Variables such as CMAKE\_<LANG>\_FLAGS\_<CONFIG> are global – they apply to all targets. It is recommended to configure your targets through properties and commands such as target\_compile\_options() rather than relying on global variables. This way, you can control your targets at higher granularity.
+
+By choosing an optimization level with -O<level>, we indirectly set a long list of flags, each controlling a specific optimization behavior. We can then fine-tune the optimization by appending more flags, like so:
+
+\begin{itemize}
+\item 
+Enable them with an -f option: -finline-functions.
+	
+\item 
+Disable them with an -fno option: -fno-inline-functions.
+\end{itemize}
+
+Some of these flags are worth understanding better as they will often impact how your program works and how you can debug it. Let's take a look.
 
 \subsubsubsection{5.4.2\hspace{0.2cm}Function inlining}
 
+As you will recall, compilers can be encouraged to inline some functions, either by defining a function inside a class declaration block or by explicitly using the inline keyword:
+
+\begin{lstlisting}[style=styleCXX]
+struct X {
+	void im_inlined(){ cout << "hi\n"; };
+	void me_too();
+};
+inline void X::me_too() { cout << "bye\n"; };
+\end{lstlisting} 
+
+It's up to the compiler to decide whether a function will be inlined. If inlining is enabled and the function is used in a single place (or is a relatively small function used in a few places), then inlining will most likely happen.
+
+It's a really curious optimization technique. It works by extracting the code from the function in question and putting it in all the places the function was called, replacing the original call and saving precious CPU cycles.
+
+Let's consider the following example using the class we just defined:
+
+\begin{lstlisting}[style=styleCXX]
+int main() {
+	X x;
+	x.im_inlined();
+	x.me_too();
+	return 0;
+}
+\end{lstlisting} 
+
+Without inlining, the code would execute in the main() frame until a method call. Then, it would create a new frame for im\_inlined(), execute in a separate scope, and go back to the main() frame. The same would happen for the me\_too() method.
+
+However, when inlining takes place, the compiler will replace the calls, like so:
+
+\begin{lstlisting}[style=styleCXX]
+int main() {
+	X x;
+	cout << "hi\n";
+	cout << "bye\n";
+	return 0;
+}
+\end{lstlisting} 
+
+This isn't an exact representation because inlining happens at the level of assembly or machine code (and not the source code), but it conveys a general picture.
+The compiler does it to save time; it won't have to go through the creation and teardown of a new call frame, it doesn't have to look up the address of the next instruction to execute (and return to), and it can cache the instructions better as they are nearby.
+
+Of course, inlining has some important side effects; if the function is used more than once, it has to be copied to all places (meaning a bigger file size and more memory being used). Nowadays, this may not be so critical as it was in the past, but it's still relevant, as we constantly develop software that has to run on low-end devices without much RAM to spare.
+
+Other than that, it affects us critically when we're debugging the code we wrote. Inlined code is no longer at the line number it was originally written, so it's not as easy (or sometimes even possible) to track. This is the exact reason why a debugger breakpoint placed in a function that was inlined never gets hit (although the code is still somehow executed). To avoid this issue, we simply have to disable inlining for debug builds (at the cost of not testing the exact same version as the release build).
+
+We can do that by specifying the -O0 level for the target or going straight after the flags responsible:
+
+\begin{itemize}
+\item 
+-finline-functions-called-once: GCC only
+
+\item 
+-finline-functions: Clang and GCC
+
+\item 
+-finline-hint-functions: Clang only
+
+\item 
+-finline-functions-called-once: GCC only
+\end{itemize}
+
+You can explicitly disable inlining with -fno-inline-.... In any case, for details, refer to the documentation of the specific version of your compiler.
 
 \subsubsubsection{5.4.3\hspace{0.2cm}Loop unrolling}
 
+Loop unrolling is an optimization technique that is also known as loop unwinding. The general approach is to transform loops into a set of statements that achieve the same effect. By doing so, we'll trade the size of the program for execution speed, as we'll reduce or eliminate the instruction that controls the loop – pointer arithmetic or end-ofloop tests.
+
+Consider the following example:
+
+\begin{lstlisting}[style=styleCXX]
+void func() {
+	for(int i = 0; i < 3; i++)
+	cout << "hello\n";
+}
+\end{lstlisting}
+
+The previous code will be transformed into something like this:
+
+\begin{lstlisting}[style=styleCXX]
+void func() {
+	cout << "hello\n";
+	cout << "hello\n";
+	cout << "hello\n";
+}
+\end{lstlisting}
+
+The outcome will be the same, but we no longer have to allocate the i variable, increment it, or compare it three times with a value of 3. If we call func() enough times in the lifetime of the program, unrolling even such a short and small function will make a significant difference.
+
+However, it is important to understand two limiting factors. Loop unrolling will only work if the compiler knows or can effectively estimate the amount of iterations. Secondly, loop unrolling can produce undesirable effects on modern CPUs, as increased code size might prevent effective caching.
+
+Each compiler offers a slightly different version of this flag:
+
+\begin{itemize}
+\item 
+-floop-unroll: GCC
+
+\item 
+-funroll-loops: Clang
+\end{itemize}
+
+If you're in doubt, test extensively whether this flag is affecting your particular program and explicitly enable or disable it. Do note that on GCC, it is implicitly enabled with -O3 as part of the implicitly enabled -floop-unroll-and-jam flag.
 
 \subsubsubsection{5.4.4\hspace{0.2cm}Loop vectorization}
+
+Single Instruction Multiple Data (SIMD) is one of the mechanisms developed in the early 1960s to achieve parallelism. It works exactly as the name suggests; it can perform the same operation on multiple pieces of information at the same time. What does it mean in practice? Let's consider the following example:
+
+\begin{lstlisting}[style=styleCXX]
+int a[128];
+int b[128];
+// initialize b
+for (i = 0; i<128; i++)
+	a[i] = b[i] + 5;
+\end{lstlisting}
+
+Normally, the preceding code would loop 128 times, but with a capable CPU, we can execute the code much faster by calculating two or more elements of the array at the same time. This works because there's no dependency between consecutive elements and no overlap of data between arrays. Smart compilers can transform the preceding loop into something similar to this (which happens on the assembly level):
+
+\begin{lstlisting}[style=styleCXX]
+for (i = 0; i<32; i+=4) {
+	a[ i ] = b[ i ] + 5;
+	a[i+1] = b[i+1] + 5;
+	a[i+2] = b[i+2] + 5;
+	a[i+3] = b[i+3] + 5;
+}
+\end{lstlisting}
+
+GCC will enable such automatic vectorization of loops at -O3. Clang enables it by default. Both compilers offer different flags to enable/disable vectorization in particular:
+
+\begin{itemize}
+\item 
+-ftree-vectorize -ftree-slp-vectorize to enable in GCC
+
+\item 
+-fno-vectorize -fno-slp-vectorize to disable in Clang (if things break)
+\end{itemize}
+
+The performance of vectorization comes from utilizing special instructions that CPU manufacturers provide, rather than just simply replacing the original form of the loop with the unrolled version. Therefore, it's not possible to achieve the same level of performance by doing it manually (also, it's not very clean code).
+
+The role of the optimizer is important in enhancing the performance of the program during runtime. By employing its strategies effectively, we'll get more bang for our buck. Efficiency is important not only after the coding is completed but also as we work on the software. If the compilation times are lengthy, we can improve them by managing the process better.
+
+
+
+
