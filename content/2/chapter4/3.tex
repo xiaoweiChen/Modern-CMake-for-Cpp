@@ -1,6 +1,127 @@
 
+Using custom targets has one drawback – as soon as you add them to the ALL target or start depending on them for other targets, they will be built every single time (you may still enable them in an if block to limit that). Sometimes, this is what you want, but there are cases when custom behavior is necessary to produce files that shouldn't be recreated without reason:
+
+\begin{itemize}
+\item 
+Generating a source code file that another target depends on
+
+\item 
+Translating another language into C++
+
+\item 
+Executing a custom action immediately before or after another target was built
+\end{itemize}
+
+There are two signatures for a custom command. The first one is an extended version of add\_custom\_target():
+
+\begin{lstlisting}[style=styleCMake]
+add_custom_command(OUTPUT output1 [output2 ...]
+					COMMAND command1 [ARGS] [args1...]
+					[COMMAND command2 [ARGS] [args2...] ...]
+					[MAIN_DEPENDENCY depend]
+					[DEPENDS [depends...]]
+					[BYPRODUCTS [files...]]
+					[IMPLICIT_DEPENDS <lang1> depend1
+									[<lang2> depend2] ...]
+					[WORKING_DIRECTORY dir]
+					[COMMENT comment]
+					[DEPFILE depfile]
+					[JOB_POOL job_pool]
+					[VERBATIM] [APPEND] [USES_TERMINAL]
+					[COMMAND_EXPAND_LISTS])
+\end{lstlisting}
+
+As you might have guessed, a custom command doesn't create a logical target, but just like custom targets, it has to be added to a dependency graph. There are two ways of doing that – using its output artifact as a source for an executable (or library), or explicitly adding it to a DEPENDS list for a custom target.
 
 \subsubsubsection{4.3.1\hspace{0.2cm}Using a custom command as a generator}
 
+Admittedly, not every project needs to generate C++ code from other files. One such occasion might be a compilation of Google's Protocol Buffer's (Protobuf) .proto files. If you're not familiar with this library, protobuf is a platform-neutral binary serializer for structured data. To keep it cross-platform and fast at the same time, Google's engineers invented their own protobuf format that defines models in .proto files, such as this one:
+
+\begin{lstlisting}[style=styleCMake]
+message Person {
+	required string name = 1;
+	required int32 id = 2;
+	optional string email = 3;
+}
+\end{lstlisting}
+
+Such a file can be then shared across multiple languages – C++, Ruby, Go, Python, Java, and so on. Google provides compilers that read .proto files and output structure and serialization code valid for the chosen language. Smart engineers don't check those compiled files into a repository but will use the original protobuf format and add it to the build chain.
+
+We don't know yet how to detect whether (and where) a protobuf compiler is available on the target host (we'll learn that in Chapter 7, Managing Dependencies with CMake). So, for now, let's just assume that the compiler's protoc command is residing in a location known to the system. We have prepared a person.proto file and we know that the protobuf compiler will output person.pb.h and person.pb.cc files. Here's how we would define a custom command to compile them:
+
+\begin{lstlisting}[style=styleCMake]
+add_custom_command(OUTPUT person.pb.h person.pb.cc
+		COMMAND protoc ARGS person.proto
+		DEPENDS person.proto
+)
+\end{lstlisting}
+
+Then, to allow serialization in our executable, we can just add output files to the sources:
+
+\begin{lstlisting}[style=styleCMake]
+add_executable(serializer serializer.cpp person.pb.cc)
+\end{lstlisting}
+
+Assuming we dealt correctly with the inclusion of header files and linking the protobuf library, everything will compile and update automatically when we introduce changes to the .proto file.
+
+A simplified (and much less practical) example would be to create the necessary header by copying it from another location:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter04/03-command/CMakeLists.txt
+
+add_executable(main main.cpp constants.h)
+target_include_directories(main PRIVATE
+	${CMAKE_BINARY_DIR})
+add_custom_command(OUTPUT constants.h
+	COMMAND cp
+	ARGS "${CMAKE_SOURCE_DIR}/template.xyz" constants.h)
+\end{lstlisting}
+
+Our "compiler", in this case, is the cp command. It fulfills a dependency of the main target by creating a constants.h file in the build tree root, simply by copying it from the source tree.
 
 \subsubsubsection{4.3.2\hspace{0.2cm}Using a custom command as a target hook}
+
+The second version of the add\_custom\_command() command introduces a mechanism to execute commands before or after building a target:
+
+\begin{lstlisting}[style=styleCMake]
+add_custom_command(TARGET <target>
+					PRE_BUILD | PRE_LINK | POST_BUILD
+					COMMAND command1 [ARGS] [args1...]
+					[COMMAND command2 [ARGS] [args2...] ...]
+					[BYPRODUCTS [files...]]
+					[WORKING_DIRECTORY dir]
+					[COMMENT comment]
+					[VERBATIM] [USES_TERMINAL]
+					[COMMAND_EXPAND_LISTS])
+\end{lstlisting}
+
+We specify what target we'd like to "enhance" with new behavior in the first argument and under the following conditions:
+
+\begin{itemize}
+\item 
+PRE\_BUILD will run before any other rules for this target (Visual Studio generators only; for others, it behaves like PRE\_LINK).
+
+\item 
+PRE\_LINK binds the command to be run just after all sources have been compiled but before the linking (or archiving) the target. It doesn't work for custom targets.
+
+\item 
+POST\_BUILD will run after all other rules have been executed for this target.
+\end{itemize}
+
+Using this version of add\_custom\_command(), we can replicate the generation of the checksum from the previous BankApp example:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter04/04-command/CMakeLists.txt
+
+cmake_minimum_required(VERSION 3.20.0)
+project(Command CXX)
+
+add_executable(main main.cpp)
+add_custom_command(TARGET main POST_BUILD
+					COMMAND cksum
+					ARGS "$<TARGET_FILE:main>" > "main.ck")
+\end{lstlisting}
+
+After the build of the main executable completes, CMake will execute cksum with provided arguments. But what is happening in the first argument? It's not a variable, as it would be wrapped in curly braces (\$\{\}), not in angle brackets (\$<>). It's a generator expression evaluating a full path to the target's binary file. This mechanism is useful in the context of many target properties.
+
+

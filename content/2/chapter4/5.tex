@@ -1,3 +1,47 @@
 
+Understanding targets is critical to writing clean, modern CMake projects. In this chapter, we not only discussed what constitutes a target and how targets depend on each other but also how to present that information in a diagram using the Graphviz module.
+With this general understanding, we were able to learn about the key feature of targets – properties (all kinds of properties). We not only went through a few commands to set regular properties on targets; we also solved the mystery of transitive usage requirements or propagated properties. This was a hard one to solve, as we not only needed to control which properties get propagated but also how to reliably propagate them to selected, further targets. Furthermore, we discovered how to guarantee that those propagated properties are compatible when they arrive from multiple sources.
+
+We then briefly discussed pseudo targets – imported targets, alias targets, and interface libraries. All of them will come in handy in our projects, especially when we know how to connect them with propagated properties for our benefit. Then, we talked about generated build targets and how they are the immediate effect of our actions during the configuration stage. Afterward, we focused on custom commands (how they can generate files that can be consumed by other targets, compiled, translated, and so on) and their hook function – executing additional steps when a target is built.
+
+The last part of the chapter was dedicated to the concept of a generator expression, or genex for short. We explained its syntax, nesting, and how its conditional expressions work. Then, we went through two types of evaluation – to Boolean and to string. Each had its own set of expressions, which we explored and commented on in detail. In addition, we have presented a few usage examples and clarified how they work in practice.
+
+With such a solid foundation, we are ready for the next topic – compiling C++ sources to executables and libraries.
 
 \subsubsubsection{4.5.1\hspace{0.2cm}Further reading}
+
+For more information, use the following sites:
+
+\begin{itemize}
+\item 
+Graphviz module documentation:
+
+\url{https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/Graphviz}
+
+\url{https://cmake.org/cmake/help/latest/module/CMakeGraphVizOptions.html}
+	
+\item 
+Graphviz software:
+
+\url{https://graphviz.org}
+	
+\item 
+CMake target properties:
+
+\url{https://cmake.org/cmake/help/latest/manual/cmakeproperties.7.html\#properties-on-targets}
+
+\item 
+Transitive usage requirements:
+ 
+\url{https://cmake.org/cmake/help/latest/manual/cmakebuildsystem.7.html\#transitive-usage-requirements}
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
