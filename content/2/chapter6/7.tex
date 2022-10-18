@@ -1,0 +1,12 @@
+Linking in CMake does seem simple and insignificant, but in reality, there's much more to it than meets the eye. After all, linking executables isn't as simple as putting puzzle pieces together. As we learned about the structure of object files and libraries, we discovered that things need to move around a bit before a program is runnable. These things are called sections and they have distinct roles in the life cycle of the program – store different kinds of data, instructions, symbol names, and so on. A linker needs to combine them together in the final binary accordingly. This process is called relocation.
+We also need to take care of symbols – resolve references across all the translation units and make sure that nothing's missing. Then, a linker can create the program header and add it to the final executable. It will contain instructions for the system loader, describing how to turn consolidated sections into segments that make up the runtime memory image of the process.
+
+We also discussed three different kinds of libraries (static, shared, and shared modules), and we explained how they differ and which scenarios fit some better than others. We also touched on the subject of PIC – a powerful concept that allows for the lazy binding of symbols.
+
+The ODR is a C++ concept, but as we already know, it's heavily enforced by linkers. After introducing this subject, we briefly explored how to deal with the most basic symbol duplication, in both static and dynamic libraries. This was followed by some short advice to use namespaces wherever possible and not to rely on a linker too much when it comes to preventing symbol collisions.
+
+For such a seemingly straightforward step (CMake offers only a few commands dedicated to a linker), it sure has a lot of quirks! One tricky thing to get right is the order of linking, especially when libraries have nested dependencies. We now know how to handle some basic situations and what other methods we could research to deal with more complex ones.
+
+Lastly, we investigated how to take advantage of a linker to prepare our program for testing – by separating the main() function into another translation unit. This enabled us to introduce another executable, which ran tests against the exact same machine code that will be run in production.
+
+Now that we know how to link, we can retrieve external libraries and use them in our CMake projects. In the next chapter, we'll study how to manage dependencies in CMake.

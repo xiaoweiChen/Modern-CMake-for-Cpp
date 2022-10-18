@@ -1,0 +1,99 @@
+As we established so far, a linker enforces the ODR and makes sure that all external symbols provide their definitions in the process of linking. One interesting problem that we might encounter is the correct testing of the build.
+
+Ideally, we should test exactly the same source code that is being run in production. An exhaustive testing pipeline should build the source code, run its tests on produced binary, and only then package and distribute the executable (without the tests themselves).
+
+But how do we actually make this happen? Executables have a very specific flow of execution, which often requires reading command-line arguments. C++'s compiled nature doesn't really support pluggable units that can be temporarily injected into the binary for test purposes only. It seems like we'll need a very complex approach to solve this.
+
+Luckily, we can use a linker to help us deal with this in an elegant manner. Consider extracting all logic from your program's main() to an external function, start\_program(), like so:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter06/07-testing/main.cpp
+
+extern int start_program(int, const char**);
+int main(int argc, const char** argv) {
+	return start_program(argc, argv);
+}
+\end{lstlisting}
+
+It's reasonable to skip testing this new main() function now; it is only forwarding arguments to a function defined elsewhere (in another file). We can then create a library containing the original source from main() wrapped in a new function – start\_program(). In this example, I'm going to use a simple program to check whether the command-line argument count is higher than 1:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter06/07-testing/program.cpp
+
+#include <iostream>
+int start_program(int argc, const char** argv) {
+	if (argc <= 1) {
+		std::cout << "Not enough arguments" << std::endl;
+		return 1;
+	}
+	return 0;
+}
+\end{lstlisting}
+
+We can now prepare a project that builds this application and links together those two translation units:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter06/07-testing/CMakeLists.txt
+
+cmake_minimum_required(VERSION 3.20.0)
+project(Testing CXX)
+
+add_library(program program.cpp)
+
+add_executable(main main.cpp)
+target_link_libraries(main program)
+\end{lstlisting}
+
+The main target is just providing the required main() function. It's the program target that contains all the logic. We can now test it by creating another executable with its own main() containing the test logic.
+
+In a real-world scenario, frameworks such as GoogleTest or Catch2 will provide their own main() method that can be used to replace your program's entry point and run all the defined tests. We'll dive deep into the subject of actual testing in Chapter 8, Testing Frameworks. For now, let's focus on the general principle and write our own tests in another main() function:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter06/07-testing/test.cpp
+
+#include <iostream>
+extern int start_program(int, const char**);
+using namespace std;
+int main() {
+	auto exit_code = start_program(0, nullptr);
+	if (exit_code == 0)
+		cout << "Non-zero exit code expected" << endl;
+	
+	const char* arguments[2] = {"hello", "world"};
+	exit_code = start_program(2, arguments);
+	if (exit_code != 0)
+		cout << "Zero exit code expected" << endl;
+}
+\end{lstlisting}
+
+The preceding code will call start\_program twice, with and without arguments, and check whether the returned exit codes are correct. This unit test leaves much to be desired in terms of clean code and elegant testing practices, but at least it's a start. The important thing is that we have now defined main() twice:
+
+\begin{enumerate}
+\item 
+In main.cpp for production use
+
+\item 
+In test.cpp for test purposes
+\end{enumerate}
+
+We'll add the second executable to the bottom of our CMakeLists.txt now:
+
+\begin{lstlisting}[style=styleCMake]
+add_executable(test test.cpp)
+target_link_libraries(test program)
+\end{lstlisting}
+
+This creates another target, which is linked against the exact same binary code as the production, but it grants us the freedom to call all exported functions however we like. Thanks to this, we can run all code paths automatically and check whether they work as expected. Great!
+
+
+
+
+
+
+
+
+
+
+
+
+

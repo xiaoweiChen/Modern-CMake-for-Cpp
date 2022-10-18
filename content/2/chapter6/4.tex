@@ -1,7 +1,224 @@
 
+Phil Karlton was right on point when he said the following:
 
+"There are two hard things in computer science: cache invalidation and naming things."
+
+Names are difficult for a few reasons – they have to be precise, simple, short, and expressive at the same time. That makes them meaningful and allows programmers to understand the concepts behind the raw implementation. C++ and many other languages impose one more requirement – many names have to be unique. This is manifested in a few different ways. A programmer is required to follow the ODR.
+
+This says that in the scope of a single translation unit (a single .cpp file), you are required to define it exactly once, even if you declare the same name (of a variable, function, class type, enumeration, concept, or template) multiple times.
+
+This rule is extended to the scope of an entire program for all variables you effectively use in your code and non-inlined functions. Consider the following example:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter06/02-odr-fail/shared.h
+
+int i;
+\end{lstlisting}
+
+\begin{lstlisting}[style=styleCXX]
+// chapter06/02-odr-fail/one.cpp
+
+#include <iostream>
+#include "shared.h"
+int main() {
+	std::cout << i << std::endl;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=styleCXX]
+// chapter06/02-odr-fail/two.cpp
+	
+#include "shared.h"
+\end{lstlisting}
+
+\begin{lstlisting}[style=styleCMake]
+# chapter06/02-odr-fail/two.cpp
+	
+cmake_minimum_required(VERSION 3.20.0)
+project(ODR CXX)
+set(CMAKE_CXX_STANDARD 20)
+add_executable(odr one.cpp two.cpp)
+\end{lstlisting}
+
+As you can see, it's very straightforward – we created a shared.h header file used in two separate translation units:
+
+\begin{itemize}
+\item 
+one.cpp, which simply prints i to the screen
+
+\item 
+two.cpp, which does nothing except include the header
+\end{itemize}
+
+We then link the two into a single executable and receive the following error:
+
+\begin{tcblisting}{commandshell={}}
+[100%] Linking CXX executable odr
+/usr/bin/ld: CMakeFiles/odr.dir/two.cpp.o:(.bss+0x0): multiple
+definition of 'i'
+; CMakeFiles/odr.dir/one.cpp.o:(.bss+0x0): first defined here
+collect2: error: ld returned 1 exit status
+\end{tcblisting}
+
+You can't define these things twice. However, there's a notable exception – types, templates, and extern inline functions can repeat their definitions in multiple translation units if they are exactly the same (that is, they have the same sequence of tokens). We can prove that by replacing a simple definition, int i;, with a definition of a class:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter06/03-odr-success/shared.h
+
+struct shared {
+	static inline int i = 1;
+};
+\end{lstlisting}
+
+Then, we use it like so:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter06/03-odr-success/one.cpp
+
+#include <iostream>
+#include "shared.h"
+int main() {
+	std::cout << shared::i << std::endl;
+}
+\end{lstlisting}
+
+The other two files, two.cpp and CMakeLists.txt, remain the same, as in the 02odrfail example. Such a change will allow the linking to succeed:
+
+\begin{tcblisting}{commandshell={}}
+-- Build files have been written to: /root/examples/
+chapter06/03-odr-success/b
+[ 33%] Building CXX object CMakeFiles/odr.dir/one.cpp.o
+[ 66%] Building CXX object CMakeFiles/odr.dir/two.cpp.o
+[100%] Linking CXX executable odr
+[100%] Built target odr
+\end{tcblisting}
+
+Alternatively, we can mark the variable as local to a translation unit (it won't be exported outside of the object file). To do so, we'll use the static keyword, like so:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter06/04-odr-success/shared.h
+
+static int i;
+\end{lstlisting}
+
+All other files will remain the same, as in the original example, and linking will still succeed. This, of course, means that the variable in the preceding code is stored in separate memory for each translation unit, and changes to one won't affect the other.
 
 \subsubsubsection{6.4.1\hspace{0.2cm}Dynamically linked duplicated symbols}
 
+The ODR rule works exactly the same for static libraries as it does for object files, but things aren't so clear when we build our code with SHARED libraries. A linker will allow duplicated symbols here. In the following example, we'll create two shared libraries, A and B, with one duplicated() function and two unique a() and b() functions:
+
+\begin{lstlisting}[style=styleCXX]
+//chapter06/05-dynamic/a.cpp
+
+#include <iostream>
+void a() {
+	std::cout << "A" << std::endl;
+}
+void duplicated() {
+	std::cout << "duplicated A" << std::endl;
+}
+\end{lstlisting}
+
+The second implementation file is almost an exact copy of the first:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter06/05-dynamic/b.cpp
+
+#include <iostream>
+void b() {
+	std::cout << "B" << std::endl;
+}
+void duplicated() {
+	std::cout << "duplicated B" << std::endl;
+}
+\end{lstlisting}
+
+Now, let's use each function to see what happens (we'll declare them locally with extern for simplicity):
+
+\begin{lstlisting}[style=styleCXX]
+// chapter06/05-dynamic/main.cpp
+
+extern void a();
+extern void b();
+extern void duplicated();
+
+int main() {
+	a();
+	b();
+	duplicated();
+}
+\end{lstlisting}
+
+The preceding code will run unique functions from each library and then call a function defined with the same signature in both dynamic libraries. What do you think will happen? Would the linking order matter in this case? Let's test it for two cases:
+
+\begin{itemize}
+\item 
+main\_1 linked with the a library first
+
+\item 
+main\_2 linked with the b library first
+\end{itemize}
+
+Here's the code for such a project:
+
+\begin{lstlisting}[style=styleCMake]
+// chapter06/05-dynamic/CMakeLists.txt
+	
+cmake_minimum_required(VERSION 3.20.0)
+project(Dynamic CXX)
+
+add_library(a SHARED a.cpp)
+add_library(b SHARED b.cpp)
+
+add_executable(main_1 main.cpp)
+target_link_libraries(main_1 a b)
+
+add_executable(main_2 main.cpp)
+target_link_libraries(main_2 b a)
+\end{lstlisting}
+
+After building and running both executables, we'll see the following output:
+
+\begin{tcblisting}{commandshell={}}
+root@ce492a7cd64b:/root/examples/chapter06/05-dynamic# b/main_1
+A B
+duplicated A
+root@ce492a7cd64b:/root/examples/chapter06/05-dynamic# b/main_2
+A
+B
+duplicated B
+\end{tcblisting}
+
+Aha! So, a linker does care about the order of the linked libraries. This may create some confusion if we aren't careful. In practice, naming collisions aren't as rare as they seem.
+
+There are some exceptions to this behavior; if we define locally visible symbols, they will take precedence over those available from dynamically linked libraries. Adding the following function to main.cpp will change the last line of output of both binaries to duplicated MAIN, as shown here:
+
+\begin{lstlisting}[style=styleCXX]
+#include <iostream>
+void duplicated() {
+	std::cout << "duplicated MAIN" << std::endl;
+}
+\end{lstlisting}
+
+Always take great care when exporting names from libraries, as you're bound to encounter name collisions sooner or later.
 
 \subsubsubsection{6.4.2\hspace{0.2cm}Use namespaces – don't count on a linker}
+
+The concept of namespaces was invented to avoid such weird problems and deal with the ODR in a manageable way. It comes as no surprise that it is recommended to wrap your library code in a namespace named after the library. This way, we can escape all the problems of duplicated symbols.
+
+In our projects, we might experience situations where one shared library is linking another and then another in a lengthy chain. These aren't that rare, especially in more complex setups. It is important to remember that simply linking one library to another doesn't imply any kind of namespace inheritance. Symbols in each link of this chain remain unprotected, kept in the namespaces in which they were originally compiled.
+
+The quirks of a linker are interesting and useful to know on a couple of occasions, but let's talk about a not-so-uncommon problem – what to do when correctly defined symbols go missing without an explanation.
+
+
+
+
+
+
+
+
+
+
+
+
+

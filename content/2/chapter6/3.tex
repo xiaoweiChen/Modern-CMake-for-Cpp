@@ -1,12 +1,105 @@
 
+After source code is compiled, we might want to avoid compiling it again for the same platform or even share it with external projects wherever possible. Of course, you could just simply provide all of your object files as they were originally created, but that has a few downsides. It is harder to distribute multiple files and add them individually to a buildsystem. It can be a hassle, especially if they are numerous. Instead, we could simply bring all object files into a single object and share that. CMake helps greatly with this process. We can create these libraries with a simple add\_library() command (which is consumed with the target\_link\_libraries() command). By convention, all libraries have a common prefix, lib, and use system-specific extensions that denote what kind of library they are:
+
+\begin{itemize}
+\item 
+A static library has a .a extension on Unix-like systems and .lib on Windows.
+
+\item 
+Shared libraries have a .so extension on Unix-like systems and .dll on Windows.
+\end{itemize}
+
+When building libraries (static, shared, or shared modules), you'll often encounter the name linking for this process. Even CMake calls it that in the build output of the chapter06/01-libraries project:
+
+\begin{tcblisting}{commandshell={}}
+[ 33%] Linking CXX static library libmy_static.a
+[ 66%] Linking CXX shared library libmy_shared.so
+[100%] Linking CXX shared module libmy_module.so
+[100%] Built target module_gui
+\end{tcblisting}
+
+Contrary to how it may seem, a linker isn't used to create all of the preceding libraries. There are exceptions to performing relocation and reference resolution. Let's take a look at each library type to understand how each works.
 
 \subsubsubsection{6.3.1\hspace{0.2cm}Static libraries}
 
+To build a static library, we can simply use the command we already saw in previous chapters:
+
+\begin{lstlisting}[style=styleCMake]
+add_library(<name> [<source>...])
+\end{lstlisting}
+
+The preceding code will produce a static library if the BUILD\_SHARED\_LIBS variable isn't set to ON. If we want to build a static library regardless, we can provide an explicit keyword:
+
+\begin{lstlisting}[style=styleCMake]
+add_library(<name> STATIC [<source>...])
+\end{lstlisting}
+
+What are static libraries? They are essentially a collection of raw object files stored in an archive. On Unix-like systems, such archives can be created by the ar tool. Static libraries are the oldest and most basic mechanism to provide a compiled version of code. Use them if you want to avoid separating your dependencies from the executable, at the price of the executable increasing in size and used memory.
+
+The archive may contain some additional indexes to speed up the final linking process. Each platform uses its own methods to generate those. Unix-like systems use a tool called ranlib for this purpose.
 
 \subsubsubsection{6.3.2\hspace{0.2cm}Shared libraries}
 
+It's not surprising to learn that we can build shared libraries with the SHARED keyword:
+
+\begin{lstlisting}[style=styleCMake]
+add_library(<name> SHARED [<source>...])
+\end{lstlisting}
+
+We can also do it by setting the BUILD\_SHARED\_LIBS variable to ON and using the
+short version:
+
+\begin{lstlisting}[style=styleCMake]
+add_library(<name> [<source>...])
+\end{lstlisting}
+
+The difference from static libraries is significant. Shared libraries are built using a linker, and they will perform both stages of linking. This means that we'll receive a file with proper section headers, sections, and a section header table (Figure 6.1).
+
+Shared libraries (also known as shared objects) can be shared between multiple different applications. An operating system will load a single instance of such a library into memory with the first program that uses it, and all subsequently started programs will be provided with the same address (thanks to the complex mechanisms of virtual memory). Only the .data and .bss segments will be created separately for every process consuming the library (so that each process can modify its own variables without affecting other consumers).
+
+Thanks to this approach, the overall memory usage in the system is better. And if we're using a very popular library, we might not need to ship it with our program. Chances are that it's already available on the target machine. However, if that's not the case, a user is expected to explicitly install it before running the application. This opens up the possibility of some issues when an installed version of a library is different from expected (this type of problem is called dependency hell; more information can be found in the Further reading section).
 
 \subsubsubsection{6.3.3\hspace{0.2cm}Shared modules}
 
+To build shared modules, we need to use the MODULE keyword:
+
+\begin{lstlisting}[style=styleCMake]
+add_library(<name> MODULE [<source>...])
+\end{lstlisting}
+
+This is a version of a shared library that is intended to be used as a plugin loaded during runtime, rather than something that is linked with an executable during compilation. A shared module isn't loaded automatically with the start of the program (like regular shared libraries). This only happens when a program explicitly requests it by making a system call such as LoadLibrary (Windows) or dlopen()/dlsym() (Linux/macOS).
+
+You shouldn't try to link your executable with a module, as this isn't guaranteed to work on all platforms. If you need to do that, use regular shared libraries.
 
 \subsubsubsection{6.3.4\hspace{0.2cm}Position-independent code}
+
+All sources for shared libraries and modules should be compiled with a positionindependent code flag enabled. CMake checks the POSITION\_INDEPENDENT\_CODE property of targets and appropriately adds compiler-specific compilation flags such as -fPIC for gcc or clang.
+
+PIC is a bit of a confusing term. Nowadays, programs are already position-independent in a sense, in that they use virtual memory to abstract away actual physical addresses. When calling a function, a CPU uses a memory management unit (MMU) to translate a virtual address (starting from 0 for every process) to a physical address that was available at the time of allocation. These mappings don't have to point to consecutive physical addresses or follow any other specific order.
+
+PIC is about mapping symbols (references to functions and global variables) to their runtime addresses. During compilation of a library, it is not known which processes might use it. It's not possible to predetermine where in the virtual memory the library will be loaded or in what order. This, in turn, means that the addresses of the symbols are unknown, as is their relative position to the library's machine code.
+
+To deal with that, we need another level of indirection. PIC will add a new section to our output – the Global Offset Table (GOT). Eventually, this section will become a segment containing runtime addresses for all the symbols needed by shared libraries. The position of the GOT relative to the .text section is known during linking; therefore, all symbol references can be pointed (through an offset) to a placeholder GOT at that time. The actual values pointing to symbols in memory will only be filled when an instruction accessing a referenced symbol is first executed. At that time, a loader will set up that particular entry in the GOT (this is where the term lazy loading comes from).
+
+Shared libraries and modules will have the POSITION\_INDEPENDENT\_CODE property automatically set to ON by CMake. However, it is important to remember that if your shared library is linked against another target, such as a static or object library, you need to set this property on that target too. Here's how:
+
+\begin{lstlisting}[style=styleCMake]
+set_target_properties(dependency_target
+					PROPERTIES POSITION_INDEPENDENT_CODE
+					ON)
+\end{lstlisting}
+
+Failing to do so will get you into trouble with CMake, as this property is by default checked for conflicts in a manner described in the Dealing with conflicting propagated properties section of Chapter 4, Working With Targets.
+
+Speaking of symbols, there's another problem to discuss. The next section is about name collisions leading to ambiguity and inconsistency in definitions.
+
+
+
+
+
+
+
+
+
+
+

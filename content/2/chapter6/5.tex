@@ -1,0 +1,114 @@
+A linker can often seem whimsical and start complaining about things for no apparent reason. This is an especially difficult ordeal for programmers starting out who don't know their way around this tool. It's no wonder, since they usually try to avoid touching build configuration for as long as they possibly can. Eventually, they're forced to change something (perhaps add a library they worked on) in the executable, and all hell breaks loose.
+
+Let's consider a fairly simple dependency chain – the main executable depends on the outer library, which depends on the nested library (containing the necessary int b variable). Suddenly, an inconspicuous message appears on the programmer's screen:
+
+\begin{tcblisting}{commandshell={}}
+outer.cpp:(.text+0x1f): undefined reference to 'b'
+\end{tcblisting}
+
+This isn't such a rare diagnostic – usually, it means that we forgot to add a necessary library to the linker. But in this case, the library is actually added correctly to the target\_link\_libraries() command:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter06/06-order/CMakeLists.txt
+
+cmake_minimum_required(VERSION 3.20.0)
+project(Order CXX)
+
+add_library(outer outer.cpp)
+add_library(nested nested.cpp)
+
+add_executable(main main.cpp)
+target_link_libraries(main nested outer)
+\end{lstlisting}
+
+What then!? Very few errors can be as infuriating to debug and understand. What we're seeing here is an incorrect order of linking. Let's dive into the source code to figure out the reason:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter06/06-order/main.cpp
+
+#include <iostream>
+extern int a;
+int main() {
+	std::cout << a << std::endl;
+}
+\end{lstlisting}
+
+The preceding code seems easy enough – we'll print an a external variable, which can be found in the outer library. We're declaring it ahead of time with the extern keyword. Here is the source for that library:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter06/06-order/outer.cpp
+
+extern int b;
+int a = b;
+\end{lstlisting}
+
+This is quite simple too – outer is depending on the nested library to provide the b external variable, which gets assigned to the a exported variable. Let's see the source of nested to confirm that we're not missing the definition:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter06/06-order/nested.cpp
+
+int b = 123;
+\end{lstlisting}
+
+So indeed, we have provided the definition for b, and since it's not marked as local with the static keyword, it's correctly exported from the nested target. As we saw previously, this target is linked with the main executable in CMakeLists.txt:
+
+\begin{lstlisting}[style=styleCMake]
+target_link_libraries(main nested outer)
+\end{lstlisting}
+
+So where does the undefined reference to 'b' error come from?
+
+Resolving undefined symbols works like this – a linker processes the binaries from left to right. As the linker iterates through the binaries, it will do the following:
+
+\begin{enumerate}
+\item 
+Collect all undefined symbols exported from this binary and store them for later
+
+\item 
+Try to resolve undefined symbols (collected from all binaries processed so far) with symbols defined in this binary
+
+\item 
+Repeat this process for the next binary
+\end{enumerate}
+
+If any symbols remain undefined after the whole operation is completed, the linking fails.
+
+This is the case in our example (CMake puts the object files of the executable target before the libraries):
+
+\begin{enumerate}
+\item 
+We processed main.o, got an undefined reference to a, and collected it for future resolution.
+
+\item 
+We processed libnested.a, no undefined references were found, so there was nothing to resolve.
+
+\item 
+We processed libouter.a, got an undefined reference to b, and resolved a reference to a.
+\end{enumerate}
+
+We did correctly resolve the reference to the a variable, but not for b. All we need to do is reverse the order of linking so that nested comes after outer:
+
+\begin{lstlisting}[style=styleCMake]
+target_link_libraries(main outer nested)
+\end{lstlisting}
+
+Another less elegant option is to repeat the library (which is useful for cyclic references):
+
+\begin{lstlisting}[style=styleCMake]
+target_link_libraries(main nested outer nested)
+\end{lstlisting}
+
+Finally, we can try using linker-specific flags such as -{}-start-group or -{}-end-group. Go to the documentation of your linker for details, as these specifics are outside of the scope of this book.
+
+Now that we know how to solve common problems, let's talk about how we could use the linker to our advantage.
+
+
+
+
+
+
+
+
+
+
+
