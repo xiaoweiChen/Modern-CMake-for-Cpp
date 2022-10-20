@@ -1,0 +1,136 @@
+The problem of managing dependencies and discovering all the compile flags that they require is as old as C++ libraries themselves. There are many tools to deal with it, ranging from very small and minimal mechanisms to very versatile solutions offered as parts of buildsystems and IDEs. One of the (once very popular) tools is called PkgConfig (\url{freedesktop.org/wiki/Software/pkg-config/}). It is often available on Unixlike systems (although it works on macOS and Windows too).
+
+pkg-config is slowly being phased out by other more modern solutions. A question arises here – should you invest your time in supporting it? The answer is as usual – it depends:
+
+\begin{itemize}
+\item 
+If a library is really popular, it might already have its find-module in CMake; in that case, you probably won't need it.
+
+\item 
+If there's no find-module (or it doesn't work for your library) and a PkgConfig .pc file is all that library provides, just use what's readily available.
+\end{itemize}
+
+Many (if not most) libraries have embraced CMake and provide a package config-file in current versions. If you're not publishing your solution and you control the environment, use find\_package() and don't worry about legacy versions.
+
+Sadly, not all environments can be quickly updated to the latest versions of a library. A lot of companies are still using legacy systems in production, which are no longer getting the latest packages. In that case, users might be stuck with an older (but hopefully compatible) version. And very often, it will provide a .pc file.
+
+Additionally, efforts to support the older PkgConfig format might be worthwhile if it means that your project will work out of the box for most users.
+
+In any case, start by using find\_package(), as described in the previous section, and if <PKG\_NAME>\_FOUND is false, fall back on PkgConfig. This way, we cover a scenario where an environment gets upgraded and we can just use the main method without changing the code.
+
+The concept of this helper tool is quite simple – the author of the library provides a small .pc file containing details necessary for compilation and linking, such as this one:
+
+\begin{lstlisting}[style=styleCMake]
+prefix=/usr/local
+exec_prefix=${prefix}
+includedir=${prefix}/include
+libdir=${exec_prefix}/lib
+
+Name: foobar
+Description: A foobar library
+Version: 1.0.0
+Cflags: -I${includedir}/foobar
+Libs: -L${libdir} -lfoobar
+\end{lstlisting}
+
+The format is pretty straightforward, lightweight, and it even supports a basic variable expansion. This is why many developers prefer it over complex, robust solutions such as CMake. While PkgConfig is extremely easy to use, its features are quite limited:
+
+\begin{itemize}
+\item 
+Checks to see whether a library exists in the system and if a .pc file is provided with it
+
+\item 
+Checks whether a sufficient version of a library is available
+
+\item 
+ Gets linker flags for a library by running pkg-config -{}-libs libfoo
+
+\item 
+Gets the include directories for a library (this field can technically contain other
+compiler flags) – pkg-config -{}-cflags libfoo
+\end{itemize}
+
+To properly use PkgConfig in a build scenario, your buildsystem has to find the pkg-config executable in the OS, run it a few times and provide appropriate arguments, and store the responses in variables so they can be passed later to the compiler. We already know how to do that in CMake – scan paths known for storing helper tools to check whether PkgConfig is installed and then use a few exec\_program() commands to discover how to link dependencies. Even though the steps are limited, it seems excessive to do it every time when we'd like to use PkgConfig.
+
+Fortunately, CMake provides a handy built-in find-module just for that purpose – FindPkgConfig. It follows most of the rules for regular find modules, but instead of providing PKG\_CONFIG\_INCLUDE\_DIRS or PKG\_CONFIG\_LIBS variables, it sets a variable with a direct path to the binary – PKG\_CONFIG\_EXECUTABLE. Unsurprisingly, the PKG\_CONFIG\_FOUND variable is set too – we'll use it to confirm that the tool is available in the system and then scan for a package with a pkg\_check\_modules() helper command defined in the module.
+
+Let's see that in practice. One example of a somewhat popular library that offers a .pc file is a client for the PostgreSQL database – libpqxx.
+
+To install it on Debian, you can use the libpqxx-dev package (your OS might need a different package):
+
+\begin{tcblisting}{commandshell={}}
+apt-get install libpqxx-dev
+\end{tcblisting}
+
+We'll create the shortest possible main.cpp file, which utilizes a dummy connection class:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter07/02-find-pkg-config/main.cpp
+
+#include <pqxx/pqxx>
+int main()
+{
+	// We're not actually connecting, but
+	// just proving that pqxx is available.
+	pqxx::nullconnection connection;
+}
+\end{lstlisting} 
+
+And we can now provide the necessary dependencies for the previous code by using the PkgConfig find-module:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter07/03-find-pkg-config/CMakeLists.txt
+
+cmake_minimum_required(VERSION 3.20.0)
+project(FindPkgConfig CXX)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(PQXX REQUIRED IMPORTED_TARGET libpqxx)
+message("PQXX_FOUND: ${PQXX_FOUND}")
+
+add_executable(main main.cpp)
+target_link_libraries(main PRIVATE PkgConfig::PQXX)
+\end{lstlisting}
+
+Let's break down what happens
+
+\begin{itemize}
+\item 
+We ask CMake to find the PkgConfig executable with the find\_package() command. It will fail if pkg-config is not present because of the REQUIRED keyword.
+
+\item 
+A pkg\_check\_modules() custom macro defined in the FindPkgConfig find-module is called to create a new IMPORTED target with PQXX as the chosen name. The find-module will search for a dependency called libpxx, and again, it will fail if the library isn't available because of the REQUIRED keyword. Note the IMPORTED\_TARGET keyword – without it, no target would be automatically created, and we would have to define it manually with variables created by the macro.
+
+
+\item 
+We confirm that everything is correct with a diagnostic message by printing PQXX\_FOUND. If we didn't specify REQUIRED in the previous command, we can check here whether this variable was set (perhaps to allow other fallback mechanisms to kick in).
+
+\item 
+We create the main executable.
+
+\item 
+We link the PkgConfig::PQXX IMPORTED target created by pkg\_check\_modules(). Note that PkgConfig:: is a constant prefix, and PQXX comes from the first argument passed to that command.
+\end{itemize}
+
+This was a fairly convenient method to bring in dependencies that don't support CMake yet. This find-module has a few other methods and options; if you're interested in learning more, I recommend referring to the official documentation: \url{https://cmake.org/ cmake/help/latest/module/FindPkgConfig.html}.
+
+Find-modules are meant as a very convenient way of providing CMake with information on installed dependencies. Most popular libraries are widely supported by CMake on all major platforms. What can we do though when we want to use a third-party library that doesn't have a dedicated find-module yet?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
