@@ -1,0 +1,49 @@
+Tenured professionals know that testing has to be automated. Someone explained that to them years ago or they learned the hard way. This practice isn't as obvious to inexperienced programmers: it seems unnecessary, additional work that doesn't bring much value. No wonder: when someone is just starting writing code, they'll avoid writing complex solutions and contributing to vast code bases. Most likely, they're the sole developer on their pet project. These early projects hardly ever need more than a few months to complete, so there's hardly any opportunity to see how code rots over a longer period.
+
+All these factors contribute toward the notion that writing tests is a waste of time and effort. The programming apprentice may say to themselves that they actually do test their code each time they execute the "build-and-run" routine. After all, they have manually confirmed that their code works and does what's expected. It's finally time to move on to the next task, right?
+
+Automated testing guarantees that new changes don't accidentally break our program. In this chapter, we'll learn why tests are important and how to use CTest (a tool bundled with CMake) to coordinate test execution. CTest is capable of querying available tests, filtering execution, shuffling, repeating, and time-limiting. We'll explore how to use those features, control the output of CTest, and handle test failures.
+
+Next, we'll adapt our project's structure to support testing and create our own test runner.
+After discussing the basic principles, we'll move on to adding popular testing frameworks: Catch2 and GoogleTest with its mocking library. Lastly, we'll introduce detailed test coverage reporting with LCOV.
+
+In this chapter, we're going to cover the following main topics:
+
+\begin{itemize}
+\item 
+Why are automated tests worth the trouble?
+
+\item 
+Using CTest to standardize testing in CMake
+
+\item 
+Creating the most basic unit test for CTest
+
+\item 
+Unit-testing frameworks
+
+\item 
+Generating test coverage reports
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

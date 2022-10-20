@@ -1,0 +1,41 @@
+Managing dependencies isn't complicated when we use modern, well-supported projects. In most cases, we'd simply rely on the library being available in the system and fall back to FetchContent if it's not. This would be appropriate if dependencies are relatively small and quick to build.
+
+For some really big libraries out there (such as Qt), it would take a significant amount of time to build from the source. To provide automatic dependency resolution in these cases, we'd have to resort to package managers offering compiled versions of libraries matching the user's environment. External tools such as Apt or Conan aren't within the scope of this book, as they are either too system-dependent or too complex.
+
+The good news is that most users know how to install dependencies that your project might require, as long as you provide them with clear instructions to do so. From this chapter, you already know how to detect packages installed in the system with CMake's find-modules and config files bundled with the library.
+
+We also learned what to do if a library is a bit older and doesn't support CMake but is distributed with the .pc files instead – we'll rely on the PkgConfig tool and the FindPkgConfig find-module bundled with CMake. We can expect that CMake will automatically create build targets when a library is found with one of the aforementioned methods, which is convenient and elegant. We also discussed relying on Git, and its submodules and cloning entire repositories. This method comes in useful when others won't do or are impractical to implement.
+
+Finally, we explored the ExternalProject module and its functionalities and limitations. We studied how FetchContent extends the ExternalProject module, which things it has in common with the module, where it differs from the module, and why FetchContent is preferable.
+
+You're now ready to use regular libraries in your projects; however, there's another kind of dependency that we should cover – testing frameworks. Every serious project needs to be tested for correctness, and CMake is a great tool to automate this process. We'll learn how to do it in the next chapter.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

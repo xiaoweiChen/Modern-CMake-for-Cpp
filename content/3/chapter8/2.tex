@@ -1,0 +1,42 @@
+Imagine a factory line that has a machine putting holes in sheets of steel. These holes have to be of specific size and shape so that they can house bolts that will hold the finished product together. The designer of such a factory line will set up the machine, test if the holes are correct, and move on. Sooner or later, something will change: the factory will use different, thicker steel; a worker will accidentally change the hole size; or, simply, more holes need to be punched and the machine has to be upgraded. A smart designer will put quality-control checks at certain points on the line to make sure that the product follows the specification and retains its key qualities. Holes have to conform to particular requirements but it doesn't really matter how they are created: drilled, punched, or laser-cut.
+
+The same approach finds application in software development: it's very hard to predict which pieces of code will remain unchanged for years and which will see multiple revisions. As the functionality of the software expands, we need to make sure that we don't accidentally break things. But we will. Even the best programmers will make mistakes because they can't foresee all the implications of every change they make. As if that weren't enough, developers often work on code written by someone else and they don't know any of the intricate assumptions made earlier. They will read the code, build a rough mental model, add necessary changes, and hope they got it right. Most times, that's true— until it isn't. In such cases, an introduced bug can consume hours if not days to fix, not to mention the damage it can do to the product and the customers.
+
+On occasion, you will stumble upon some code that is really hard to understand and follow. You will not only question how the code came to be and what it does, but you will also start a witch-hunt to figure out who's to blame for creating such a mess. Don't be too surprised if it turns out that you're the author. It has happened to me, and it will happen to you. Sometimes, code is created in a hurry, without a full understanding of the problem.
+
+As developers, we're not only under pressure from deadlines or budgets. Woken up in the middle of the night to fix a critical failure, you'll be appalled at how certain errors can slip past code review.
+
+Most of this can be avoided with automated tests. These are pieces of code that check if another piece of code (used in production) is behaving correctly. As the name suggests, automated tests should be executed without prompts every time someone makes a change.
+
+It usually happens as part of the build process and is often added as a step to control the code quality before merging it into the repository.
+
+You may be tempted to avoid automated tests to save time. That would be a very costly lesson. Steven Wright rightfully said: "Experience is something you don't get until just after you need it." Trust me: unless you're writing a one-off script for personal purposes or prototyping a non-production experiment, don't skip writing tests. Initially, you might get annoyed by the fact that the code you meticulously crafted is constantly failing tests. But if you really think about it, that failed test just stopped you from adding a breaking change to production. The effort invested now will pay off as time is saved on bug-fixing (and full nights of sleep). Tests are not as hard to add and maintain as they may seem.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

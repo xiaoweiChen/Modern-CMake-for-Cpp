@@ -1,6 +1,233 @@
 
+Many projects rely on Git as a version control system. Assuming that our project and external library are both using it, is there some kind of Git magic that would allow us to link these repositories together? Can we build a specific (or latest) version of the library as a step toward building our project? If so, how?
 
 \subsubsubsection{7.5.1\hspace{0.2cm}Providing external libraries through Git submodules}
 
+One possible solution is to use a mechanism built into Git called Git submodules. Submodules allow a project repository to use other Git repositories without actually adding the referenced files to the project repository. They work similarly to soft links – they point to a specific branch or commit in an external repository (but you need to update them explicitly). To add a submodule to your repository (and clone its repository), execute the following command:
 
-\subsubsubsection{7.5.2\hspace{0.2cm}Git-cloning dependencies for projects that don't  use Git}
+\begin{tcblisting}{commandshell={}}
+git submodule add <repository-url>
+\end{tcblisting}
+
+If you pulled a repository that already has submodules, you'll need to initialize them:
+
+\begin{tcblisting}{commandshell={}}
+git submodule update --init -- <local-path-to-submodule>
+\end{tcblisting}
+
+As you can tell, this is a versatile mechanism to leverage third-party code in our solution.
+The small drawback is that submodules don't get automatically pulled when a user clones the repository with the root project. An explicit init/pull command is required. Hold that thought – we'll solve it with CMake too. First, let's see how we can use a freshly created submodule in our code.
+
+For this example, I've decided to write a tiny program that reads a name from a YAML file and prints it out in a welcome message. YAML is a great, simple format to store humanreadable configuration, but it's quite complex to parse by machines. I've found a neat, small project that solves this problem by Jesse Beder (and 92 other contributors at the time) called yaml-cpp (\url{https://github.com/jbeder/yaml-cpp}).
+
+The example is fairly straightforward. It's a greeting program that prints a Welcome <name> message. The default value of name will be Guest, but we can specify a different name in a YAML configuration file. Here's the code:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter07/05-git-submodule-manual/main.cpp
+
+#include <string>
+#include <iostream>
+#include "yaml-cpp/yaml.h"
+
+using namespace std;
+int main() {
+	string name = "Guest";
+	YAML::Node config = YAML::LoadFile("config.yaml");
+	if (config["name"])
+		name = config["name"].as<string>();
+	
+	cout << "Welcome " << name << endl;
+	return 0;
+}
+\end{lstlisting}
+
+The configuration file for this example is just a single line:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter07/05-git-submodule-manual/main.cpp
+
+#include <string>
+#include <iostream>
+#include "yaml-cpp/yaml.h"
+
+using namespace std;
+int main() {
+	string name = "Guest";
+	YAML::Node config = YAML::LoadFile("config.yaml");
+	if (config["name"])
+		name = config["name"].as<string>();
+	cout << "Welcome " << name << endl;
+	return 0;
+}
+\end{lstlisting}
+
+The configuration file for this example is just a single line:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter07/05-git-submodule-manual/config.yaml
+
+name: Rafal
+\end{lstlisting}
+
+Let's get back to main.cpp for a second – it includes the "yaml-cpp/yaml.h" header. To make it available, we need to clone the yaml-cpp project and build it. Let's make an extern directory to store all third-party dependencies (as suggested in the Thinking about the project structure section in Chapter 3, Setting Up Your First CMake Project) and add a Git submodule, referencing the library's repository:
+
+\begin{tcblisting}{commandshell={}}
+$ mkdir extern
+$ cd extern
+$ git submodule add https://github.com/jbeder/yaml-cpp.git
+Cloning into 'chapter07/01-git-submodule-manual/extern/yamlcpp'...
+remote: Enumerating objects: 8134, done.
+remote: Total 8134 (delta 0), reused 0 (delta 0), pack-reused
+8134
+Receiving objects: 100% (8134/8134), 3.86 MiB | 3.24 MiB/s, done.
+Resolving deltas: 100% (5307/5307), done.
+\end{tcblisting}
+
+Git has cloned the repository; we can now add it as a dependency to our project and have CMake take care of building:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter07/05-git-submodule-manual/CMakeLists.txt
+
+cmake_minimum_required(VERSION 3.20.0)
+project(GitSubmoduleManual CXX)
+
+add_executable(welcome main.cpp)
+configure_file(config.yaml config.yaml COPYONLY)
+
+add_subdirectory(extern/yaml-cpp)
+target_link_libraries(welcome PRIVATE yaml-cpp)
+\end{lstlisting}
+
+Let's break down what instructions we are giving to CMake here:
+
+\begin{itemize}
+\item 
+Set up the project and add our welcome executable.
+
+\item 
+Next, call configure\_file but don't actually configure anything. By providing the COPYONLY keyword, we just copy our config.yaml to the build tree so that the executable can find it in runtime.
+
+\item 
+Add the subdirectory of the yaml-cpp repository. CMake will treat it as part of the project and recursively execute any nested CMakeLists.txt files.
+
+\item 
+Link the yaml-cpp target provided by the library with the welcome target.
+\end{itemize}
+
+Authors of yaml-cpp follow the practices outlined in Chapter 3, Setting Up Your First CMake Project and store public headers in a separate directory – <project-name>/ include/<project-name>. This allows clients of the library (such as main.cpp) to address the files with paths containing the "yaml-cpp/yaml.h" library name. Such naming practices are great for discovery – we know immediately which library is providing this header.
+
+As you can see, this isn't a very complex process, but it isn't ideal – the user has to manually initialize the submodule we have added after cloning the repository. What's worse is that it doesn't take into account the fact that the user might already have this library installed in their system. That means a wasteful download and build of this dependency. There has to be a better way.
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Automatic Git submodule initialization}
+
+Providing a neat experience to the users doesn't always have to be painful for developers. If a library provides a package config-file, we can just ask find\_package() to search for it in the installed libraries. As promised, CMake will start by checking whether there's an appropriate find-module, and if there's not, it will look for config-files.
+
+We already know that if the <LIB\_NAME>\_FOUND variable is set to 1, the library was found and we can just use it. We can also act when library wasn't found and provide convenient workaround to silently improve the user's experience: fall back to fetching submodules and building the library from source. Suddenly, the fact that a freshly cloned repository doesn't automatically download and initialize nested submodules doesn't look so bad, does it?
+
+Let's take the code from the previous example and extend it:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter07/06-git-submodule-auto/CMakeLists.txt
+
+cmake_minimum_required(VERSION 3.20.0)
+project(GitSubmoduleAuto CXX)
+
+add_executable(welcome main.cpp)
+configure_file(config.yaml config.yaml COPYONLY)
+
+find_package(yaml-cpp QUIET)
+if (NOT yaml-cpp_FOUND)
+	message("yaml-cpp not found, initializing git submodule")
+	execute_process(
+		COMMAND git submodule update --init -- extern/yaml-cpp
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	add_subdirectory(extern/yaml-cpp)
+endif()
+target_link_libraries(welcome PRIVATE yaml-cpp)
+\end{lstlisting}
+
+We added the highlighted lines:
+
+\begin{itemize}
+\item 
+We'll try to quietly find yaml-cpp and use it.
+
+\item 
+If it's not present, we'll print a short diagnostic message and use the execute\_process() command to initialize the submodule. This effectively clones the files from the referenced repository.
+
+\item 
+Finally, we'll add\_subdirectory() to build the dependency from the source.
+\end{itemize}
+
+This is short and sweet. This also works for libraries that aren't built with CMake – we can follow the example of git submodule and call execute\_process() again to kick off any external build tools in the same fashion.
+
+Sadly, this method falls apart if your company works with Concurrent Versions System (CVS), Subversion (SVN), Mercurial, or anything else to ship code to your users. If you cannot rely on Git submodules, what's the alternative?
+
+\subsubsubsection{7.5.2\hspace{0.2cm}Git-cloning dependencies for projects that don't use Git}
+
+If you're using another VCS or offer your source in an archive, you might have a hard time relying on Git submodules bringing in external dependencies to your repository. Chances are that the environment that will build your code has Git installed and could execute the git clone command.
+
+Let's see how we can go about this:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter07/07-git-clone/CMakeLists.txt
+
+cmake_minimum_required(VERSION 3.20.0)
+project(GitClone CXX)
+
+add_executable(welcome main.cpp)
+configure_file(config.yaml config.yaml COPYONLY)
+
+find_package(yaml-cpp QUIET)
+if (NOT yaml-cpp_FOUND)
+	message("yaml-cpp not found, cloning git repository")
+	find_package(Git)
+	if (NOT Git_FOUND)
+		message(FATAL_ERROR "Git not found, can't initialize!")
+	endif ()
+	execute_process(
+		COMMAND ${GIT_EXECUTABLE} clone
+		https://github.com/jbeder/yaml-cpp.git
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/extern
+	)
+	add_subdirectory(extern/yaml-cpp)
+endif()
+target_link_libraries(welcome PRIVATE yaml-cpp)
+\end{lstlisting}
+
+Again, the highlighted lines are new parts in our YAML project. Here's what happens:
+
+\begin{itemize}
+\item 
+We start by checking if Git is available through the FindGit find-module.
+
+\item 
+If it's not, we're stuck. We'll issue FATAL\_ERROR and hope that the user knows what to do next.
+
+\item 
+Otherwise, we'll call execute\_process() with the GIT\_EXECUTABLE variable that was set by find\_package() and clone the repository we're interested in.
+\end{itemize}
+
+Git is especially attractive for developers who have some experience with it. It can be a good fit for a smaller project that doesn't contain nested references to the same repositories. However, if it does, you'll find that you might need to clone and build the same project multiple times. If the dependency project doesn't use Git at all, you'll need another solution.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
