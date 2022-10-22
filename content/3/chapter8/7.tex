@@ -1,0 +1,20 @@
+
+
+On the surface, it may seem that complexities associated with proper testing are so great, they aren't worth the effort. It's striking how much code out there is running without any tests at all, the primary argument being that testing your software is a daunting endeavor. I'll add: even more so if done manually. Unfortunately, without rigorous automated testing, visibility of any issues in the code is incomplete or non-existent. Untested code is often quicker to write (not always), but it's definitely much slower to read, refactor, and fix.
+
+In this chapter, we outlined some key reasons for going forward with tests from the get-go. One of the most compelling is mental health and a good night's sleep. Not one developer lies in their bed thinking: I can't wait to be woken up in a few hours to put out some fires and fix bugs. But seriously: catching errors before deploying them to production can be a life-saver for you (and the company).
+
+When it comes to testing utilities, CMake really shows its true strength. CTest can do wonders in detecting faulty tests: isolation, shuffling, repetition, timeouts. All these techniques are extremely handy and available through a simple flag straight from the command line. We also learned how we can use CTest to list tests, filter them, and control the output of test cases, but most importantly, we now know the true power of adopting a standard solution across the board. Any project built with CMake can be tested exactly the same, without investigating any details about its internals.
+
+Next, we structured our project to simplify the process of testing and reuse the same object files between production code and test runners. It was interesting to write our own test runner, but maybe let's focus on the actual problem our program should solve and invest time in embracing a popular third-party testing framework.
+
+Speaking of which, we learned the very basics of Catch2 and GTest. We further dove into details of the GMock library and understood how test doubles work to make true unit tests possible. Lastly, we set up some reporting with LCOV. After all, there's nothing better than hard data to prove that our solution is, in fact, fully tested.
+In the next chapter, we'll discuss more useful tooling to improve the quality of our source code and find issues we didn't even know existed.
+
+
+
+
+
+
+
+

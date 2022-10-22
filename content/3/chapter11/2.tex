@@ -1,0 +1,128 @@
+How can we make the targets of project A available to the consuming project B? Usually, we'd reach for the find\_package() command, but that would mean that we'd need to create a package and install it on the system. That approach is useful, but it takes some work. Sometimes, we just need a really quick way to build a project and make its targets available for other projects.
+
+We could save some time by including the main listfile of A: it contains all the target definitions already. Unfortunately, it also potentially contains a lot of other things: global configuration, requirements, CMake commands with side effects, additional dependencies, and perhaps targets that we don't want in B (such as unit tests). So, let's not do that. It's better to achieve this by providing a target export file that the consuming project, B, can include with the include() command:
+
+\begin{lstlisting}[style=styleCMake]
+cmake_minimum_required(VERSION 3.20.0)
+project(B)
+include(/path/to/project-A/ProjectATargets.cmake)
+\end{lstlisting}
+
+Doing this will provide definitions (commands such as add\_library() and add\_executable()) for all the targets of A with the correct properties set.
+
+Of course, we're not going to write such a file manually – that wouldn't be a very DRY approach. CMake can generate these files for us with the export() command, which has the following signature:
+
+\begin{lstlisting}[style=styleCMake]
+export(TARGETS [target1 [target2 [...]]]
+	[NAMESPACE <namespace>] [APPEND] FILE <path>
+	[EXPORT_LINK_INTERFACE_LIBRARIES])
+\end{lstlisting}
+
+We must supply all the targets that we'd like to export after the TARGET keyword and provide the destination filename after FILE. The other arguments are optional:
+
+\begin{itemize}
+\item 
+NAMESPACE is recommended as a hint, stating that the target has been imported from other projects.
+
+\item 
+APPEND tells CMake that it shouldn't erase the contents of the file before writing.
+
+\item 
+EXPORT\_LINK\_INTERFACE\_LIBRARIES will export target link dependencies (including imported and config-specific variants).
+\end{itemize}
+
+Let's see this in action with our example Calc library, which provides two simple methods:
+
+\begin{lstlisting}[style=styleCXX]
+// chapter-11/01-export/src/include/calc/calc.h
+
+#pragma once
+int Sum(int a, int b);
+int Multiply(int a, int b);
+\end{lstlisting}
+
+We declare its target like so:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter-11/01-export/src/CMakeLists.txt
+
+add_library(calc STATIC calc.cpp)
+target_include_directories(calc INTERFACE include)
+\end{lstlisting}
+
+Then, we ask CMake to generate the export file with the export(TARGETS) command:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter-11/01-export/CMakeLists.txt (fragment)
+
+cmake_minimum_required(VERSION 3.20.0)
+project(ExportCalcCXX)
+add_subdirectory(src bin)
+set(EXPORT_DIR "${CMAKE_CURRENT_BINARY_DIR}/cmake")
+export(TARGETS calc
+	FILE "${EXPORT_DIR}/CalcTargets.cmake"
+	NAMESPACE Calc::
+)
+...
+\end{lstlisting}
+
+In the preceding code, we can see that the EXPORT\_DIR variable has been set to the cmake subdirectory of the build tree (as per the convention for .cmake files). Then, we export the target declaration file, CalcTargets.cmake, with a single target calc that's visible as Calc::calc for projects that will include this file.
+
+Note that this export file is not a package yet. And, more importantly, all the paths in this file are absolute and hardcoded to the build tree. In other words, they're non-relocatable (we'll discuss this in the Understanding the issues with relocatable targets section).
+
+The export() command also has a shorter version:
+
+\begin{lstlisting}[style=styleCMake]
+export(EXPORT <export> [NAMESPACE <namespace>] [FILE
+	<path>])
+\end{lstlisting}
+
+However, it requires a <export> name rather than a list of exported targets. Such <export> instances are named lists of targets that are defined by install(TARGETS) (we'll cover this command in the Installing logical targets section). Here's a tiny example demonstrating how this shorthand is used in practice:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter-11/01-export/CMakeLists.txt (continued)
+
+...
+install(TARGETS calc EXPORT CalcTargets)
+export(EXPORT CalcTargets
+	FILE "${EXPORT_DIR}/CalcTargets2.cmake"
+	NAMESPACE Calc::
+)
+\end{lstlisting}
+
+The preceding code works exactly like the previous one, but now, a single target list between the export() and install() commands is being shared.
+
+Both ways of generating export files will produce the same results. They will contain some boilerplate code and a few lines defining the target. With /tmp/b set to the build tree path, they'll look like this:
+
+\begin{lstlisting}[style=styleCMake]
+# /tmp/b/cmake/CalcTargets.cmake (fragment)
+
+# Create imported target Calc::calc
+add_library(Calc::calc STATIC IMPORTED)
+set_target_properties(Calc::calc PROPERTIES
+	INTERFACE_INCLUDE_DIRECTORIES
+	"/root/examples/chapter11/01-export/src/include"
+)
+# Import target "Calc::calc" for configuration ""
+set_property(TARGET Calc::calc APPEND PROPERTY
+	IMPORTED_CONFIGURATIONS NOCONFIG
+)
+set_target_properties(Calc::calc PROPERTIES
+	IMPORTED_LINK_INTERFACE_LANGUAGES_NOCONFIG "CXX"
+	IMPORTED_LOCATION_NOCONFIG "/tmp/b/libcalc.a"
+)
+\end{lstlisting}
+
+Normally, we wouldn't edit this file or even open it, but I wanted to highlight the hardcoded paths in this generated file. In its current form, the package is not relocatable. If we want to change that, we'll need to jump through some hoops first. We'll explore why that's important in the next section.
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,17 @@
+High-quality code is not only well written, working, and tested—it is also thoroughly documented. Documentation allows us to share information that could otherwise get lost, draw a bigger picture, give context, reveal intent, and—finally—educate both external users and maintainers.
+
+Do you remember the last time you joined a new project and got lost for hours in a maze of directories and files? This can be avoided. Truly excellent documentation will lead a complete newcomer to the exact line of code they're looking for in seconds. Sadly, the subject of missing documentation is often swept under the rug. No wonder—it takes a lot of skill and many of us aren't very good at it. On top of that, documentation and code can really part ways very quickly. Unless a strict update and review process is put in place, it's easy to forget that documentation needs work too.
+
+Some teams (in the interest of time or encouraged by managers) follow a practice of writing "self-documenting code". By picking meaningful, readable identifiers for filenames, functions, variables, and whatnot, they hope to avoid the chore of documenting. While the habit of good naming is absolutely correct, it won't replace documentation. Even the best function signatures don't guarantee that all necessary information is conveyed—for example, int removeDuplicates(); is quite descriptive, but it doesn't reveal what is returned! It may be the number of duplicates found, the number of items left, or something else—it's not certain. Remember: there's no such thing as a free lunch.
+
+To make things easier, professionals use automatic documentation generators that can analyze the code and comments in source files to produce comprehensive documentation in multiple different formats. Adding such generators to a CMake project is very simple— let's see how!
+
+In this chapter, we're going to cover the following main topics:
+
+\begin{itemize}
+\item 
+Adding Doxygen to your project
+
+\item 
+Generating documentation with a modern look
+\end{itemize}

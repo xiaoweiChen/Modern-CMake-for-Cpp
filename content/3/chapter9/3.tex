@@ -1,15 +1,192 @@
 
+Static program analysis is the process of checking the source code without actually running the compiled version. The rigorous application of static checkers dramatically improves the quality of the code: it becomes more consistent and less bug-prone. The chance of introducing known security vulnerabilities is reduced too. The C++ community has created dozens of static checkers: Astrée, Clang-Tidy, CLazy, CMetrics, Cppcheck, Cpplint, CQMetrics, ESBMC, FlawFinder, Flint, IKOS, Joern, PC-Lint, Scan-Build, Vera++, and so on.
+
+Many of them recognize CMake as the industry standard and will provide out-of-thebox support (or an integration tutorial). Some build engineers don't want to go to the trouble of writing CMake code, and they add static checkers by including external modules available online, such as those collected by Lars Bilke in his GitHub repository: \url{https://github.com/bilke/cmake-modules}.
+
+It's no wonder, as the general misconception is that you'd need to jump through many hoops to get your code checked. The reason for this complexity is in the nature of static checkers: they often mimic the behavior of a real compiler to understand what happens in the code.
+
+Cppcheck recommends the following steps in its manual:
+
+\begin{enumerate}
+\item 
+Find the static checker's executable.
+
+\item 
+Generate a compile database with the following:
+
+\begin{tcblisting}{commandshell={}}
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
+\end{tcblisting}
+
+\item 
+Run the checker on the produced JSON file:
+
+\begin{tcblisting}{commandshell={}}
+<path-to-cppcheck> --project=compile_commands.json
+\end{tcblisting}
+\end{enumerate}
+
+All that should happen as part of the build so that it doesn't get forgotten.
+
+Since CMake understands exactly how we want our targets built, can't it support some of these utilities? At least the most popular? Sure, it can! This gem of a feature is hard to find among the online noise, despite being so simple to use. CMake supports enabling checkers on a per-target basis for the following tools:
+
+\begin{itemize}
+\item 
+include-what-you-use (\url{https://include-what-you-use.org})
+
+\item 
+Clang-Tidy (\url{https://clang.llvm.org/extra/clang-tidy})
+
+\item 
+link what you use (a built-in CMake checker)
+
+\item 
+cpplint (\url{https://github.com/cpplint/cpplint})
+
+\item 
+Cppchecker (\url{https://cppcheck.sourceforge.io})
+\end{itemize}
+
+All we need to do is set an appropriate target property to a semicolon-separated list containing the path to the checker's executable, followed by any command-line options that should be forwarded to the checker:
+
+\begin{itemize}
+\item 
+<LANG>\_CLANG\_TIDY
+
+\item 
+<LANG>\_CPPCHECK
+
+\item 
+<LANG>\_CPPLINT
+
+\item 
+<LANG>\_INCLUDE\_WHAT\_YOU\_USE
+
+\item 
+LINK\_WHAT\_YOU\_USE
+\end{itemize}
+
+As usual, <LANG> should be replaced with the language used, so use C for C sources and CXX for C++. If you don't need to control the checker on a per-target basis, you can specify a default value for all targets in the project by setting an appropriate global variable prefixed with CMAKE\_, such as the following:
+
+\begin{lstlisting}[style=styleCMake]
+set(CMAKE_CXX_CLANG_TIDY /usr/bin/clang-tidy-3.9;-checks=*)
+\end{lstlisting}
+
+Any target defined after this statement will have its CXX\_CLANG\_TIDY property set the same way. Just keep in mind that this adds the analysis to regular builds, which will make them slightly longer.
+
+On the other hand, there's some value in more granular control of how targets should be tested by the checker. We can write a simple function to solve this for us:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter09/02-clang-tidy/cmake/ClangTidy.cmake
+
+function(AddClangTidy target)
+	find_program(CLANG-TIDY_PATH clang-tidy REQUIRED)
+	set_target_properties(${target}
+		PROPERTIES CXX_CLANG_TIDY
+		"${CLANG-TIDY_PATH};-checks=*;--warnings-as-errors=*"
+	)
+endfunction()
+\end{lstlisting}
+
+The AddClangTidy function has two simple steps:
+
+\begin{enumerate}
+\item 
+Find the Clang-Tidy binary and store its path in CLANG-TIDY\_PATH. The REQUIRED keyword will stop the configuration with an error if the binary wasn't found.
+
+\item 
+Enable Clang-Tidy on target, provide the path to the binary and custom options to enable all checks, and treat warnings as errors.
+\end{enumerate}
+
+To use this function, we just need to include the module and call it for the chosen target:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter09/02-clang-tidy/src/CMakeLists.txt
+
+add_library(sut STATIC calc.cpp run.cpp)
+target_include_directories(sut PUBLIC .)
+
+add_executable(bootstrap bootstrap.cpp)
+target_link_libraries(bootstrap PRIVATE sut)
+
+include(ClangTidy)
+AddClangTidy(sut)
+\end{lstlisting}
+
+This is short and extremely powerful. As we build the solution, we can see the output from Clang-Tidy:
+
+\begin{tcblisting}{commandshell={}}
+[ 6%] Building CXX object bin/CMakeFiles/sut.dir/calc.cpp.o
+/root/examples/chapter09/04-clang-tidy/src/calc.cpp:3:11:
+warning: method 'Sum' can be made static [readability-convertmember-functions-to-static]
+int Calc::Sum(int a, int b) {
+             ^
+[ 12%] Building CXX object bin/CMakeFiles/sut.dir/run.cpp.o
+/root/examples/chapter09/04-clang-tidy/src/run.cpp:1:1:
+warning: #includes are not sorted properly [llvm-include-order]
+#include <iostream>
+^ ~~~~~~~~~~
+/root/examples/chapter09/04-clang-tidy/src/run.cpp:3:1:
+warning: do not use namespace using-directives; use usingdeclarations instead [google-build-using-namespace]
+using namespace std;
+^
+/root/examples/chapter09/04-clang-tidy/src/run.cpp:6:3:
+warning: initializing non-owner 'Calc *' with a newly created
+'gsl::owner<>' [cppcoreguidelines-owning-memory]
+  auto c = new Calc();
+  ^
+\end{tcblisting}
+
+Note that unless you add the -{}-warnings-as-errors=* option to the command-line arguments, the build will succeed. It is recommended to agree on a list of rules that will be enforced and fail builds that break them; this way, we'll prevent non-compliant code from tainting the repository.
+
+clang-tidy also offers an interesting -{}-fix option, which will automatically correct your code where possible. This is definitely a great timesaver and can be used whenever you're increasing the number of checks. As with formatting, be sure to avoid merge conflicts when introducing any changes generated by static analysis tools to legacy code bases.
+
+Depending on your use case, the size of the repository, and team preferences, you should probably choose a few checkers that are a good match. Adding too many will become a nuisance. Here's a short introduction to checkers supported by CMake out-of-the-box.
 
 \subsubsubsection{9.3.1\hspace{0.2cm}Clang-Tidy}
+
+Here is a description of Clang-Tidy from the official website:
+
+clang-tidy is a clang-based C++ "linter" tool. Its purpose is to provide an extensible framework for diagnosing and fixing typical programming errors, like style violations, interface misuse, or bugs that can be deduced via static analysis. clang-tidy is modular and provides a convenient interface for writing new checks.
+
+The versatility of this tool is really impressive, as it offers over 400 checks. It works well paired with ClangFormat, as the fixes applied automatically (over 150 available) can follow the same format file. Offered checks include improvements in performance, readability, modernization, cpp-core-guidelines, and bug-prone namespaces.
 
 
 \subsubsubsection{9.3.2\hspace{0.2cm}Cpplint}
 
+Here is a description of Cpplint from the official website:
+
+Cpplint is a command-line tool to check C/C++ files for style issues following Google's C++ style guide. Cpplint is developed and maintained by Google Inc. at google/styleguide.
+
+This linter is meant to get your code in line with the aforementioned Google style. It is written in Python, which might be an unwanted dependency for some projects. The fixes are offered in formats consumable by Emacs, Eclipse, VS7, Junit, and as sed commands.
 
 \subsubsubsection{9.3.3\hspace{0.2cm}Cppcheck}
+
+Here is a description of Cppcheck from the official website:
+
+Cppcheck is a static analysis tool for C/C++ code. It provides unique code analysis to detect bugs and focuses on detecting undefined behaviour and dangerous coding constructs. The goal is to have very few false positives. Cppcheck is designed to be able to analyze your C/C++ code even if it has non-standard syntax (common in embedded projects).
+
+This tool is worth recommending for peace of mind when it comes to avoiding unnecessary noise generated by false positives. It is quite well established (over 14 years in the making) and still very actively maintained. Also, you might find it useful if your code doesn't compile with Clang.
 
 
 \subsubsubsection{9.3.4\hspace{0.2cm}include-what-you-use}
 
+Here is a description of include-what-you-use from the official website:
+
+The main goal of include-what-you-use is to remove superfluous \#includes. It does this both by figuring out what \#includes are not actually needed for this file (for both .cc and .h files), and replacing \#includes with forwarddeclares when possible.
+
+Too many included headers might not seem like a really big problem if your code base is slim. In larger projects, time saved by avoiding unnecessary compilation of header files quickly adds up.
 
 \subsubsubsection{9.3.5\hspace{0.2cm}Link what you use}
+
+Here is a description of link-what-you-use on CMake's blog:
+
+This is a built in CMake feature that uses options of ld and ldd to print out if executables link more libraries than they actually require.
+
+This also speeds up the build time; only in this case we're focusing on the unneeded binary artifacts.
+
+Static analysis is critical where software errors can affect people's safety, especially in medical, nuclear, aviation, automotive, and machine industries. Smart developers know that it doesn't hurt to follow similar practices in less demanding environments, most of all when the costs of adoption are so low. Using static analyzers during the build is not only much cheaper than finding and fixing bugs manually; it's also easy to enable with CMake. I'd even go as far to say that there's almost no excuse to skip these checks in quality-sensitive software (that is, all software involving someone else other than the programmer).
+
+Unfortunately, not all bugs can be caught before a program is executed. What can we do to get an even better insight into our projects?
+
+

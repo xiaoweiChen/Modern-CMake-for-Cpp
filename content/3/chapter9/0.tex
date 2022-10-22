@@ -1,0 +1,37 @@
+Producing high-quality code is not an easy task, even for very experienced developers. By adding tests to our solution, we reduce the risk of making obvious mistakes in the business code. But that won't be enough to avoid more intricate problems. Every piece of software consists of so many details that keeping track of them all becomes a full-time job. There are dozens of conventions and multiple special design practices agreed upon by teams maintaining the product.
+
+Some questions relate to consistent coding style: should we use 80 or 120 columns in our code? Should we allow std::bind or commit to Lambda functions? Is it okay to use C-style arrays? Should small functions be defined in a single line? Should we insist on using auto always, or only when it increases readability?
+
+Ideally, we also avoid any statements that are known to be incorrect in general: infinite loops, usage of identifiers reserved by a standard library, unintended loss of precision, redundant if statements, and anything else that isn't considered a "best practice" (see the Further reading section for references).
+
+Another thing to look at is the modernization of code: as C++ evolves, it offers new features. It can be difficult to track all the places we can refactor to the latest standard. Additionally, manual effort costs time and introduces the risk of bugs, which can be considerable for a large code base.
+
+Finally, we should inspect how things work when they're put into motion: executing the program and examining its memory. Is the memory freed properly after use? Do we access data that was initialized correctly? Or maybe the code tries to dereference some dangling pointers?
+
+Managing all these issues and questions by hand is inefficient and error-prone. Thankfully, we can employ automatic utilities to check and enforce rules, fix mistakes, and modernize code for us. It's time to discover tools for program analysis. Our code will be inspected on every build to ensure that it adheres to industry standards.
+
+In this chapter, we're going to cover the following main topics:
+
+\begin{itemize}
+\item 
+Enforcing the formatting
+
+\item 
+Using static checkers
+
+\item 
+Dynamic analysis with Valgrind
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+

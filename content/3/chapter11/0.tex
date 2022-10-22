@@ -1,0 +1,36 @@
+
+Our project has been built, tested, and documented. Now, it's finally time to release it to our users. This chapter is mainly about the two last steps we'll need to take to do that: installation and packaging. These are advanced techniques that build on top of everything we've learned so far: managing targets and their dependencies, transient usage requirements, generator expressions, and much more.
+
+Installation allows our project to be discoverable and accessible system-wide. In this chapter, we will cover how to export targets so that another project can use them without installation, as well as how to install our projects so that they can easily be used by any program on the system. In particular, we'll learn how to configure our project so that it can automatically put different artifact types in the correct directory. To handle more advanced scenarios, we'll introduce low-level commands for installing files and directories, as well as for executing custom scripts and CMake commands.
+
+Next, we'll learn how to set up reusable CMake packages so that they can be discovered by calling find\_package() from other projects. Specifically, we'll explain how to make sure that targets and their definitions are not fixed to a specific location on the filesystem. We'll also discuss how to write basic and advanced config files, along with the version files associated with packages.
+
+Then, to make things modular, we'll briefly introduce the concept of components, both in terms of CMake packages and the install() command. All this preparation will pave the way for the final aspect we'll be covering in this chapter: using CPack to generate archives, installers, bundles, and packages that are recognized by all kinds of package managers in different operating systems. These can be used to carry pre-built artifacts, executables, and libraries. It's the easiest way for end users to start using our software.
+
+In this chapter, we're going to cover the following main topics:
+
+\begin{itemize}
+\item 
+Exporting without installation
+
+\item 
+Installing projects on the system
+
+\item 
+Creating reusable packages
+
+\item 
+Defining components
+
+\item 
+Packaging with CPack
+\end{itemize}
+
+
+
+
+
+
+
+
+

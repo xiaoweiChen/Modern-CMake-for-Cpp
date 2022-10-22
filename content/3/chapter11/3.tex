@@ -1,10 +1,179 @@
 
+In Chapter 1, First Steps with CMake, we indicated that CMake offers a command-line mode that installs built projects on the system:
 
+\begin{tcblisting}{commandshell={}}
+cmake --install <dir> [<options>]
+\end{tcblisting}
+
+<dir> is the path to the generated build tree (required). Our <options> are as follows:
+
+\begin{itemize}
+\item 
+-{}-config <cfg>: This picks the build configuration for a multi-configuration generator.
+
+\item 
+-{}-component <comp>: This limits the installation to the given component.
+
+\item 
+-{}-default-directory-permissions <permissions>: This sets the default permissions for the installed directories (in <u=rwx,g=rx,o=rx> format).
+
+\item 
+-{}-prefix <prefix>: This specifies the non-default installation path (stored in the CMAKE\_INSTALL\_PREFIX variable). It defaults to /usr/local for Unix-like systems and c:/Program Files/\$\{PROJECT\_NAME\} for Windows.
+
+\item 
+-v, -{}-verbose: This makes the output verbose (this can also be achieved by setting the VERBOSE environment variable).
+\end{itemize}
+
+Installations can consist of many steps, but at their core, they copy the generated artifacts and the necessary dependencies to a directory somewhere on the system. Using CMake for installation not only introduces a convenient standard to all CMake projects but also does the following:
+
+\begin{itemize}
+\item 
+Provides a platform-specific installation path for artifacts, depending on their types (by following GNU Coding Standards)
+
+\item 
+Enhances the installation process by generating target export files, which allow project targets to be directly reused by other projects
+
+\item 
+Creates discoverable packages through config files, which wrap the target export files and package-specific CMake macros and functions defined by the author
+\end{itemize}
+
+These features are quite powerful as they save a lot of time and simplify the usage of projects that are prepared this way. The first step in performing a basic installation is copying the built artifacts to their destination directory.
+
+This brings us to the install() command and its various modes:
+
+\begin{itemize}
+\item 
+install(TARGETS): This installs output artifacts such as libraries and executables.
+
+\item 
+install(FILES|PROGRAMS): This installs individual files and sets their permissions.
+
+\item 
+install(DIRECTORY): This installs whole directories.
+
+\item 
+install(SCRIPT|CODE): This runs a CMake script or a snippet during installation.
+
+\item 
+install(EXPORT): This generates and installs a target export file.
+\end{itemize}
+
+Adding these commands to your listfile will generate a cmake\_install.cmake file in your build tree. While it's possible to invoke this script manually with cmake -P, it isn't recommended. This file is meant to be used by CMake internally when cmake -{}-install is executed.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
+Upcoming CMake versions will also support installing runtime artifacts and dependency sets, so be sure to check the latest documentation to learn more.
+\end{tcolorbox}
+
+Every install() mode has an extensive set of options. A few of them are shared and work the same way:
+
+\begin{itemize}
+\item 
+DESTINATION: This specifies the installation path. Relative paths will be prepended with CMAKE\_INSTALL\_PREFIX, while absolute paths are used verbatim (and not supported by cpack).
+
+\item 
+PERMISSIONS: This sets file permissions on platforms that support them. The available values are OWNER\_READ, OWNER\_WRITE, OWNER\_EXECUTE, GROUP\_READ, GROUP\_WRITE, GROUP\_EXECUTE, WORLD\_READ, WORLD\_WRITE, WORLD\_EXECUTE, SETUID, and SETGID. The default permissions for directories that are created during installation time can be set by specifying the CMAKE\_INSTALL\_DEFAULT\_DIRECTORY\_PERMISSIONS variable.
+
+\item 
+CONFIGURATIONS: This specifies a list of configurations (Debug, Release). Any of the options in this command that follow this keyword will only be applied if the current build config is in this list.
+
+\item 
+OPTIONAL: This disables raising errors when the installed files don't exist.
+\end{itemize}
+
+Two shared options are also used in component-specific installations: COMPONENT and EXCLUDE\_FROM\_ALL. We'll discuss these in detail in the Defining components section.
+
+Let's take a look at the first installation mode: install(TARGETS).
 
 \subsubsubsection{11.3.1\hspace{0.2cm}Installing logical targets}
 
+Targets defined by add\_library() and add\_executable() can easily be installed with the install(TARGETS) command. This means copying the artifacts that have been produced by the buildsystem to the appropriate destination directories and setting suitable file permissions for them. The general signature for this mode is as follows:
+
+\begin{lstlisting}[style=styleCMake]
+install(TARGETS <target>... [EXPORT <export-name>]
+	[<output-artifact-configuration> ...]
+	[INCLUDES DESTINATION [<dir> ...]]
+	)
+\end{lstlisting}
+
+After the initial mode specifier – that is, TARGETS – we must provide a list of targets we'd like to install. Here, we may optionally assign them to a named export with the EXPORT option, which can be used in export(EXPORT) and install(EXPORT) to produce a target export file. Then, we must configure the installation of output artifacts (grouped by type). Optionally, we can provide a list of directories that will be added to the target export file for each target in its INTERFACE\_INCLUDE\_DIRECTORIES property.
+
+[<output-artifact-configuration>...] provides a list of configuration blocks. The full syntax of a single block is as follows:
+
+\begin{lstlisting}[style=styleCMake]
+<TYPE> [DESTINATION <dir>] [PERMISSIONS permissions...]
+	[CONFIGURATIONS [Debug|Release|...]]
+	[COMPONENT <component>]
+	[NAMELINK_COMPONENT <component>]
+	[OPTIONAL] [EXCLUDE_FROM_ALL]
+	[NAMELINK_ONLY|NAMELINK_SKIP]
+\end{lstlisting}
+
+Every output artifact block has to start with <TYPE> (this is the only required element). CMake recognizes several of them:
+
+\begin{itemize}
+\item 
+ARCHIVE: Static libraries (.a) and DLL import libraries for Windows-based systems (.lib).
+
+\item 
+LIBRARY: Shared libraries (.so), but not DLLs.
+
+\item 
+RUNTIME: Executables and DLLs.
+
+\item 
+OBJECTS: Object files from OBJECT libraries.
+
+\item 
+FRAMEWORK: Static and shared libraries that have the FRAMEWORK property set (this excludes them from ARCHIVE and LIBRARY). This is macOS-specific.
+
+\item 
+BUNDLE: Executables marked with MACOSX\_BUNDLE (also not part of RUNTIME).
+
+\item 
+PUBLIC\_HEADER, PRIVATE\_HEADER, RESOURCE: Files specified in the target properties with the same name (on Apple platforms, they should be set on the FRAMEWORK or BUNDLE targets).
+\end{itemize}
+
+The CMake documentation claims that if you only configure one artifact type (for example, LIBRARY), only this type will be installed. For CMake version 3.20.0, this is not true: all the artifacts will be installed as if they were configured with the default options. This can be solved by specifying <TYPE> EXCLUDE\_FROM\_ALL for all unwanted artifact types.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
+A single install(TARGETS) command can have multiple artifact configuration blocks. However, be aware that you may only specify one of each type per call. That is, if you'd like to configure different destinations of ARCHIVE artifacts for the Debug and Release configurations, then you must make two separate install(TARGETS ... ARCHIVE) calls.
+\end{tcolorbox}
+
+You may also omit the type name and specify options for all the artifacts:
+
+\begin{lstlisting}[style=styleCMake]
+install(TARGETS executable, static_lib1
+	DESTINATION /tmp
+)
+\end{lstlisting}
+
+Installation would be then performed for every file that's produced by these targets, regardless of their type.
+
+Also, you don't always need to provide an installation directory with DESTINATION. Let's see why.
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Working out the correct destination for different platforms}
+
+The formula for a destination path is as follows:
+
+\begin{tcblisting}{commandshell={}}
+${CMAKE_INSTALL_PREFIX} + ${DESTINATION}
+\end{tcblisting}
+
+If DESTINATION isn't provided, CMake will use a built-in default for every type:
+
+
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Dealing with public headers}
 
 \subsubsubsection{11.3.2\hspace{0.2cm}Low-level installation}
 
 
+
+
 \subsubsubsection{11.3.3\hspace{0.2cm}Invoking scripts during installation}
+
+
