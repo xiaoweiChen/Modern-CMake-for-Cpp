@@ -1,7 +1,136 @@
 
+We'll start talking about package components by clearing up some possible confusion around the term component. Look at the full signature for find\_package():
 
+\begin{lstlisting}[style=styleCMake]
+find_package(<PackageName> [version] [EXACT] [QUIET] [MODULE]
+	[REQUIRED] [[COMPONENTS] [components...]]
+	[OPTIONAL_COMPONENTS components...]
+	[NO_POLICY_SCOPE])
+\end{lstlisting}
+
+The components that are mentioned here shouldn't be conflated with the COMPONENT keyword that's used in the install() command. They are different concepts that must be understood separately, despite sharing the same name. We'll look at this in more detail in the following subsections.
 
 \subsubsubsection{11.5.1\hspace{0.2cm}How to use components in find\_package()}
 
+When we call find\_package() with a list of COMPONENTS or OPTIONAL\_COMPONENTS, we tell CMake that we're only interested in packages that provide them. However, it's important to realize that it's up to the package to verify this requirement, and if the package vendor doesn't add the necessary checks to the config-file mentioned in the Creating advanced config-file section, then nothing happens.
+
+Requested components are passed to the config-file in the <package>\_FIND\_COMPONENTS variable (both optional and not). Additionally, for every non-optional component, a <package>\_FIND\_REQUIRED\_<component> will be set. As package authors, we could write a macro to scan this list and check if we have provided all the required components. But we don't need to – this is exactly what check\_required\_components() does. To use it, the config-file should set the <Package>\_<Component>\_FOUND variable when the necessary component is found. The macro at the end of the file will check if all the required variables were set.
 
 \subsubsubsection{11.5.2\hspace{0.2cm}How to use components in the install() command}
+
+Some produced artifacts may not need to be installed for all scenarios. For example, a project may install static libraries and public headers for developing purposes, but by default, it can just install a shared library for the runtime. To make this duality of behavior possible, we can group artifacts under a common name by using the COMPONENT keyword, which is available in all the install() commands. Users that are interested in limiting installation to a specific component can request this explicitly by running the following command (the component names are case-sensitive):
+
+\begin{tcblisting}{commandshell={}}
+cmake --install <build tree> --component=<component name>
+\end{tcblisting}
+
+Marking an artifact with the COMPONENT keyword doesn't mean that it won't be installed by default. To prevent this from happening, we must add the EXCLUDE\_FROM\_ALL keyword.
+
+Let's explore these components using a code example:
+
+\begin{lstlisting}[style=styleCMake]
+# chapter-11/11-components/CMakeLists.txt (fragment)
+
+...
+install(TARGETS calc EXPORT CalcTargets
+	ARCHIVE
+		COMPONENT lib
+	PUBLIC_HEADER
+		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/calc
+		COMPONENT headers
+)
+install(EXPORT CalcTargets
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/calc/cmake
+	NAMESPACE Calc::
+	COMPONENT lib
+)
+install(CODE "MESSAGE(\"Installing 'extra' component\")"
+	COMPONENT extra
+	EXCLUDE_FROM_ALL
+)
+...
+\end{lstlisting}
+
+These install commands define the following components:
+
+\begin{itemize}
+\item 
+lib: This contains the static library and target export files. It's installed by default.
+
+\item 
+headers: This contains public header files. It is installed by default.
+
+\item 
+extra: This executes a piece of code by printing a message. It's not installed by default.
+\end{itemize}
+
+Let's reiterate this:
+
+\begin{itemize}
+\item 
+cmake -{}-install without the -{}-component argument will install both the lib and headers components.
+
+\item 
+cmake -{}-install -{}-component headers will only install public headers.
+
+\item 
+cmake -{}-install -{}-component extra will print a message that's inaccessible otherwise (because of the EXCLUDE\_FROM\_ALL keyword).
+\end{itemize}
+
+If no COMPONENT keyword is specified for the installed artifact, it will get a default value of Unspecified from the CMAKE\_INSTALL\_DEFAULT\_COMPONENT\_NAME variable.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
+Since there's no easy way to list all the components that are available from the cmake command line, users of your package will benefit from exhaustive documentation listing your package's components. Perhaps the INSTALL file would be a good place to mention it.
+\end{tcolorbox}
+
+If cmake is called with the -{}-component argument for a component that doesn't exist, then the command will succeed without any warnings or errors. It just won't install anything.
+
+Partitioning our installation into components enables users to cherry-pick what they want to install. We have mostly discussed grouping installed files into components, but there are also are procedural steps such as install(SCRIPT|CODE) or creating symlinks for shared libraries.
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Managing symbolic links for versioned shared libraries}
+
+The target platform for your installation may use symbolic links to help linkers discover the currently installed version of a shared library. After creating a lib<name>.so symlink to the lib<name>.so.1 file, it's possible to link this library by passing the -l<name> argument to the linker. The creation of such symlinks is handled by CMake's install(TARGETS <target> LIBRARY) block when needed.
+
+However, we may decide to move that step into another install() command by adding NAMELINK\_SKIP to this block:
+
+\begin{lstlisting}[style=styleCMake]
+install(TARGETS <target> LIBRARY COMPONENT cmp
+	NAMELINK_SKIP)
+\end{lstlisting}
+
+To assign symlinking to another component (instead of disabling it altogether), we can repeat the install() command for the same target and specify a different component, followed by the NAMELINK\_ONLY keyword:
+
+\begin{lstlisting}[style=styleCMake]
+install(TARGETS <target> LIBRARY COMPONENT lnk
+	NAMELINK_ONLY)
+\end{lstlisting}
+
+The same can be achieved with the NAMELINK\_COMPONENT keyword:
+
+\begin{lstlisting}[style=styleCMake]
+install(TARGETS <target> LIBRARY
+	COMPONENT cmp NAMELINK_COMPONENT lnk)
+\end{lstlisting}
+
+Now that we have configured automatic installation, we can provide pre-built artifacts for our users using the CPack tool, which is included with CMake.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

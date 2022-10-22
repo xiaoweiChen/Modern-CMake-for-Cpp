@@ -1,0 +1,22 @@
+Writing installation scripts in a cross-platform way is an incredibly complex task without a tool such as CMake. While it still requires a little bit of work to set up, it's a much more streamlined process that ties closely to all the other concepts and techniques we've used so far in this book.
+
+First, we learned how to export CMake targets from projects so that they can be consumed in other projects without installing them. Then, we learned how to install projects that had already been configured for this purpose.
+
+After that, we started exploring the basics of installation by starting with the most important subject: installing CMake targets. We now know how CMake handles different destinations for various artifact types and how to deal with public headers that are somewhat special. To manage these installation steps at lower levels, we discussed other modes of the install() command, including installing files, programs, and directories and invoking scripts during the installation.
+
+After explaining how to codify the installation steps, we learned about CMake's reusable packages. Specifically, we learned how to make targets in our projects relocatable so that the packages can be installed wherever the user wants. Then, we focused on forming a fully-defined package that can be consumed by other projects with find\_package(), which required preparing target export files, config-files, and version files.
+
+Recognizing that different users may need different parts of our package, we discovered how to group artifacts and actions in installation components, as well as how they differ from the components of CMake packages.
+Finally, we touched on CPack and learned how to prepare basic binary packages that can be used to distribute our software in a pre-compiled form.
+
+There's still a long way to go to fully grasp all the details and complexities of installation and packaging, but this chapter has given us a solid foundation to handle the most common scenarios and explore them further with confidence.
+
+In the next chapter, we will put everything we've learned so far into practice by creating a coherent, professional project.
+
+
+
+
+
+
+
+

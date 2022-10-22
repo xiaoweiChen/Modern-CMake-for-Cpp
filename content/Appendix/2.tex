@@ -1,0 +1,93 @@
+This command provides basic operations on lists: reading, searching, modification, and ordering. Some modes will change list (mutate the original value). Be sure to copy the original value if you'll need it later.
+
+Full details can be found in the online documentation: 
+
+\url{https://cmake.org/cmake/help/latest/command/list.html}
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Reading}
+
+The following modes are available:
+
+\begin{itemize}
+\item 
+list(LENGTH <list> <out>) counts the elements in the <list> variable and stores the result in the <out> variable.
+
+\item 
+list(GET <list> <index>... <out>) copies the <list> elements specified with the list of <index> indexes to the <out> variable.
+
+\item 
+list(JOIN <list> <glue> <out>) interleaves <list> elements with the <glue> delimiter and stores the resulting string in the <out> variable.
+
+\item 
+list(SUBLIST <list> <begin> <length> <out>) works like the GET mode, but operates on range instead of explicit indexes. If <length> is -1, elements from <begin> index to the end of the list provided in the <list> variable will be returned.
+\end{itemize}
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Searching}
+
+This mode simply finds the index of the <needle> element in the <list> variable and stores the result in the <out> variable (or -1 if the element wasn't found):
+
+\begin{lstlisting}[style=styleCMake]
+list(FIND <list> <needle> <out>)
+\end{lstlisting}
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Modification}
+
+The following modes are available:
+
+\begin{itemize}
+\item 
+list(APPEND <list> <element>...) adds one or more <element> value to the end of the <list> variable.
+
+\item 
+list(PREPEND <list> [<element>...]) works like APPEND, but adds elements to the beginning of the <list> variable.
+
+\item 
+list(FILTER <list> {INCLUDE | EXCLUDE} REGEX <pattern>) filters the <list> variable to INCLUDE or EXCLUDE the elements matching the <pattern> value.
+
+\item 
+list(INSERT <list> <index> [<element>...]) adds one or more <element> values to the <list> variable at the given <index>.
+
+\item 
+list(POP\_BACK <list> [<out>...]) removes an element from the end of the <list> variable and stores it in the optional <out> variable. If multiple <out> variables were provided, more elements will be removed to fill them.
+
+\item 
+list(POP\_FRONT <list> [<out>...]) works like POP\_BACK but removes an element from the beginning of the <list> variable.
+
+\item 
+list(REMOVE\_ITEM <list> <value>...) shorthand for FILTER EXCLUDE, but without the support of regular expressions.
+
+\item 
+list(REMOVE\_AT <list> <index>...) removes elements from <list> at a specific <index>.
+
+\item 
+list(REMOVE\_DUPLICATES <list>) removes duplicates from <list>.
+
+\item 
+list(TRANSFORM <list> <action> [<selector>] [OUTPUT\_VARIABLE <out>]) applies a specific transformation to the <list> elements.
+
+By default, the action is applied to all elements, but we may limit the effect by adding a <selector>. Provided list will be mutated (changed in place) unless the OUTPUT\_VARIABLE keyword was provided, in which case, the result is stored in the <out> variable.
+
+The following selectors are available: AT <index>, FOR <start> <stop> [<step>], and REGEX <pattern>. Actions include APPEND <string>, PREPEND <string>, TOLOWER, TOUPPER, STRIP, GENEX\_STRIP, and REPLACE <pattern> <expression>. They work exactly like the string() modes with the same name.
+\end{itemize}
+
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Ordering}
+
+The following modes are available:
+
+\begin{itemize}
+\item 
+list(REVERSE <list>) simply reverses the order of <list>.
+
+\item 
+list(SORT <list>) sorts the list alphabetically. Refer to the online manual for more advanced options.
+\end{itemize}
+

@@ -1,0 +1,159 @@
+This command provides all kinds of operations related to files: reading, transferring, locking, and archiving. It also provides modes to inspect the filesystem and operations on strings representing paths.
+
+Full details can be found in the online documentation: 
+
+\url{https://cmake.org/cmake/help/latest/command/file.html}
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Reading}
+
+The following modes are available:
+
+\begin{itemize}
+\item 
+file(READ <filename> <out> [OFFSET <o>] [LIMIT <max>] [HEX]) reads the file from <filename> to the <out> variable. The read optionally starts at offset <o> and follows the optional limit of <max> bytes. The HEX flag specifies that output should be converted to hexadecimal representation.
+
+\item 
+file(STRINGS <filename> <out>) reads strings from the file at <filename> to the <out> variable.
+
+\item 
+file(<algorithm> <filename> <out>) computes the <algorithm> hash from the file at <filename> and stores the result in the <out> variable. Available algorithms are the same as for the string() hashing function.
+
+\item 
+file(TIMESTAMP <filename> <out> [<format>]) generates a string representation of a timestamp of the file at <filename> and stores it in the <out> variable. Optionally accepts a <format> string.
+
+\item 
+file(GET\_RUNTIME\_DEPENDENCIES [...]) gets runtime dependencies for specified files. This is an advanced command to be used only in install(CODE) or install(SCRIPT) scenarios.
+\end{itemize}
+
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Writing}
+
+The following modes are available:
+
+\begin{itemize}
+\item 
+file(\{WRITE | APPEND\} <filename> <content>...) writes or appends all <content> arguments to the file at <filename>. If the provided system path doesn't exist, it will be recursively created.
+
+\item 
+file(\{TOUCH | TOUCH\_NOCREATE\} [<filename>...]) updates the timestamp of the <filename>. If the file doesn't exist, it will only be created in the TOUCH mode.
+
+\item 
+file(GENERATE OUTPUT <output-file> [...]) is an advanced mode that generates an output file for each build configuration of the current CMake Generator.
+
+\item 
+file(CONFIGURE OUTPUT <output-file> CONTENT <content> [...]) works like GENERATE\_OUTPUT, but also configures the generated files by substituting variable placeholders with values.
+\end{itemize}
+
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Filesystem}
+
+The following modes are available:
+
+\begin{itemize}
+\item 
+file(\{GLOB | GLOB\_RECURSE\} <out> [...] [<globbingexpression>...]) generates a list of files matching <globbingexpression> and stores it in the <out> variable. GLOB\_RECURSE mode will also scan nested directories.
+
+\item 
+file(RENAME <oldname> <newname>) moves a file from <oldname> to <newname>.
+
+\item 
+file({REMOVE | REMOVE\_RECURSE } [<files>...]) deletes <files>. REMOVE\_RECURSE will also remove directories.
+
+\item 
+file(MAKE\_DIRECTORY [<dir>...]) creates a directory
+
+\item 
+file(COPY <file>... DESTINATION <dir> [...]) copies files to the <dir> destination. Offers options for filtering, setting permissions, symlink chain following, and more.
+
+\item 
+file(SIZE <filename> <out>) reads the size of <filename> in bytes and stores it in the <out> variable.
+
+\item 
+file(READ\_SYMLINK <linkname> <out>) reads the destination path of the <linkname> symlink and stores it in the <out> variable.
+
+\item
+file(CREATE\_LINK <original> <linkname> [...]) creates a symlink to <original> at <linkname>.
+
+\item 
+file(\{CHMOD|CHMOD\_RECURSE\} <files>... <directories>... PERMISSIONS <permissions>... [...]) sets permissions on files and directories.
+\end{itemize}
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Path conversion}
+
+The following modes are available:
+
+\begin{itemize}
+\item 
+file(REAL\_PATH <path> <out> [BASE\_DIRECTORY <dir>]) computes the absolute path from the relative path and stores it in the <out> variable. Optionally accepts the <dir> base directory. It's been available since CMake 3.19.
+
+\item 
+file(RELATIVE\_PATH <out> <directory> <file>) computes the <file> path relative to <directory> and stores it in the <out> variable.
+
+\item 
+file(\{TO\_CMAKE\_PATH | TO\_NATIVE\_PATH\} <path> <out>) converts <path> to a CMake path (directories separated with a forward slash) to the native path of the platform and back. The result is stored in the <out> variable.
+\end{itemize}
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Transfer}
+
+The following modes are available:
+
+\begin{itemize}
+\item 
+file(DOWNLOAD <url> [<path>] [...]) downloads a file from <url> and stores it in path.
+
+\item 
+file(UPLOAD <file> <url> [...]) uploads <file> to an URL.
+\end{itemize}
+
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Locking}
+
+Locking mode places an advisory lock on the <path> resource:
+
+\begin{lstlisting}[style=styleCMake]
+file(LOCK <path> [DIRECTORY] [RELEASE]
+	[GUARD <FUNCTION|FILE|PROCESS>]
+	[RESULT_VARIABLE <out>]
+	[TIMEOUT <seconds>])
+\end{lstlisting}
+
+This lock can be optionally scoped to FUNCTION, FILE, or PROCESS and limited with a timeout of <seconds>. To release the lock, provide the RELEASE keyword. The result will be stored in the <out> variable.
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Archiving}
+
+The creation of archives is provided with the following signature:
+
+\begin{lstlisting}[style=styleCMake]
+file(ARCHIVE_CREATE OUTPUT <destination> PATHS <source>...
+	[FORMAT <format>]
+	[COMPRESSION <type> [COMPRESSION_LEVEL <level>]]
+	[MTIME <mtime>] [VERBOSE])
+\end{lstlisting}
+
+It creates an archive at the <destination> path comprising <source> files in one of the supported formats: 7zip, gnutar, pax, paxr, raw, or zip (paxr is the default). If the chosen format supports the compression level, it can be provided as a single-digit integer 0-9, with 0 being the default.
+
+The extraction mode has the following signature:
+
+\begin{lstlisting}[style=styleCMake]
+file(ARCHIVE_EXTRACT INPUT <archive> [DESTINATION <dir>]
+	[PATTERNS <patterns>...] [LIST_ONLY] [VERBOSE])
+\end{lstlisting}
+
+It extracts files matching optional <patterns> values from <archive> to the destination <dir>. If the LIST\_ONLY keyword is provided, files won't be extracted, but only listed instead.
+
+
+

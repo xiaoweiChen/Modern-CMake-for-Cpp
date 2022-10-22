@@ -1,0 +1,37 @@
+CMake also supports some simple arithmetical operations. See the online documentation for full details:
+
+\url{https://cmake.org/cmake/help/latest/command/math.html}
+
+To evaluate a mathematical expression and store it in the <out> variable as the string in an optional <format> (HEXADECIMAL or DECIMAL), use the following signature:
+
+\begin{lstlisting}[style=styleCMake]
+math(EXPR <out> "<expression>" [OUTPUT_FORMAT <format>])
+\end{lstlisting}
+
+The <expression> value is a string that supports operators present in C code (they have the same meaning here):
+
+\begin{itemize}
+\item 
+Arithmetical: +, -, *, /, \% modulo division
+
+\item 
+Bitwise: | or, \& and, \^{} xor, ~ not, <{}< shift left, >{}> shift right
+
+\item 
+Parenthesis (...)
+\end{itemize}
+
+Constant values can be provided in decimal or hexadecimal format.
+
+
+
+
+
+
+
+
+
+
+
+
+

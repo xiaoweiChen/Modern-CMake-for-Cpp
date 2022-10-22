@@ -1,0 +1,32 @@
+
+We gathered all the required knowledge to build professional projects; we learned about structuring, building, dependency management, testing, analyzing, installing, and packaging. It's time to put these acquired skills into practice by creating a coherent, professional project.
+
+The important thing to understand is that even trivial programs will benefit from automated quality checks and a streamlined end-to-end process that turns raw code into a fully fledged solution. It's true that this is often a considerable investment, as many steps need to be taken in order to prepare everything right – even more so if we're trying to add these mechanisms to already existing code bases (usually, they're already large and convoluted).
+
+That's the very reason to use CMake from the get-go and set all the piping upfront; not only it will be easier to configure but, more importantly, it's also much more efficient to do it early, as all the quality controls and build automation have to be added to long-term projects at some point anyway.
+
+This is exactly what we'll do in this chapter – we'll write a new solution that is as small and as simple as possible. It will perform just a single (almost) practical function – adding two numbers together. Limiting the functionality of the business code will allow us to focus on every other aspect of the project that we learned about in the previous chapters.
+
+To have a more involved problem to solve, this project will build both a library and an executable. The library will provide the internal business logic and will also be available for other projects to consume as a CMake package. The executable will be meant for end users only and will implement a user interface that shows the functionality of the underlying library.
+
+In this chapter, we're going to cover the following main topics:
+
+\begin{itemize}
+\item 
+Planning our work
+
+\item 
+Project layout
+
+\item 
+Building and managing dependencies
+
+\item 
+Testing and program analysis
+
+\item 
+Installing and packaging
+
+\item 
+Providing the documentation
+\end{itemize}

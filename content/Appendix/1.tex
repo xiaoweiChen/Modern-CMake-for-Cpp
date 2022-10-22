@@ -1,0 +1,222 @@
+The string() command is used to manipulate strings. It comes with a variety of modes that perform different actions on the string: search and replace, manipulation, comparison, hashing, generation, and JSON operations (the last one available since CMake 3.19).
+
+Full details can be found in the online documentation: \url{https://cmake.org/cmake/ help/latest/command/string.html}.
+
+string() modes that accept the <input> argument will accept multiple <input> values and concatenate them before the execution of the command:
+
+\begin{lstlisting}[style=styleCMake]
+string(PREPEND myVariable "a" "b" "c")
+\end{lstlisting}
+
+This is the equivalent of the following:
+
+\begin{lstlisting}[style=styleCMake]
+string(PREPEND myVariable "abc")
+\end{lstlisting}
+
+Let's explore all available string() modes.
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Search and replace}
+
+The following modes are available:
+
+\begin{itemize}
+\item 
+string(FIND <haystack> <pattern> <out> [REVERSE]) searches for <pattern> in the <haystack> string and writes the position found as an integer to the <out> variable. If the REVERSE flag was used, it searches from the end of the string to the beginning. This works only for ASCII strings (multibyte support isn't provided).
+
+\item 
+string(REPLACE <pattern> <replace> <out> <input>) replaces all occurrences of <pattern> in <input> with <replace> and stores them in the <out> variable.
+
+\item 
+string(REGEX MATCH <pattern> <out> <input>) regex-matches the first occurrence of <pattern> in <input> with <replace> and stores it in the <out> variable.
+
+\item 
+string(REGEX MATCHALL <pattern> <out> <input>) regex-matches all occurrences of <pattern> in <input> with <replace> and stores them in the <out> variable as a comma-separated list.
+
+\item
+string(REGEX REPLACE <pattern> <replace> <out> <input>) regex-replaces all occurrences of <pattern> in <input> with the <replace> expression and stores them in the <out> variable.
+\end{itemize}
+
+Regular expression operations follow C++ syntax as defined in the standard library in the <regex> header. You can use capturing groups to add matches to the <replace> expression with numeric placeholders: \verb|\|\verb|\|1, \verb|\|\verb|\|2... (double backslashes are required so arguments are parsed correctly).
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Manipulation}
+
+The following modes are available:
+
+\begin{itemize}
+\item 
+string(APPEND <out> <input>) mutates strings stored in <out> by appending the <input> string.
+
+\item 
+string(PREPEND <out> <input>) mutates strings stored in <out> by prepending the <input> string.
+
+\item 
+string(CONCAT <out> <input>) concatenates all provided <input> strings and stores them in the <out> variable.
+
+\item 
+string(JOIN <glue> <out> <input>) interleaves all provided <input> strings with a <glue> value and stores them as a concatenated string in the <out> variable (don't use this mode for list variables).
+
+\item
+string(TOLOWER <string> <out>) converts <string> to lowercase and stores it in the <out> variable.
+
+\item
+string(LENGTH <string> <out>) counts the bytes of <string> and stores the result in the <out> variable.
+
+\item
+string(SUBSTRING <string> <begin> <length> <out>) extracts a substring of <string> of <length> bytes starting at the <begin> byte, and stores it in the <out> variable. Providing -1 as the length is understood as "till the end of the string."
+
+\item
+string(STRIP <string> <out>) removes trailing and leading whitespace from <string> and stores the result in the <out> variable.
+
+\item 
+string(GENEX\_STRIP <string> <out>) removes all generator expressions used in <string> and stores the result in the <out> variable.
+
+\item 
+string(REPEAT <string> <count> <out>) generates a string containing <count> repetitions of <string> and stores it in the <out> variable.
+\end{itemize}
+
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Comparison}
+
+A comparison of strings takes the following form:
+
+\begin{lstlisting}[style=styleCMake]
+string(COMPARE <operation> <stringA> <stringB> <out>)
+\end{lstlisting}
+
+The <operation> argument is one of the following: LESS, GREATER, EQUAL, NOTEQUAL, LESS\_EQUAL, or GREATER\_EQUAL. It will be used to compare <stringA> with <stringB> and the result (true or false) will be stored in the <out> variable.
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Hashing}
+
+The hashing mode has the following signature:
+
+\begin{lstlisting}[style=styleCMake]
+string(<algorithm> <out> <string>)
+\end{lstlisting}
+
+It hashes <string> with <algorithm> and stores the result in the <out> variable. The following algorithms are supported:
+
+\begin{itemize}
+\item 
+MD5: Message-Digest Algorithm 5, RFC 1321
+
+\item 
+SHA1: US Secure Hash Algorithm 1, RFC 3174
+
+\item 
+SHA224: US Secure Hash Algorithms, RFC 4634
+
+\item 
+SHA256: US Secure Hash Algorithms, RFC 4634
+
+\item
+SHA384: US Secure Hash Algorithms, RFC 4634
+
+\item
+SHA512: US Secure Hash Algorithms, RFC 4634
+
+\item
+SHA3\_224: Keccak SHA-3
+
+\item
+SHA3\_256: Keccak SHA-3
+
+\item 
+SHA3\_384: Keccak SHA-3
+
+\item 
+SHA3\_512: Keccak SHA-3
+\end{itemize}
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{Generation}
+
+The following modes are available:
+
+\begin{itemize}
+\item 
+string(ASCII <number>... <out>) stores ASCII characters of given <number> in the <out> variable.
+
+\item 
+string(HEX <string> <out>) converts <string> to its hexadecimal representation and stores it in the <out> variable (since CMake 3.18).
+
+\item 
+string(CONFIGURE <string> <out> [@ONLY] [ESCAPE\_QUOTES])works exactly like configure\_file() but for strings. The result is stored in the <out> variable.
+
+\item 
+string(MAKE\_C\_IDENTIFIER <string> <out>) converts non-alphanumeric characters in <string> to underscores and stores the result in the <out> variable.
+
+\item
+string(RANDOM [LENGTH <len>] [ALPHABET <alphabet>] [RANDOM\_SEED <seed>] <out>)generates a random string of <len> characters (default 5) using the optional <alphabet> from the random seed, <seed>, and stores the result in the <out> variable.
+
+\item
+string(TIMESTAMP <out> [<format>] [UTC]) generates a string representing the current date and time and stores it in the <out> variable.
+
+\item
+string(UUID <out> ...) generates a universally unique identifier. This mode is a bit involved to use.
+\end{itemize}
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{JSON}
+
+Operations on JSON-formatted strings use the following signature:
+
+\begin{lstlisting}[style=styleCMake]
+string(JSON <out> [ERROR_VARIABLE <error>] <operation + args>)
+\end{lstlisting}
+
+Several operations are available. They all store their results in the <out> variable, and errors in the <error> variable. Operations and their arguments are as follows:
+
+\begin{itemize}
+\item 
+GET <json> <member|index>... returns the value of one or more elements from a <json> string using the <member> path or <index>.
+
+\item 
+TYPE <json> <member|index>... returns the type of one or more elements from a <json> string using the <member> path or <index>.
+
+\item 
+MEMBER <json> <member|index>... <array-index> returns the member name of one or more array-typed elements on the <array-index> position from the <json> string using the <member> path or <index>.
+
+\item 
+LENGTH <json> <member|index>... returns the element count of one or more array-typed elements from the <json> string using the <member> path or <index>.
+
+\item
+REMOVE <json> <member|index>... returns the result of removal of one or more elements from the <json> string using the <member> path or <index>.
+
+\item
+SET <json> <member|index>... <value> returns the result of upsertion of <value> to one or more elements from a <json> string using the <member> path or <index>.
+
+\item
+EQUAL <jsonA> <jsonB> evaluates whether <jsonA> and <jsonB> are equal.
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
