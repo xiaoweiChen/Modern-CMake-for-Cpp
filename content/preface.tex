@@ -1,74 +1,74 @@
 \begin{flushright}
-	\zihao{1} 前言
+\zihao{1} 前言
 \end{flushright}
 
-Creating top-notch software isn't an easy task. Developers researching this subject online frequently have problems determining which advice is up to date and which approaches have already been superseded by fresher, better practices. At the same time, most resources explain this process chaotically, without the proper background, context, and structure.
+创造优秀的软件并非易事。开发人员经常会遇到无法确定哪些建议是最新的，以及哪些方法已经有更新或更好的实践的问题。同时，大多数资源在没有交代背景、上下文和结构的情况下，解释起来也很难。
 
-Modern CMake for C++ is an end-to-end guide offering a simpler experience, as it treats building C++ solutions in a comprehensive manner. It teaches you how to use CMake in your CMake projects, and also shows you what makes them maintainable, elegant, and clean. It guides you through the automation of complex tasks appearing in many projects, including building, testing, and packaging.
+本书提供了全面构建C++的端到端解决方案，提供了更简单的方法。让您了解如何使用CMake，如何使其可维护、优雅和干净。将使用自动化的方式帮助您完成项目中出现的许多复杂任务，比如构建、测试和打包。
 
-The book instructs you on how to form the source directories, as well as build targets and packages. As you progress, you will learn how to compile and link executables and libraries, how these processes work in detail, and how to optimize all steps to achieve the best results. You'll also understand how to add external dependencies to the project: third-party libraries, testing frameworks, program analysis tools, and documentation generators. Finally, you'll explore how to export, install, and package your solution for internal and external purposes.
+本书指导您生成源目录，以及如何构建目标和包。随着学习的深入，将了解如何编译和链接可执行文件和库，以及如何优化各种步骤以获得最佳结果。还将了解如何向项目添加外部依赖项:第三方库、测试框架、程序分析工具和文档生成器。最后，将了解如何为内部和外部目的导出、安装和打包解决方案。
 
-After completing this book, you'll be able to use CMake confidently on a professional level.
+阅读完本书后，相信您能够在非常专业地使用CMake。
 
 \hspace*{\fill} \\ %插入空行
 \textbf{适宜读者}
 
-这本书是为具有C/ C++编程知识的工程师和软件开发人员所著，从而可以学习CMake，以了解自动化构建小型和大型软件的解决方案。若刚刚开始使用CMake，并长期使用GNU Make，或者只是想复习一下最新的最佳实践，那么本书非常适合您。
+这本书是为具有C/C++编程知识的工程师和软件开发人员所著，从而可以学习CMake，以了解自动化构建小型和大型软件的解决方案。若刚刚开始使用CMake，并长期使用GNU Make，或者只是想复习一下最新的最佳实践，那么本书非常适合您。
 
 \hspace*{\fill} \\ %插入空行
 \textbf{本书内容}
 
-Chapter 1, First Steps with CMake, covers how to install and use CMake's command line, along with what files make up the project.
+\textit{第1章，初识CMake}，介绍了如何安装和使用 CMake命令行，以及如何创建相应的项目文件。
 
-Chapter 2, The CMake Language, provides key code information: comments, command invocations and arguments, variables, lists, and control structures.
+\textit{第2章，CMake语法}，介绍了关键的代码信息:注释、命令调用和参数、变量、列表和控制结构。
 
-Chapter 3, Setting Up Your First CMake Project, introduces the basic configuration of a project, the required CMake version, project metadata, and file structure, as well as the toolchain setup.
+\textit{第3章，CMake项目}，介绍了项目的基本配置、所需的CMake版本、项目元数据、文件结构，以及如何设置工具链。
 
-Chapter 4, Working with Targets, introduces the logical build targets that produce artifacts for executables and libraries.
+\textit{第4章，使用目标}，为可执行程序和库生成构建目标。
 
-Chapter 5, Compiling C++ Sources with CMake, explains how the details of compilation process works and how it can be controlled in a CMake project.
+\textit{第5章，CMake编译C++}，了解编译过程的工作方式，以及如何在CMake项目中进行控制。
 
-Chapter 6, Linking with CMake, provides general information on linking, static, and shared libraries. This chapter also explains how to structure a project so that it can be tested.
+\textit{第6章，使用CMake进行链接}，介绍了关于链接、静态和共享库的信息。解释了如何构建一个项目，以便对其进行测试。
 
-Chapter 7, Managing Dependencies with CMake, explains the dependency management methods available in modern CMake.
+\textit{第7章，管理依赖关系}，了解现代CMake中管理依赖关系的方法。
 
-Chapter 8, Testing Frameworks, describes how to add the most popular testing frameworks to your project, as well as how to use the CTest utility available in the CMake toolset.
+\textit{第8章，测试框架}，如何将测试框架添加到项目中，以及如何使用CMake提供的CTest。
 
-Chapter 9, Program Analysis Tools, covers how to perform automatic formatting, as well as static and dynamic analyses, in your project.
+\textit{第9章，分析工具}，介绍了如何在项目中自动格式化，以及如何进行静态和动态分析。
 
-Chapter 10, Generating Documentation, explains how to use Doxygen to generate manuals for users straight from the C++ source code.
+\textit{第10章，生成文档}，如何使用Doxygen根据C++源代码生成手册。
 
-Chapter 11, Installing and Packaging, shows how to prepare your project to be used in other projects or installed on the system. We'll also see an explanation of the CPack utility.
+\textit{第11章，安装和打包}，展示了如何准备将项目用于其他项目或安装到系统上。还将了解对CPack的使用。
 
-Chapter 12, Creating Your Professional Project, sets out how to put together all the knowledge you have acquired hitherto in to a fully formed project.
+\textit{第12章，创建完整项目}，阐述了如何将了解的所有知识整合到一个完整的项目中。
 
-Appendix: Miscellaneous Commands, provides a quick reference of the most popular commands: string(), list(), file(), and math().
+\textit{附录: 其它命令}，提供了最流行指令的快速引用:string()、list ()、file()和math()。
 
 \hspace*{\fill} \\ %插入空行
 \textbf{编译环境}
 
-Basic familiarity with C++ and Unix-like systems is assumed throughout the book. Although this isn't a strict requirement, it will prove helpful in fully understanding the examples given in this book.
+阅读本书的读者需要对C++和类Unix系统有基本的了解。虽然这不是一个严格的要求，但有了这些基础，能够更加的理解本书给出的例子。
 
-This book targets CMake 3.20, but most of the techniques described should work from CMake 3.15 (features that were added after are usually highlighted). All examples have been tested on Debian with the following packages installed:
+本书的目标是CMake 3.20，但是描述的大多数技术应该从CMake 3.15后出现的(后面添加的特性通常会突出显示)。所有示例都在Debian上进行了测试，并安装了以下软件包:
 
-clang-format clang-tidy cppcheck doxygen g++ gawk git graphviz lcov libpqxx-dev libprotobuf-dev make pkg-config protobuf-compiler tree valgrind vim wget
+\texttt{clang-format clang-tidy cppcheck doxygen g++ gawk git graphviz lcov libpqxx-dev libprotobuf-dev make pkg-config protobuf-compiler tree valgrind vim wget}
 
-To experience the same environment, it is recommended to use the Docker images, as explained in Chapter 1.
+这里，建议使用Docker映像。
 
 \textbf{如果您正在使用这本书的数字版本，建议您自己输入代码或从本书的GitHub存储库访问代码(下一节有链接)。这样做将帮助您避免与复制和粘贴代码相关的错误。}
 
 \hspace*{\fill} \\ %插入空行
 \textbf{下载示例}
 
-You can download the example code files for this book from GitHub at \url{https://github.com/PacktPublishing/Modern-CMake-for-Cpp}. If there's an update to the code, it will be updated in the GitHub repository.
+可以从GitHub上下载这本书的示例代码文件 \url{https://github.com/PacktPublishing/Modern-CMake-for-Cpp}。若代码有更新，会在GitHub存储库中更新。
 
-We also have other code bundles from our rich catalog of books and videos available at \url{https://github.com/PacktPublishing/}. Check them out!
+还可以从丰富的书籍和视频目录中获得其他代码包\url{https://github.com/PacktPublishing/}。
 
 
 \hspace*{\fill} \\ %插入空行
 \textbf{下载彩图}
 
-We also provide a PDF file that has color images of the screenshots and diagrams used in this book. You can download it here: \url{https://static.packt-cdn.com/downloads/9781801070058_ColorImages.pdf}.
+我们还提供了一个PDF文件，其中有本书中使用的屏幕截图和图表的彩图。下载地址: \url{https://static.packt-cdn.com/downloads/9781801070058_ColorImages.pdf}.
 
 
 
