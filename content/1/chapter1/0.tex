@@ -1,31 +1,31 @@
-There is something magical about turning source code into a working application. It is not only the effect itself, that is, a working mechanism that we devise and bring to life, but the very process or act of exercising the idea into existence.
+将源代码转换为可工作应用的过程会比较神奇。不仅是效果本身(即设计并赋予生命的工作机制)，而且是将理念付诸于过程的行为本身。
 
-As programmers, we work in the following loop: design, code, and test. We invent changes, we phrase them in a language that the compiler understands, and we check whether they work as intended. To create a proper, high-quality application from our source code, we need to meticulously execute repetitive, error-prone tasks: invoking the correct commands, checking the syntax, linking binary files, running tests, reporting issues, and more.
+作为开发者的工作流程基本是:设计、编码和测试。我们使用编译器能理解的语言来描述它们，并检查写出来的东西是否如预期的那样工作。为了从源代码中创建高质量的应用，需要耐心地重复流程，并检查容易出错的任务:使用正确的命令、检查语法、链接二进制文件、运行测试、产生报告问题等。
 
-It takes great effort to remember each step every single time. Instead, we want to stay focused on the actual coding and delegate everything else to automated tooling. Ideally, this process would start with a single button, right after we have changed our code. It would be smart, fast, extensible, and work in the same way across different OSs and environments. It would be supported by multiple Integrated Development Environments (IDEs) but also by Continuous Integration (CI) pipelines that test our software after a change is submitted to a shared repository.
+每一次的进步都不容易，但我们更想将重点放在编码上，并将其他所有事情委托给自动化工具。理想情况下，这个过程应该从一个简单地按钮开始。在我们更改了代码之后，工具将以智能的、快速的、可扩展的方式，在不同的操作系统和环境中以相同的方式工作。它将支持多个集成开发环境(IDE)和持续集成(CI)流水，这些流水在更改提交到代码库后，就能对我们的代码进行测试。
 
-CMake is the answer to many such needs; however, it requires a bit of work to configure and use correctly. This is not because CMake is unnecessarily complex but because the subject that we're dealing with here is. Don't worry. We'll undergo this whole learning process very methodically; before you know it, you will have become a building guru.
+CMake是许多此类需求一种答案，并且要正确配置和使用需要一定的工作量。这并不是因为CMake复杂，而是因为我们的需求很复杂。请放心，在这里我们会有条不紊地进行学习。在完全了解这个流程后，你将成为一个软件构建大师。
 
-I know you're eager to rush off to start writing your own CMake projects, and I applaud your attitude. Since your projects will be primarily for users (yourself included), it's important for you to understand that perspective as well.
+可能有的读者会急于开始编写自己的CMake项目，我对您的态度表示赞赏。由于您的项目将主要面向用户(包括您自己)，因此理解如何使用也很重要。
 
-So, let's start with just that: becoming a CMake power user. We'll go through a few basics: what this tool is, how it works in principle, and how to install it. Then, we'll do a deep dive on the command line and modes of operation. Finally, we'll wrap up with the purposes of different files in a project, and we'll explain how to use CMake without creating a project at all.
+那么让我们从成为CMake的用户开始。将介绍一些基础知识:这个工具是什么，如何工作，如何安装。然后，将深入研究命令行和操作模式。最后，将总结项目中不同文件的用途，并了解如何在不创建项目的情况下使用CMake。
 
-In this chapter, we're going to cover the following main topics:
+本章中，我们将讨论以下主题:
 
 \begin{itemize}
 \item 
-Understanding the basics
+基础知识
 
 \item 
-Installing CMake on different platforms
+不同平台的安装
 
 \item 
-Mastering the command line
+使用命令行
 
 \item 
-Navigating the project files
+项目文件
 
 \item 
-Discovering scripts and modules
+脚本和模块
 \end{itemize}
 
