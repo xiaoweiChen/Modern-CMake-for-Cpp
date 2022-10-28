@@ -3,7 +3,7 @@
 CMake uses quite a few files to manage its projects. Let's attempt to get a general idea of what each file does before tinkering with the contents. It's important to realize, that even though a file contains CMake language commands, it's not certain that it's meant for developers to edit. Some files are generated to be used by subsequent tools, and any changes made to those files will be written over at some stage. Other files are meant for advanced users to adjust your project to their individual needs. Finally, there are some temporary files that provide valuable information in specific contexts. This section will also specify which of them should be in the ignore file of your version control system.
 
 
-\subsubsubsection{1.5.1\hspace{0.2cm}The source tree}
+\subsubsubsection{1.5.1\hspace{0.2cm}源码树}
 
 This is the directory where your project will live (it is also called the project root). It contains all of the C++ sources and CMake project files.
 
@@ -23,7 +23,7 @@ The path to this directory is given by the user with a -S argument of the cmake 
 Avoid hardcoding any absolute paths to the source tree in your CMake code – users of your software can store the project under a different path.
 \end{itemize}
 
-\subsubsubsection{1.5.2\hspace{0.2cm}The build tree}
+\subsubsubsection{1.5.2\hspace{0.2cm}构建树}
 
 CMake uses this directory to store everything that gets generated during the build: the artifacts of the project, the transient configuration, the cache, the build logs, and anything that your native build tool will create. Alternative names for this directory include build root and binary tree.
 
@@ -47,7 +47,7 @@ It's recommended that your projects include an installation stage that allows yo
 \end{itemize}
 
 
-\subsubsubsection{1.5.3\hspace{0.2cm}Listfiles}
+\subsubsubsection{1.5.3\hspace{0.2cm}文件列表}
 
 Files that contain the CMake language are called listfiles and can be included one in another, by calling include() and find\_package(), or indirectly with add\_subdirectory():
 
@@ -145,7 +145,7 @@ You can reset the project to its default configuration by deleting this file; it
 Cache variables can be read and written from the listfiles. Sometimes, variable reference evaluation is a bit complicated; however, we will cover that in more detail in Chapter 2, The CMake Language.
 \end{itemize}
 
-\subsubsubsection{1.5.6\hspace{0.2cm}The Config-files for packages}
+\subsubsubsection{1.5.6\hspace{0.2cm}包的config文件}
 
 A big part of the CMake ecosystem includes the external packages that projects can depend on. They allow developers to use libraries and tools in a seamless, cross-platform way. Packages that support CMake should provide a configuration file so that CMake understands how to use them.
 
@@ -172,12 +172,12 @@ CMake provides a package registry to store packages system-wide and for each use
 \end{itemize}
 
 
-\subsubsubsection{1.5.7\hspace{0.2cm}The cmake\_install.cmake, CTestTestfile.cmake, and CPackConfig.cmake files}
+\subsubsubsection{1.5.7\hspace{0.2cm}cmake\_install.cmake，CTestTestfile.cmake和CPackConfig.cmake}
 
 These files are generated in the build tree by the cmake executable in the generation stage. As such, they shouldn't be edited manually. CMake uses them as a configuration for the cmake install action, CTest, and CPack. If you're implementing an in-source build (not recommended), it's probably a good idea to add them to the VCS ignore file.
 
 
-\subsubsubsection{1.5.8\hspace{0.2cm}CMakePresets.json and CMakeUserPresets.json}
+\subsubsubsection{1.5.8\hspace{0.2cm}CMakePresets.json和CMakeUserPresets.json}
 
 The configuration of the projects can become a relatively busy task when we need to be specific about things such as cache variables, chosen generators, the path of the build tree, and more – especially when we have more than one way of building our project. This is where the presets come in.
 
@@ -343,7 +343,7 @@ For example, for /home/rafal/project, it would be project.
 \end{itemize}
 
 
-\subsubsubsection{1.5.9\hspace{0.2cm}Ignoring files in Git}
+\subsubsubsection{1.5.9\hspace{0.2cm}设置Git中的忽略文件}
 
 There are many VCSs; one of the most popular types out there is Git. Whenever we start a new project, it is good to make sure that we only check in to the repository files that need to be there. Project hygiene is easier to maintain if we just add generated, user, or temporary files to the .gitignore file. In this way, Git knows to automatically skip them when building new commits. Here's the file that I use in my projects:
 

@@ -1,37 +1,37 @@
 
-CMake is a cross-platform, open-source software written in C++. That means you can, of course, compile it yourself; however, the most likely scenario is that you won't have to. This is because precompiled binaries are available for you to download from the official web page at \url{https://cmake.org/download/}.
+CMake是用C++编写的跨平台开源软件，所以可以自行编译它，但不推荐这样做。可以从官方网页下载预编译的二进制文件，网址是\url{https://cmake.org/download/}。
 
-Unix-based systems provide ready-to-install packages directly from the command line..
+基于Unix的系统可以直接使用命令行进行安装。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-Remember that CMake doesn't come with compilers. If your system doesn't have them installed yet, you'll need to provide them before using CMake. Make sure to add the paths to their executables to the PATH environment variable so that CMake can find them.
+记住，CMake并不附带编译器。如果系统中还没有安装编译器，那么需要在使用CMake之前安装或提供它们的路径。确保将可执行文件的路径添加到PATH环境变量中，以便CMake能够找到它们。
 
-To avoid solving tooling and dependency problems while learning from this book, I recommend choosing the first installation method: Docker.
+为了避免在阅读本书时遇到的工具和依赖问题，建议选择第一种安装方法:Docker。
 \end{tcolorbox}
 
-Let's go through different environments on which CMake can be used.
+让我们来了解一下可以使用CMake的环境。
 
 \subsubsubsection{1.3.1\hspace{0.2cm}Docker}
 
-Docker (\url{https://www.docker.com/}) is a cross-platform tool that provides OS-level virtualization, allowing applications to be shipped in complete packages, called containers. These are self-sufficient bundles that contain a piece of software with all of its libraries, dependencies, and tools required to run it. Docker executes its containers in lightweight environments that are isolated one from another.
+Docker (\url{https://www.docker.com/})是一个跨平台工具，提供操作系统级虚拟化，允许应用程序以完整(称为容器)的形式发布。这些是自给自足的捆绑包，包含软件及其运行所需的所有库、依赖项和工具。Docker在彼此隔离的轻量级环境中运行容器。
 
-This concept makes it extremely convenient to share whole toolchains, which are necessary for a given process, configured and ready to go. I can't stress enough how easy things become when you don't need to worry about minuscule environmental differences. 
+这个概念使得共享工具链非常方便，这些工具链是必需的，并且是配置好的。
 
-The Docker platform has a public repository of container images, \url{https://registry.hub.docker.com/}, that provides millions of ready-to-use images.
+Docker平台有一个镜像的公共存储库\url{https://registry.hub.docker.com/}，提供了数百万个现成的镜像。
 
-For your convenience, I have published two Docker repositories:
+方便起见，我发布了两个Docker镜像:
 
 \begin{itemize}
 \item 
-swidzinski/cmake:toolchain: This contains the curated tools and dependencies that are necessary to build with CMake.
+swidzinski/cmake:toolchain: 包含了使用CMake构建所必需的策划工具和依赖项。
 
 \item 
-swidzinski/cmake:examples: This contains the preceding toolchain and all of the projects and examples from this book.
+swidzinski/cmake:examples: 包含了前面的工具链，以及本书中的所有项目和示例。
 \end{itemize}
 
-The first option is for readers who simply want a clean-slate image ready to build their own projects, and the second option is for hands-on practice with examples as we go through the chapters.
+第一个选项是为那些只想要一个干净镜像的读者；第二个选项可以在阅读本章时，使用示例进行实践。
 
-You can install Docker by following the instructions from its official documentation (please refer to \url{docs.docker.com/get-docker}). Then, execute the following commands in your Terminal to download the image and start the container:
+可以按照Docker官方文档的说明安装Docker(请参考\url{docs.docker.com/get-docker})。然后，在终端中执行以下命令下载镜像并启动容器:
 
 \begin{tcblisting}{commandshell={}}
 $ docker pull swidzinski/cmake:examples
@@ -39,37 +39,37 @@ $ docker run -it swidzinski/cmake:examples
 root@b55e271a85b2:root@b55e271a85b2:#
 \end{tcblisting}
 
-Note that all of the examples are available in the directories matching this format: \texttt{/root/examples/examples/chapter-<N>/<M>-<title>}.
+注意，所有的例子都在这样格式的目录中:\texttt{/root/examples/examples/chapter-<n>/<m>-<title>}。
 
 \subsubsubsection{1.3.2\hspace{0.2cm}Windows}
 
-Installing in Windows is straightforward – simply download the version for 32 or 64 bits. You can pick a portable ZIP or MSI package for Windows Installer.
+Windows上安装很简单——只需下载32位或64位的版本，可以为Windows安装程序选择便携ZIP或MSI包。
 
-With the ZIP package, you will have to add the CMake bin directory to the PATH environment variable so that you can use it in any directory without any such errors:
+对于ZIP包，必须将CMake的bin目录添加到PATH环境变量中，这样就可以在目录中使用CMake:
 
 \begin{tcblisting}{commandshell={}}
 'cmake' is not recognized as an internal or external command,
 operable program or batch file.
 \end{tcblisting}
 
-If you prefer convenience, simply use the MSI installer:
+如果更喜欢方便的方式，那就使用MSI安装程序:
 
 \begin{center}
-\includegraphics[width=0.9\textwidth]{content/1/chapter1/images/2.jpg}\\
-Figure 1.2 – The installation wizard can set up the PATH environment variable for you
+\includegraphics[width=0.6\textwidth]{content/1/chapter1/images/2.jpg}\\
+图1.2 安装向导可以为设置PATH环境变量
 \end{center}
 
-As I mentioned earlier, this is open-source software, so it is possible to build CMake yourself. However, first, you will have to get a binary copy of CMake on your system. So, why use other build tools if you have your own, right? This scenario is used by CMake contributors to generate newer versions.
+正如我前面提到的，这是一个开源软件，所以可以自己构建CMake。但首先，必须在系统上获得CMake的二进制副本。那么，如果有自己的构建工具，为什么还要使用其他构建工具呢?CMake的代码贡献者可以使用此方式生成新版本的CMake。
 
-On Windows, we also require a build tool that can finalize the build process started by  CMake. A popular choice here is Visual Studio, for which the Community Edition is available for free from Microsoft's website: \url{https://visualstudio.microsoft.com/downloads/}.
+在Windows上，还需要一个构建工具来完成由CMake启动的构建过程。这里的选择是Visual Studio，社区版可以从微软的网站上免费获得:\url{https://visualstudio.microsoft.com/downloads/}。
 
 \subsubsubsection{1.3.3\hspace{0.2cm}Linux}
 
-Getting CMake on Linux is the same as getting any other popular package. Simply use your package manager from the command line. Packages are usually kept up to date with fairly recent versions. However, if you are after the latest version, you can download the installation script from the website:
+在Linux上获得CMake与获得其他包一样，只需在终端使用包管理器即可。软件包的版本不保证是最新，若想要最新版本，可以下载安装脚本:
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{The script for Linux x86\_64}
+\textbf{Linux x86\_64的安装脚本}
 
 \begin{tcblisting}{commandshell={}}
 $ wget -O - https://github.com/Kitware/CMake/releases/download/
@@ -78,7 +78,7 @@ v3.20.0/cmake-3.20.0-linux-x86_64.sh | bash
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{The script for Linux aarch64}
+\textbf{Linux aarch64的安装脚本}
 
 \begin{tcblisting}{commandshell={}}
 $ wget -O - https://github.com/Kitware/CMake/releases/download/
@@ -87,7 +87,7 @@ v3.20.0/cmake-3.20.0-Linux-aarch64.sh | bash
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{The package for Debian/Ubuntu}
+\textbf{Debian/Ubuntu的安装包}
 
 \begin{tcblisting}{commandshell={}}
 $ sudo apt-get install cmake
@@ -95,7 +95,7 @@ $ sudo apt-get install cmake
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{The package for Red Hat}
+\textbf{Red Hat的安装包}
 
 \begin{tcblisting}{commandshell={}}
 $ yum install cmake
@@ -103,21 +103,21 @@ $ yum install cmake
 
 \subsubsubsection{1.3.4\hspace{0.2cm}macOS}
 
-This platform is also strongly supported by CMake developers. The most popular choice of installation is through MacPorts:
+这个平台也得到了CMake开发人员的大力支持。可以通过MacPorts安装:
 
 \begin{tcblisting}{commandshell={}}
 $ sudo port install cmake
 \end{tcblisting}
 
-Alternatively, you can use Homebrew:
+或者，使用Homebrew:
 
 \begin{tcblisting}{commandshell={}}
 $ brew install cmake
 \end{tcblisting}
 
-\subsubsubsection{1.3.5\hspace{0.2cm}Building from the source}
+\subsubsubsection{1.3.5\hspace{0.2cm}使用源码构建}
 
-If all else fails – or if you're on a special platform – download the source from the official website and compile it yourself:
+若以上方法都失败了——或者是在一个特殊的平台上——可以从官方网站下载源代码，自行编译:
 
 \begin{tcblisting}{commandshell={}}
 $ wget https://github.com/Kitware/CMake/releases/download/
@@ -129,9 +129,9 @@ $ make
 $ make install
 \end{tcblisting}
 
-Building from source is relatively slow and requires more steps. However, by doing it this way, you're guaranteed to use the latest version of CMake. This is especially apparent when compared to packages that are available for Linux: the older the version of the system, the fewer updates it gets.
+从源码构建相对较慢，需要更多步骤。但通过这种方式，可以保证使用最新版本的CMake。与Linux可用的包相比，这一点尤其明显:系统版本越老，得到的更新就越少。
 
-Now that we have our CMake readily installed, let's learn how to use it!
+我们已经安装了CMake，来了解如何使用它吧!
 
 
 

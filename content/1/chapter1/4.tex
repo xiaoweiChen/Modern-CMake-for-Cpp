@@ -1,86 +1,86 @@
 
-The majority of this book will teach you how to prepare CMake projects for your users. To cater to their needs, we need to thoroughly understand how users interact with CMake in different scenarios. This will allow you to test your project files and ensure they're working correctly.
+本书的大部分内容将展示如何为用户准备CMake项目。为了满足需求，我要彻底了解用户在不同场景下如何与CMake交互。将允许测试项目文件，并确保它们工作正常。
 
-CMake is a family of tools and consists of five executables:
+CMake是一个工具集，由五个可执行程序组成:
 
 \begin{itemize}
 \item 
-cmake: This is the main executable that configures, generates, and builds projects.
+cmake: 配置、生成和构建项目的主要可执行文件。
 
 \item 
-ctest: This is the test driver program used to run and report test results.
+ctest: 用于运行和报告测试结果的测试驱动程序。
 
 \item 
-cpack: This is the packaging program used to generate installers and source packages.
+cpack: 用来生成安装程序和源包的打包程序。
 
 \item 
-cmake-gui: This is the graphical wrapper around cmake.
+cmake-gui: cmake的图形界面。
 
 \item 
-ccmake: This is the console-based GUI wrapper around cmake.
+ccmake: cmake基于控制台的图形界面。
 \end{itemize}
 
 \subsubsubsection{1.4.1\hspace{0.2cm}CMake}
 
-This binary provides a few modes of operation (also called actions):
+提供了一些操作模式(也称为动作):
 
 \begin{itemize}
 \item 
-Generating a project buildsystem
+生成项目构建系统
 
 \item 
-Building a project
+构建项目
 
 \item 
-Installing a project
+安装项目
 
 \item 
-Running a script
+运行脚本
 
 \item 
-Running a command-line tool
+运行命令行工具
 
 \item 
-Getting help
+获得帮助
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Generating a project buildsystem}
+\textbf{生成项目构建系统}
 
-This is the first step required to build our project. Here are a few options in terms of how the CMake build action can be executed:
-
-\textbf{The syntax of the generation mode}
+这是构建项目的第一步。这里有一些关于如何执行CMake构建操作的选项:
 
 \begin{tcblisting}{commandshell={}}
+# 生成模式的语法
+
 cmake [<options>] -S <path-to-source> -B <path-to-build>
 cmake [<options>] <path-to-source>
 cmake [<options>] <path-to-existing-build>
 \end{tcblisting}
 
-We'll discuss these options in the upcoming sections. Right now, let's focus on choosing the right form of command. One important feature of CMake is the support for out-ofsource builds or the production of artifacts in a separate directory. In contrast to tools such as GNU Make, this ensures the source directory is kept clean from any build-related files and avoids polluting our Version Control Systems (VCS) with unnecessary files or ignore directives. This is why it's best to use the first form of command of generation mode: specify the path to source tree with -S option followed by path to the directory of the produced buildsystem specified with -B:
+我们将在接下来的部分中讨论这些选项。现在，让我们集中精力选择正确的命令形式。CMake的一个重要特性是支持源外构建或在单独目录中生成工件。与GNU Make等工具相比，这确保源目录与构建相关的文件保持分离，并避免不必要的文件污染版本控制系统(VCS)或忽略指令。这就是为什么最好使用生成模式的第一种形式的命令:用-S选项指定源树的路径，然后用-B选项指定生成的构建系统的目录:
 
 \begin{tcblisting}{commandshell={}}
 cmake -S ./project -B ./build
 \end{tcblisting}
 
-The preceding command will generate a buildsystem in the ./build directory (or create it if it's missing) from the source in the ./project directory.
+上面的命令将从./project目录中的源代码中在./build目录中生成一个构建系统(如果没有就创建)。
 
-We can skip one of the arguments and cmake will "guess" that we intended to use the current directory for it. However, watch out. Skipping both will get you an in-source build, and that is messy.
+我们可以跳过其中一个参数，cmake将“猜测”我们打算使用当前目录。跳过这两者将形成内源代码构建，这很麻烦。
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Not Recommended]
-Do not use the second or third form of the cmake <directory> command. This is because it can produce a messy in-source build (we'll learn how to block that in Chapter 3, Setting Up Your First CMake Project). As hinted in the syntax snippet, the same command behaves differently if a previous build already exists in <directory>: it will use the cached path to the sources and rebuild from there. Since we often invoke the same commands from the Terminal command history, we might get into trouble here: before using this form, always check whether your shell is currently working in the right directory.
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=不推荐]
+不要使用cmake <directory>命令的第二种或第三种形式，因为它会产生一个混乱的内源代码构建(我们将在第3章，设置你的第一个CMake项目中学习如何阻止它)。正如语法片段中所暗示的，若<directory>中已经存在先前的构建，则相同的命令的行为不同:它将使用到源的缓存路径并从那里重新构建。由于我们经常使用终端命令历史中运行相同的命令，因此在这里可能会遇到麻烦:在使用此方式之前，请检查shell当前是否在正确的目录下。
 \end{tcolorbox}
 
-\textbf{Examples}
+\textbf{示例}
 
-Build in the current directory, but take the source from one directory up (note that -S is optional):
+在当前目录中构建，但从一个目录中获取源代码(-S是可选的):
 
 \begin{tcblisting}{commandshell={}}
 cmake -S ..
 \end{tcblisting}
 
-Build in the ./build directory, and use a source from the current directory:
+在./ Build目录中编译，并使用当前目录中的源代码:
 
 \begin{tcblisting}{commandshell={}}
 cmake -B build
@@ -88,17 +88,17 @@ cmake -B build
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Options for generators}
+\textbf{生成器的选项}
 
-As discussed earlier, you can specify a few options during the generation stage. Selecting and configuring a generator decides which build tool from our system will be used for building, what build files will look like, and what the structure of the build tree will be.
+如前所述，可以在生成阶段指定一些选项。选择和配置生成器决定了将使用哪个构建工具进行构建，构建文件是什么样子的，以及构建树的结构。
  
-So, should you care? Luckily, the answer is often "no." CMake does support multiple native buildsystems on many platforms; however, unless you have a few of them installed at the same time, CMake will correctly select it for you. This can be overridden by the CMAKE\_GENERATOR environment variable or by specifying the generator directly on the command line, such as in the following:
+所以，你应该在意吗?答案通常是“不”。CMake确实支持许多平台上的多个原生构建系统，除非你同时安装了几个，否则CMake会正确地选择。选项可以被CMAKE\_GENERATOR环境变量覆盖，或者直接在命令行上指定生成器，如下所示:
 
 \begin{tcblisting}{commandshell={}}
 cmake -G <generator-name> <path-to-source>
 \end{tcblisting}
 
-Some generators (such as Visual Studio) support a more in-depth specification of a toolset (compiler) and platform (compiler or SDK). Additionally, these have respective environment variables that override the default values: CMAKE\_GENERATOR\_TOOLSET and CMAKE\_GENERATOR\_PLATFORM. We can specify them directly, as follows:
+一些生成器(如Visual Studio)支持更深入的工具集(编译器)和平台(编译器或SDK)规范。此外，它们各自有覆盖默认值的环境变量:CMAKE\_GENERATOR\_TOOLSET和CMAKE\_GENERATOR\_PLATFORM。可以直接指定:
 
 \begin{tcblisting}{commandshell={}}
 cmake -G <generator-name>
@@ -106,19 +106,19 @@ cmake -G <generator-name>
       <path-to-source>
 \end{tcblisting}
 
-Windows users usually want to generate a buildsystem for their favorite IDE. On Linux and macOS, it's very common to use Unix Makefiles or Ninja generators.
+Windows用户通常希望为他们喜欢的IDE生成一个构建系统。在Linux和macOS上，使用Unix Makefiles或Ninja生成器比较常见。
 
-To check which generators are available on your system, use the following command:
+要检查您的系统上有哪些生成器可用，使用以下命令:
 
 \begin{tcblisting}{commandshell={}}
 cmake --help
 \end{tcblisting}
 
-At the end of the help printout, you should observe a full list like this one:
-
-\textbf{There are plenty of generators available on Windows 10}
+帮助信息输出的最后，应该可以看到一个完整的列表:
 
 \begin{tcblisting}{commandshell={}}
+# Windows 10上有很多可用的生成器
+
 The following generators are available on this platform:
 Visual Studio 16 2019
 Visual Studio 15 2017 [arch]
@@ -127,6 +127,8 @@ Visual Studio 12 2013 [arch]
 Visual Studio 11 2012 [arch]
 Visual Studio 10 2010 [arch]
 Visual Studio 9 2008 [arch]
+\end{tcblisting}
+\begin{tcblisting}{commandshell={}}
 Borland Makefiles
 NMake Makefiles
 NMake Makefiles JOM
@@ -162,93 +164,93 @@ Sublime Text 2 - Unix Makefiles
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Options for caching}
+\textbf{缓存选项}
 
-CMake queries the system for all kinds of information during the configuration stage. This information is cached in CMakeCache.txt in the build tree directory. There are a few options that allow you to manage that file more conveniently.
+CMake在配置阶段向系统查询各种信息，这些信息缓存在构建树目录中的CMakeCache.txt中。
 
-The first thing that is at our disposal is the ability to prepopulate cached information:
+我们可以想到的第一件事是预填充缓存信息:
 
 \begin{tcblisting}{commandshell={}}
 cmake -C <initial-cache-script> <path-to-source>
 \end{tcblisting}
 
-We can provide a path to the CMake script, which (only) contains a list of set() commands to specify variables that will be used to initialize an empty build tree.
+可以提供到CMake脚本的路径，该脚本(仅)包含set()指令的列表，以指定将用于初始化空构建树的变量。
 
-The initialization and modification of existing cache variables can be done in another way (for instance, when creating a file is a bit much to only set a few variables). You can simply set them in a command line, as follows:
+现有缓存变量的初始化和修改可以用另一种方式完成(例如，创建文件时只设置几个变量有点多)。可以简单地在命令行中设置它们，如下所示:
 
 \begin{tcblisting}{commandshell={}}
 cmake -D <var>[:<type>]=<value> <path-to-source>
 \end{tcblisting}
 
-The :<type> section is optional (it is used by GUIs); you can use BOOL, FILEPATH, PATH, STRING, or INTERNAL. If you omit the type, it will be set to the type of an already existing variable; otherwise, it will be set to UNINITIALIZED.
+:<type>部分是可选的(用在GUI端),可以使用BOOL、FILEPATH、PATH、STRING或INTERNAL。若省略了类型，将设置为一个已经存在的变量的类型;否则，将设置为UNINITIALIZED。
 
-One particularly important variable contains the type of the build: for example, debug and release. Many CMake projects will read it on numerous occasions to decide things such as the verbosity of messages, the presence of debugging information, and the level of optimization for created artifacts.
+一个特别重要的变量包含构建的类型:例如，Debug和Release。许多CMake项目将在许多场景下进行读取，以决定符号信息的冗长程度、调试信息的存在程度以及所创建工件的优化级别。
 
-For single-configuration generators (such as Make and Ninja), you'll need to specify it during the configuration phase with the CMAKE\_BUILD\_TYPE variable and generate a separate build tree for each type of config: Debug, Release, MinSizeRel, or RelWithDebInfo.
+对于单配置生成器(如Make和Ninja)，需要在配置阶段使用CMAKE\_BUILD\_TYPE变量指定构建类型，并为每种类型的配置生成单独的构建树:Debug、Release、MinSizeRel或RelWithDebInfo。
 
-Here's an example:
+这有一个例子:
 
 \begin{tcblisting}{commandshell={}}
 cmake -S . -B build -D CMAKE_BUILD_TYPE=Release
 \end{tcblisting}
 
-Note that multi-configuration generators are configured during the build stage.
+注意，多配置生成器是在构建阶段配置的。
 
-We can list cache variables with the -L option:
+可以用-L选项列出缓存变量:
 
 \begin{tcblisting}{commandshell={}}
 cmake -L[A][H] <path-to-source>
 \end{tcblisting}
 
-Such a list will contain cache variables that aren't marked as ADVANCED. We can change that by adding the A modifier. To print help messages with variables - add the H modifier.
+这样的列表将包含未标记为ADVANCED的缓存变量，可以通过参数A进行改变。要打印带有变量的帮助消息-需要添加H参数。
 
-Surprisingly, custom variables that are added manually with the -D option won't be visible unless you specify one of the supported types.
+令人惊讶的是，使用-D选项手动添加的自定义变量将不可见，除非指定受支持的类型之一。
 
-The removal of one or more variables can be done with the following option:
+删除一个或多个变量可以通过以下选项完成:
 
 \begin{tcblisting}{commandshell={}}
 cmake -U <globbing_expr> <path-to-source>
 \end{tcblisting}
 
-Here, the globbing expression supports the * wildcard and any ? character symbols. Be careful when using these, as you might break things.
+这里，通配符表达式支持*通配符和任何?字符，使用时需要倍加小心。
 
-Both of the -U and -D options can be repeated multiple times.
+-U和-D选项都可以重复多次使用。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Options for debugging and tracing}
+\textbf{用于调试和跟踪的选项}
 
-CMake can be run with a multitude of options that allow you to peek under the hood. To get general information about variables, commands, macros, and other settings, run the following:
+CMake可以通过许多选项来运行，这些选项可以让您了解内部发生了什么。要获取关于变量、命令、宏和其他设置的一般信息，运行以下命令:
 
 \begin{tcblisting}{commandshell={}}
 cmake --system-information [file]
 \end{tcblisting}
 
-The optional file argument allows you to store the output in a file. Running it in the build tree directory will print additional information about the cache variables and build messages from the log files.
+可选的file参数允许将输出存储在文件中。在构建树目录中运行它，将从日志文件中打印有关缓存变量和构建消息的附加信息。
 
-In our projects, we'll be using message() commands to report details of the build process. CMake filters the log output of these based on the current log level (by default, this is STATUS). The following line specifies the log level that we're interested in:
+我们的项目中，将使用message()报告构建过程的细节，CMake根据当前日志级别(默认情况下是STATUS)过滤这些日志的输出。下面的命令行指定了我们感兴趣的日志级别:
 
 \begin{tcblisting}{commandshell={}}
 cmake --log-level=<level>
 \end{tcblisting}
 
-Here, level can be any of the following: ERROR, WARNING, NOTICE, STATUS, VERBOSE, DEBUG, or TRACE. You can specify this setting permanently in the CMAKE\_MESSAGE\_LOG\_LEVEL cache variable.
+这里，级别可以是其中一个:ERROR、WARNING、NOTICE、STATUS、VERBOSE、DEBUG或TRACE。可以在CMAKE\_MESSAGE\_LOG\_LEVEL缓存变量中永久地保留这个设置。
 
-Another interesting option allows you to display log context with each message() call. To debug very complex projects, the CMAKE\_MESSAGE\_CONTEXT variable can be used like a stack. Whenever your code enters a specific context, you can add a descriptive name to the stack and remove it when leaving. By doing this, our messages will be decorated with the current CMAKE\_MESSAGE\_CONTEXT variable like so:
+另一个有趣的选项允许显示每个message()的日志上下文。要调试非常复杂的项目，可以像使用堆栈一样使用CMAKE\_MESSAGE\_CONTEXT变量。当代码进入特定上下文时，可以向堆栈添加描述性名称，并在离开时删除它。通过这样做，我们的消息将用当前的CMAKE\_MESSAGE\_CONTEXT变量装饰，就像这样:
 
 \begin{tcblisting}{commandshell={}}
 [some.context.example] Debug message.
 \end{tcblisting}
 
-The option to enable this kind of log output is as follows:
+启用这种日志输出的选项如下:
 
 \begin{tcblisting}{commandshell={}}
 cmake --log-context <path-to-source>
 \end{tcblisting}
 
-We'll discuss logging in more detail in Chapter 2, The CMake Language.
+我们将在第2章中更详细地讨论。
 
-If all else fails – and we need to use the big guns – there is always trace mode. This will print every command with the filename and exact line number it is called from alongside its arguments. You can enable it as follows:
+若所有这些都失败了——需要使用大型武器——跟踪模式。这将打印每个命令的文件名和调用它的确切行号及其参数。可以通过以下方式启用:
 
 \begin{tcblisting}{commandshell={}}
 cmake --trace
@@ -256,54 +258,54 @@ cmake --trace
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Options for presets}
+\textbf{预置的选项}
 
-As you might have gathered, there are many, many options that users can specify to generate a build tree from your project. When dealing with the build tree path, generator, cache, and environmental variable, it's easy to get confused or miss something. Developers can simplify how users interact with their projects and provide a CMakePresets.json file that specifies some defaults. To learn more, please refer to the Navigating the project files section.
+可能已经了解到，用户可以指定许多选项来从您的项目生成构建树。在处理构建树路径、生成器、缓存和环境变量时，很容易混淆或遗漏某些内容。开发人员可以简化用户与项目交互的方式，并提供CMakePresets.json文件，其指定了一些默认值。
 
-To list all of the available presets, execute the following:
+要列出所有可用的预设，可以执行以下命令:
 
 \begin{tcblisting}{commandshell={}}
 cmake --list-presets
 \end{tcblisting}
 
-You can use one of the available presets as follows:
+使用预设的方式如下所示:
 
 \begin{tcblisting}{commandshell={}}
 cmake --preset=<preset>
 \end{tcblisting}
 
-These values override the system defaults and the environment. However, at the same time, they can be overridden with any arguments that are explicitly passed on the command line:
+这些值覆盖系统默认值和环境。与此同时，也可以显式地在命令行上传递的参数所覆盖:
 
 \begin{center}
 \includegraphics[width=0.5\textwidth]{content/1/chapter1/images/3.jpg}\\
-Figure 1.3 – How presets override CMakeCache.txt and the system environment variables
+图1.3 预设如何覆盖CMakeCache.txt和系统环境变量
 \end{center}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Building a project}
+\textbf{构建项目}
 
-After generating our build tree, we're ready for the next stage: running the builder tool. Not only does CMake know how to generate input files for many different builders, but it can also run them for you with arguments that are specific to our project.
+生成构建树后，就可以进入下一个阶段:运行构建器工具。CMake不仅知道如何为许多不同的构建器生成输入文件，而且还可以使用特定于项目参数运行它们。
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Not Recommended]
-Many online sources recommend running GNU Make directly after the generation stage: make. This is a default generator for Linux and macOS, and it usually works. However, we prefer the method described in this section, as it is generator-independent and is supported across all platforms. As a result, we don't need to worry about the exact environment of every user of our application.
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=不推荐]
+许多在线资源建议在生成阶段之后直接运行GNU Make: Make。这是Linux和macOS的默认生成器，通常可以正常工作。但更推荐本节中描述的方法，因为它与生成器无关，并且在所有平台上都得到支持。因此，不需要担心应用程序的每个用户的确切环境。
 \end{tcolorbox}
 
-\textbf{The syntax of the build mode}
-
 \begin{tcblisting}{commandshell={}}
+# 构建模式的语法
+
 cmake --build <dir> [<options>] [-- <build-tool-options>]
 \end{tcblisting}
 
-In the majority of these cases, it is enough to simply provide the bare minimum to get a successful build:
+大多数情况下，只要提供最基本的内容就可以获得成功的构建:
 
 \begin{tcblisting}{commandshell={}}
 cmake --build <dir>
 \end{tcblisting}
 
-CMake needs to know where the build tree is that we generated. This is the same path that we passed with the -B argument in the generation stage.
+CMake需要知道构建树在哪里，与在生成阶段使用-B参数传递的路径相同。
 
-By providing a few options, CMake allows you to specify key build parameters that work for every builder. If you need to provide special arguments to your chosen, native builder, pass them at the end of the command after the -{}- token:
+通过提供一些选项，CMake允许指定适用于每个构建器的关键构建参数。若需要为所选的本机构建器提供特殊参数，请在命令末尾-{}-后传递:
 
 \begin{tcblisting}{commandshell={}}
 cmake --build <dir> -- <build-tool-options>
@@ -311,38 +313,38 @@ cmake --build <dir> -- <build-tool-options>
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Options for parallel builds}
+\textbf{并行构建的选项}
 
-By default, many build tools will use multiple concurrent processes to leverage modern processors and compile your sources in parallel. Builders know the structure of project  dependencies, so they can simultaneously process steps that have their dependencies met to save users' time.
+默认情况下，许多构建工具将使用多个并发进程并行编译源代码。构建者知道项目依赖关系的结构，因此可以同时处理满足依赖关系的步骤，从而节省用户的时间。
 
-You might want to override that setting if you're building on a powerful machine (or to force a single-threaded build for debugging). Simply specify the number of jobs with either of the following options:
+如果是在功能强大的机器上构建(或强制使用单线程构建进行调试)，则可能需要覆盖该设置。只需使用以下选项之一，并指定作业数量:
 
 \begin{tcblisting}{commandshell={}}
 cmake --build <dir> --parallel [<number-of-jobs>]
 cmake --build <dir> -j [<number-of-jobs>]
 \end{tcblisting}
 
-The alternative is to set it with the CMAKE\_BUILD\_PARALLEL\_LEVEL environment variable. As usual, we can always use the preceding option to override the variable.
+另一种方法是使用CMAKE\_BUILD\_PARALLEL\_LEVEL环境变量来设置。和往常一样，可以使用前面的选项来覆盖变量。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Options for target}
+\textbf{目标的选项}
 
-We'll discuss targets in the second part of the book. For now, let's just say that every project is made up of one or more parts, called targets. Usually, we'll want to build all of them; however, on occasion, we might be interested in skipping some or explicitly building a target that was deliberately excluded from normal builds. We can do this as follows:
+我们将在本书的第二部分讨论目标。现在，让我们假设每个项目都是由一个或多个目标组成。通常情况下，我们想要构建所有目标;有时，可能需要跳过某些目标或显式地构建一个(排除在正常构建之外)的目标感兴趣。可以这样做:
 
 \begin{tcblisting}{commandshell={}}
 cmake --build <dir> --target <target1> -t <target2> ...
 \end{tcblisting}
 
-As you will observe, we can specify multiple targets by repeating the -t argument.
+可以通过重复-t参数来指定多个目标。
 
-One target that isn't normally built is clean. This will remove all artifacts from the build directory. You can call it like this:
+一个通常不建造的目标是clean。这个目标将删除构建目录中的所有构件。可以这样使用:
 
 \begin{tcblisting}{commandshell={}}
 cmake --build <dir> -t clean
 \end{tcblisting}
 
-Additionally, CMake offers a convenient alias if you'd like to clean first and then implement a normal build:
+此外，若想先清理，然后实现一个正常的构建，CMake提供了一个方便的别名:
 
 \begin{tcblisting}{commandshell={}}
 cmake --build <dir> --clean-first
@@ -350,46 +352,46 @@ cmake --build <dir> --clean-first
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Options for multi-configuration generators}
+\textbf{多配置生成器的选项}
 
-So, we already know a bit about generators: they come in different shapes and sizes. Some of them offer more features than others, and one of these features is the ability to build both Debug and Release build types in a single build tree.
+所以，我们已经对生成器有了一些了解。其中一些提供了比其他更多的特性，这个特性就是在单个构建树中构建Debug和Release构建类型的能力。
 
-Generators that support this feature include Ninja Multi-Config, Xcode, and Visual Studio. Every other generator is a single-configuration generator, and they require a separate build tree for that purpose.
+支持该功能的生成器包括Ninja Multi-Config、Xcode和Visual Studio。其他生成器都是单配置生成器，为此需要单独的构建树。
 
-Select Debug, Release, MinSizeRel, or RelWithDebInfo and specify it as follows:
+选择Debug, Release, MinSizeRel或RelWithDebInfo，并进行指定:
 
 \begin{tcblisting}{commandshell={}}
 cmake --build <dir> --config <cfg>
 \end{tcblisting}
 
-Otherwise, CMake will use Debug as the default.
+否则，CMake将使用Debug作为默认值。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Options for debugging}
+\textbf{调试的选项}
 
-When things go bad, the first thing we should do is check the output messages. However, veteran developers know that printing all the details all of the time is confusing, so they often hide them by default. When we need to peek under the hood, we can ask for far more detailed logs by telling CMake to be verbose:
+当出现问题时，应该做的第一件事是检查输出消息。经验丰富的开发人员知道，总是打印所有的细节信息不是明智之举，所以他们通常默认隐藏它们。当我们需要查看内部情况时，可以让CMake的信息变得详细:
 
 \begin{tcblisting}{commandshell={}}
 cmake --build <dir> --verbose
 cmake --build <dir> -v
 \end{tcblisting}
 
-The same effect can be achieved by setting the CMAKE\_VERBOSE\_MAKEFILE cached variable.
+同样的效果可以通过设置CMAKE\_VERBOSE\_MAKEFILE缓存变量来实现。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Installing a project}
+\textbf{安装项目}
 
-When artifacts are built, users can install them on the system. Usually, this means copying files into the correct directories, installing libraries, or running some custom installation logic from a CMake script.
-
-\textbf{The syntax of the installation mode}
+构建工件后，用户可以将它们安装到系统中。这会将文件复制到正确的目录中，安装库，或者从CMake脚本运行一些自定义安装逻辑。
 
 \begin{tcblisting}{commandshell={}}
+# 安装模式的语法
+
 cmake --install <dir> [<options>]
 \end{tcblisting}
 
-As with other modes of operation, CMake requires a path to a generated build tree:
+与其他操作模式一样，CMake需要一个到生成构建树的路径:
 
 \begin{tcblisting}{commandshell={}}
 cmake --install <dir>
@@ -397,9 +399,9 @@ cmake --install <dir>
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Options for multi-configuration generators}
+\textbf{多配置生成器的选项}
 
-Just like in the build stage, we can specify which build type we want to use for our installation (for more details, please refer to the Building a project section). The available types include Debug, Release, MinSizeRel, and RelWithDebInfo. The signature is as follows:
+就像在构建阶段一样，可以指定希望安装使用哪种构建类型(有关更多细节，请参阅构建项目部分)。可用的类型包括Debug、Release、MinSizeRel和RelWithDebInfo:
 
 \begin{tcblisting}{commandshell={}}
 cmake --install <dir> --config <cfg>
@@ -407,11 +409,11 @@ cmake --install <dir> --config <cfg>
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Options for components}
+\textbf{组件的选项}
 
-As a developer, you might choose to split your project into components that can be installed independently. We'll discuss the concept of components in further detail in Chapter 11, Installing and Packaging. For now, let's just assume they represent different parts of the solution. This might be something like application, docs, and extratools.
+作为开发人员，可能会选择将项目拆分为可以独立安装的组件。我们将在第11章中进一步详细讨论组件的概念。现在，我们假设它们代表解的不同部分。这可能是应用程序、文档和工具之类的东西。
 
-To install a single component, use the following option:
+安装单个组件时，可以使用以下方式:
 
 \begin{tcblisting}{commandshell={}}
 cmake --install <dir> --component <comp>
@@ -419,9 +421,9 @@ cmake --install <dir> --component <comp>
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Options for permissions}
+\textbf{权限的选项}
 
-If installation is carried on a Unix-like platform, you can specify default permissions for the installed directories, with the following option, using the format of u=rwx,g=rx,o=rx:
+若安装是在类Unix平台上进行的，可以为安装目录指定默认权限，使用以下选项，格式为u=rwx,g=rx,o=rx:
 
 \begin{tcblisting}{commandshell={}}
 cmake --install <dir>
@@ -430,95 +432,95 @@ cmake --install <dir>
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Options for the installation directory}
+\textbf{安装目录的选项}
 
-We can prepend the installation path specified in the project configuration with a prefix of our choice (for example, when we have limited write access to some directories). The /usr/local path that is prefixed with /home/user becomes /home/user/usr/local. The signature for this option is as follows:
+可以在项目配置中指定的安装路径前面，加上我们选择的前缀(当我们对某些目录有限制的写访问权限时)。以“/home/user”为前缀的“/usr/local”路径变成“/home/user/usr/local”:
 
 \begin{tcblisting}{commandshell={}}
 cmake --install <dir> --prefix <prefix>
 \end{tcblisting}
 
-Note that this won't work on Windows, as paths on this platform usually start with the drive letter.
+注意，这在Windows上不起作用，因为该平台上的路径通常以驱动器号开始。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Options for debugging}
+\textbf{调试的选项}
 
-Similarly, to the build stage, we can also choose to view a detailed output of the installation stage. To do this, use any of the following:
+类似地，对于构建阶段，也可以选择查看安装阶段的详细输出。可以使用以下任何一种方法:
 
 \begin{tcblisting}{commandshell={}}
 cmake --build <dir> --verbose
 cmake --build <dir> -v
 \end{tcblisting}
 
-The same effect can be achieved if the VERBOSE environment variable is set.
+若设置了VERBOSE环境变量，也可以达到同样的效果。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Running a script}
+\textbf{运行脚本}
  
-CMake projects are configured using CMake's custom language. It's cross-platform, quite powerful, and already present. So, why not make it available for other tasks? Sure enough, you can write standalone scripts (we'll get to that at the end of this chapter).
+使用CMake的自定义语言配置CMake项目。那么，为什么不让它用于其他任务呢?当然，可以编写独立的脚本(将在本章的最后讨论)。
 
-CMake can run these scripts like so:
-
-\textbf{Syntax of the script mode}
+CMake可以像这样运行脚本:
 
 \begin{tcblisting}{commandshell={}}
+# 脚本模式的语法
+
 cmake [{-D <var>=<value>}...] -P <cmake-script-file>
       [-- <unparsed-options>...]
 \end{tcblisting}
 
-Running such a script won't run any configurations or generate stages. Additionally, it won't affect the cache. There are two ways you can pass values to this script:
+运行脚本不会运行任何配置或生成阶段。此外，它不会影响缓存。有两种方法可以将值传递给这个脚本:
 
 \begin{itemize}
 \item 
-Through variables defined with the -D option.
+通过使用-D选项定义的变量。
 
 \item 
-Through arguments that can be passed after a -{}- token. CMake will create CMAKE\_ARGV<n> variables for all arguments passed to the script (including the -{}- token).
+通过可在-{}-后传递的参数。CMake将为传递给脚本的所有参数(包括-{}-)创建CMake\_ARGV<n>变量。
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Running a command-line tool}
+\textbf{运行命令行工具}
 
-On rare occasions, we might need to run a single command in a platform-independent way – perhaps copy a file or compute a checksum. Not all platforms were created equal, so not all commands are available in every system, or they have a different name.
+极少数情况下，可能需要以与平台无关的方式运行单个命令—可能是复制一个文件或计算一个校验和。并不是所有的平台都是一样的，所以并不是所有的命令都可以在每个系统中使用，或者它们有不同的名称。
 
-CMake offers a mode in which to execute the most common ones in the same way across platforms:
-
-\textbf{The syntax of the command-line tool mode}
+CMake提供了一种模式，可以跨平台以相同的方式执行一些常见的方法:
 
 \begin{tcblisting}{commandshell={}}
+# 命令行工具模式的语法
+
 cmake -E <command> [<options>]
 \end{tcblisting}
 
-As the use of this particular mode is fairly limited, we won't cover it in depth. However, if you're interested in the details, I recommend calling cmake -E to list all the available commands. To simply get a glimpse of what's on offer, CMake 3.20 supports the following commands:
+由于这种特定模式的使用是相当有限的，不会对其深入讨论。但是，若对细节感兴趣，建议使用cmake -E列出所有可用的命令。为了简单地了解一下所提供的功能，CMake 3.20支持以下命令:
 
-capabilities, cat, chdir, compare\_files, copy, copy\_directory, copy\_if\_different, echo, echo\_append, env, environment, make\_directory, md5sum, sha1sum, sha224sum, sha256sum, sha384sum, sha512sum, remove, remove\_directory, rename, rm, server, sleep, tar, time, touch, touch\_nocreate, create\_symlink, create\_hardlink, true, and false.
+capabilities, cat, chdir, compare\_files, copy, copy\_directory, copy\_if\_different, echo, echo\_append, env, environment, make\_directory, md5sum, sha1sum, sha224sum, sha256sum, sha384sum, sha512sum, remove, remove\_directory, rename, rm, server, sleep, tar, time, touch, touch\_nocreate, create\_symlink, create\_hardlink, true和false。
  
-If a command you'd like to use is missing, or you need a more complex behavior, consider wrapping it in a script and running it in -P mode.
+若缺少想要使用的命令，或者需要更复杂的行为，可以考虑将其包装到脚本中并以-P模式运行。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Getting help}
+\textbf{获得帮助}
 
-It comes without surprise that CMake offers extensive help that is accessible through its command line.
-
-\textbf{The syntax of the help mode}
+CMake通过命令行提供帮助信息。
 
 \begin{tcblisting}{commandshell={}}
+# 帮助模式的语法
+
 cmake ––help[-<topic>]
 \end{tcblisting}
 
 \subsubsubsection{1.4.2\hspace{0.2cm}CTest}
 
-Automated testing is very important in order to produce and maintain high-quality code. That's why we devoted an entire chapter to this subject (please refer to Chapter 8, Testing Frameworks), where we do a deep dive into the usage of CTest. It is one of the available command-line tools, so let's briefly introduce it now.
+为了产生和维护高质量的代码，自动化测试非常重要。这就是为什么我们花了一整个章节来讨论这个主题(请参考第8章)，在那里我们将深入研究CTest的用法。它是可用的命令行工具之一，所以让我们简单的介绍一下。
 
-CTest is about wrapping CMake in a higher layer of abstraction, where the building stage becomes just one of the stepping stones in the process of developing our software. Other tasks that CMake can do for us include updating, running all kinds of tests, reporting the state of the project to external dashboards, and running scripts written in the CMake language.
+CTest是将CMake包装在一个更高的抽象层中，构建阶段只是开发软件过程中的一个垫脚石。CMake可以为我们完成的其他任务包括更新、运行各种测试、向外部仪表板报告项目状态，以及运行用CMake语言编写的脚本。
 
-More importantly, CTest standardizes running tests and reporting for solutions built with CMake. This means that as a user, you don't need to know which testing framework the project is using or how to run it. CTest provides a convenient façade to list, filter, shuffle, retry, and timebox test runs. Additionally, it can call CMake for you if a build is required.
+更重要的是，CTest标准化了使用CMake构建的解决方案的运行测试和报告，所以用户不需要知道项目正在使用哪个测试框架或如何运行它。CTest提供了一个方便的方式来列出、筛选、洗牌、重试和时间框测试运行。此外，若需要构建，也可以为调用CMake。
 
-The simplest way to run tests for a built project is to call ctest in the generated build tree:
+为已构建项目运行测试的最简单方法是在生成的构建树中使用ctest:
 
 \begin{tcblisting}{commandshell={}}
 $ ctest
@@ -533,58 +535,58 @@ Total Test time (real) = 3.24 sec
 
 \subsubsubsection{1.4.3\hspace{0.2cm}CPack}
 
-After we have built and tested our amazing software, we are ready to share it with the world. In a rare few instances, power users are completely fine with the source code, and that's what they want. However, the vast majority of the world is using precompiled binaries because of convenience and to save time.
+构建并测试了软件之后，我们就准备与世界进行分享。高级用户完全可以接受源代码，这就是他们想要的。然而，由于方便和节省时间，世界上绝大多数人都在使用预编译的二进制文件。
 
-CMake doesn't leave you stranded here; it comes with batteries included. CPack is built for the exact purpose of creating packages for different platforms: compressed archives, executable installers, wizards, NuGet packages, macOS bundles, DMG packages, RPMs, and more.
+CMake不会把你困在这里，它蕴含强大的能量。构建CPack的确切目的是为不同的平台创建包:压缩包、可执行安装程序、安装向导、NuGet包、macOS包、DMG包、rpm等等。
 
-CPack works in a very similar way to CMake: it is configured with the CMake language and has many package generators to pick from (just don't confuse them with CMake buildsystem generators). We'll go through all the specific details in Chapter 11, Installing and Packaging, as this is quite a hefty tool that is meant for the final stages of CMake projects.
+CPack的工作方式与CMake相似:使用CMake语言进行配置，并有许多包生成器可供选择(只是不要将它们与CMake构建系统生成器混淆)。我们将在第11章中详细介绍所有的具体细节，因为这是一个非常强大的工具，用于CMake项目的最后阶段。
 
-\subsubsubsection{1.4.4\hspace{0.2cm}The CMake GUI}
+\subsubsubsection{1.4.4\hspace{0.2cm}CMake用户界面}
 
-CMake for Windows comes with a GUI version to configure the building process of previously prepared projects. For Unix-like platforms, there is a version built with QT libraries. Ubuntu offers it in the cmake-qt-gui package.
+Windows的CMake提供了一个GUI版本，用于配置之前准备好的项目的构建过程。对于类Unix平台，有一个使用QT库构建的版本。Ubuntu在cmake-qt-gui包中提供了它。
 
-To access the CMake GUI, run the cmake-gui executable:
+要使用CMake用户界面，需要运行cmake-gui可执行文件:
 
 \begin{center}
 \includegraphics[width=0.9\textwidth]{content/1/chapter1/images/4.jpg}\\
-Figure 1.4 – The CMake GUI – the configuring stage for a buildsystem using a generator for Visual Studio 2019
+图1.4  CMake GUI —— 使用Visual Studio 2019生成器构建系统的配置阶段
 \end{center}
 
-The GUI application is a convenient tool for users of your application, as the options found there are rather limited. It can be useful for those who aren't familiar with the command line and would prefer a window-based interface.
+GUI应用程序对于用户来说是一个方便的工具，因为其中的选项相当有限。对于那些不熟悉命令行而更喜欢基于窗口的界面的人来说，它可能很有用。
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Not Recommended]
-I would definitely recommend GUI to end users craving convenience; however, as a programmer, I avoid introducing any manual, blocking steps that would require clicking on forms every time I build my programs. This is especially important for build automation in CI pipelines. These tools require headless applications so that the build can be fully executed without any user interaction.
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=不推荐]
+我会向渴望方便的终端用户推荐GUI;然而，作为一名程序员，避免引入任何手册，阻止每次构建程序时都需要单击表单的步骤。这对于CI管道中的构建自动化尤其重要。这些工具需要无头软件，这样构建就可以在没有任何用户交互的情况下执行。
 \end{tcolorbox}
 
 \subsubsubsection{1.4.5\hspace{0.2cm}CCMake}
 
-The ccmake executable is the CMake curses interface for Unix-like platforms (it's  unavailable for Windows). It's not available as part of the CMake package, so users have to  install it separately.
+ccmake可执行文件是CMake面向类Unix平台的接口(它不适用于Windows)。它不是CMake包的一部分，所以用户必须单独安装。
  
-The command for Debian/Ubuntu systems is as follows:
+Debian/Ubuntu系统的命令如下:
  
 \begin{tcblisting}{commandshell={}}
 $ sudo apt-get install cmake-curses-gui
 \end{tcblisting}
  
-Note that the project configuration settings can be specified interactively through this GUI. Brief instructions are provided at the bottom of the Terminal when the program is running: 
-
-\textbf{The syntax of the CCMake command}
+注意，可以通过此GUI以交互方式指定项目配置设置。当程序运行时，终端底部会给出简短的说明:
  
 \begin{tcblisting}{commandshell={}}
+# CCMake命令的语法
+
 ccmake [<options>]
 ccmake {<path-to-source> | <path-to-existing-build>}
 \end{tcblisting}
  
-CCMake uses the same set of options as cmake:
+CCMake使用与cmake具有相同的选项集:
  
 \begin{center}
 \includegraphics[width=0.9\textwidth]{content/1/chapter1/images/5.jpg}\\
-Figure 1.5 – The configuring stage in ccmake
+图1.5  ccmake的配置阶段
 \end{center}
  
-As with Graphical User Interfaces (GUIs), this mode is fairly limited and is intended to be used by less experienced users. If you're using a Unix machine, I recommend that you take a quick look and move on even quicker.
+与图形用户界面(GUI)一样，这种模式具有相当的局限性，仅供经验不足的用户使用。
 
-This concludes the basic introduction to command line of CMake. It's time to discover what is the structure of a typical CMake project.
+以上就是对CMake命令行的基本介绍。现在是时候了解CMake项目的结构了。
  
  
  
