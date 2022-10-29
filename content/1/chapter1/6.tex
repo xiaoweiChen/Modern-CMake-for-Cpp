@@ -1,13 +1,13 @@
 
-Work with CMake is primarily focused on projects that get built and the production of artifacts that get consumed by other systems, such as CI/CD pipelines and test platforms, or deployed to machines or artifact repositories. However, there are two other concepts of CMake that enable you to create with its language: scripts and modules. Let's take a closer look.
+CMake的工作主要集中在构建的项目和生成生产上，例如CI/CD管道和测试平台，或者部署到机器或工件存储库。但CMake的另外两个概念使使用者可以使用其语言进行创建和复用:脚本和模块。
 
-\subsubsubsection{1.6.1\hspace{0.2cm}Scripts}
+\subsubsubsection{1.6.1\hspace{0.2cm}脚本}
 
-To configure project building, CMake offers a platform-agnostic programming language. This comes with many useful commands. You can use this tool to write scripts that come with your project or are completely independent.
+为了配置项目构建，CMake提供了一种平台无关的编程语言。这附带了许多有用的命令。可以使用此工具编写项目附带的，或完全独立的脚本。
  
-Think of it as a consistent way to do cross-platform work: instead of using bash scripts on Linux and batch or PowerShell scripts on Windows, you can have one version. Sure, you could bring in external tools such as Python, Perl, or Ruby scripts, but this is yet another dependency and will increase the complexity of your C/C++ projects. Yes, sometimes, this will be the only thing that can get the job done, but more often than not, we can get away with something far simpler.
+可以把它看作是进行跨平台工作的一致方式:可以使用一个版本，而不是在Linux上使用bash脚本，在Windows上使用批处理或PowerShell脚本。当然，也可以引入外部工具，如Python、Perl或Ruby脚本，但这是另一种依赖，将增加C/C++项目的复杂性。不过有时，这是唯一可以完成工作的方法，但通常情况下，我们可以用更简单的方法来规避。
 
-We have already learned from the Mastering the command line section that we can execute scripts using the -P option: cmake -P script.cmake. But what are the actual requirements for the script file provided? Not that many: a script can be as complex as you like or an empty file. However, it is recommended that you call the cmake\_minimum\_required() command at the beginning of the script. This command tells CMake which policies should be applied to subsequent commands in this project (more details in Chapter 3, Setting Up Your First CMake Project).
+我们已经知道，可以使用-P选项执行脚本:-P script.cmake。但是所提供的脚本文件的实际需求是什么?没想象的复杂:脚本可以非常复杂，也可以是一个空文件。但建议在脚本的开头使用cmake\_minimum\_required()指令，从而告诉CMake哪些策略应该应用到这个项目的后续命令中(更多细节见第3章)。
 
 \begin{lstlisting}[style=styleCMake]	
 # chapter-01/03-script/script.cmake
@@ -18,17 +18,15 @@ message("Hello world")
 file(WRITE Hello.txt "I am writing to a file")
 \end{lstlisting}
 
-When running scripts, CMake won't execute any of the usual stages (such as configuration or generation), and it won't use the cache. Since there is no concept of a source/build tree in scripts, variables that usually hold references to these paths will contain the current working directory instead: CMAKE\_BINARY\_DIR, CMAKE\_SOURCE\_DIR, CMAKE\_CURRENT\_BINARY\_DIR, and CMAKE\_CURRENT\_SOURCE\_DIR.
+当运行脚本时，CMake不会执行任何通常的阶段(比如配置或生成)，也不会使用缓存。由于在脚本中没有源代码/构建树的概念，通常持有这些路径引用的变量将包含当前工作目录:CMAKE\_BINARY\_DIR, CMAKE\_SOURCE\_DIR, CMAKE\_CURRENT\_BINARY\_DIR和CMAKE\_CURRENT\_SOURCE\_DIR。
 
-Happy scripting!
+\subsubsubsection{1.6.2\hspace{0.2cm}实用工具模块}
 
-\subsubsubsection{1.6.2\hspace{0.2cm}Utility modules}
+CMake项目可以使用外部模块来增强它们的功能。模块是用CMake语言编写的，包含宏定义、变量和执行各种功能的命令。它们的范围从相当复杂的脚本(CPack和CTest也提供模块!)到相当简单的脚本，如AddFileDependencies或TestBigEndian。
 
-CMake projects can use external modules to enhance their functionality. Modules are written in the CMake language and contain macro definitions, variables, and commands that perform all kinds of functions. They range from quite complex scripts (CPack and CTest also provide modules!) to fairly simple ones, such as AddFileDependencies or TestBigEndian.
+CMake发行版包含了近90个不同的实用程序模块。如果这还不够，可以通过浏览列表从网上下载更多，比如在\url{https://github.com/onqtam/awesome-cmake}上找到的列表，或者自己编写一个模块。
 
-The CMake distribution comes packed with almost 90 different utility modules. If that's not enough, you can download more from the internet by browsing curated lists, such as the one found at \url{https://github.com/onqtam/awesome-cmake}, or write a module from scratch.
-
-To use a utility module, we need to call an include(<MODULE>) command. Here's a simple project showing this in action:
+要使用实用程序模块，需要使用include(<MODULE>)指令。下面是一个简单的项目:
 
 \begin{lstlisting}[style=styleCMake]	
 # chapter-01/04-module/CMakeLists.txt
@@ -47,17 +45,17 @@ else()
 endif()
 \end{lstlisting}
 
-We'll learn what modules are available as they become relevant to the subject at hand. If you're curious, a full list of bundled modules can be found at \url{https://cmake.org/cmake/help/latest/manual/cmake-modules.7.html}.
+我们将了解哪些模块是可用的，因为它们与当前的主题相关。若对其他模块感兴趣，可以在\url{https://cmake.org/cmake/help/latest/manual/cmake-modules.7.html}找到一个完整的绑定模块列表。
 
-\subsubsubsection{1.6.3\hspace{0.2cm}Find-modules}
+\subsubsubsection{1.6.3\hspace{0.2cm}查找模块}
 
-In the The Config-files for packages section, I mentioned that CMake has a mechanism that allows it to find files belonging to external dependencies that don't support CMake and don't provide a CMake config-file (or haven't). That's what find-modules are for. CMake provides over 150 modules that are able to locate different packages in the system. As was the case with utility modules, there are plenty more find-modules available online and another option is to write your own as a last resort.
+包的配置文件，提到了CMake有一种机制，可以查找属于不支持CMake和不提供CMake配置文件(或没有提供)的外部依赖项的文件。这就是查找模块的作用。CMake提供了150多个模块，这些模块能够定位系统中不同的包。就像实用模块一样，在线上有很多查找模块，另一个选择是作为最后的手段编写自己的模块。
 
-You can use them by calling the find\_package() command and providing the name of the package in question. Such a find-module will then play a little game of hide and seek and check all known locations of the software it is looking for. Following this, it defines variables (as specified in that module's manual) that allow you to build against that dependency.
+可以通过使用find\_package()指令，并提供相关包的名称来使用它们。这样的查找模块将玩一个捉迷藏的小游戏，并检查它正在寻找的软件的所有已知位置。在此之后，定义变量(如模块手册中指定的那样)，可以根据该依赖项进行构建。
 
-For example, the FindCURL module searches for a popular Client URL library and defines the following variables: CURL\_FOUND, CURL\_INCLUDE\_DIRS, CURL\_LIBRARIES, and CURL\_VERSION\_STRING.
+例如，FindCURL模块搜索一个流行的客户端URL库，并定义以下变量:CURL\_FOUND、CURL\_INCLUDE\_DIRS、CURL\_LIBRARIES和CURL\_VERSION\_STRING。
 
-We will cover find-modules in more depth in Chapter 7, Managing Dependencies with CMake.
+我们将在第7章中更深入地讨论查找模块。
 
 
 
