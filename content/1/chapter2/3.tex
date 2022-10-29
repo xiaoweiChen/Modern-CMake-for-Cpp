@@ -1,20 +1,20 @@
 
-Variables in CMake are a surprisingly complex subject. Not only are there three categories of variables – normal, cache, and environment – but they also reside in different scopes, with specific rules on how one scope affects the other. Very often, a poor understanding of all these rules becomes a source of bugs and headaches. I recommend you study this section with care and make sure you understand all of concepts before moving on.
+CMake中的变量是一个异常复杂的主题。有三类变量——普通变量、缓存变量和环境变量——而且它们还在不同的作用域中，并对一个作用域如何影响另一个作用域具有特定的规则。通常情况下，对所有这些规则的不理解会成为bug和头痛的根源。我建议仔细学习这一节，确保在继续学习之前理解了所有的概念。
 
-Let's start with some key facts about variables in CMake:
+先从CMake中关于变量的一些关键点开始:
 
 \begin{itemize}
 \item 
-Variable names are case-sensitive and can include almost any character.
+变量名区分大小写，可以包含任何字符。
 
 \item 
-All variables are stored internally as strings, even if some commands can interpret them as values of other data types (even lists!).
+所有变量都在内部作为字符串存储，有些命令可以解释为其他数据类型的值(甚至是列表!)
 
 \item 
-The basic variable manipulation commands are set() and unset(), but there are other commands that can affect variables, such as string() and list().
+基本的变量操作指令是set()和unset()，但还有其他指令可以影响变量，如string()和list()。
 \end{itemize}
 
-To set a variable, we simply call set(), providing its name and the value:
+要设置变量，只需使用set()，提供名称和值:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter02/02-variables/set.cmake
@@ -35,9 +35,9 @@ Also avoid reserved names (in upper, lower, or mixed case) that begin with any o
 The set() command accepts a plain text variable name as its first argument, but the message() command uses a variable reference wrapped in the \$\{\} syntax. What would happen if we were to provide a variable wrapped in the \$\{\} syntax to the set() command? To answer that, we'll need to understand variable references better.
 \end{tcolorbox}
 
-To unset a variable, we can use unset() in the following way: unset(MyString1).
+要取消变量的设置，可以使用：unset(MyString1)。
 
-\subsubsubsection{2.3.1\hspace{0.2cm}Variable references}
+\subsubsubsection{2.3.1\hspace{0.2cm}变量引用}
 
 I already mentioned references briefly in the Command arguments section, as they're evaluated for quoted and unquoted arguments. And we learned that to create a reference to a defined variable, we need to use the \$\{\} syntax, like so: message(\$\{MyString1\}).
 
@@ -86,7 +86,7 @@ That's right, with \$\{\}, you might get a value from one category or the other.
 Remember that you can pass arguments to scripts through the command line after a -{}- token. Values will be stored in the CMAKE\_ARGV<n> variable and the count of the passed arguments will be in the CMAKE\_ARGC variable.
 \end{tcolorbox}
 
-\subsubsubsection{2.3.2\hspace{0.2cm}Using the environment variables}
+\subsubsubsection{2.3.2\hspace{0.2cm}环境变量}
 
 This is the least complicated kind of variable. CMake makes a copy of the variables that were in the environment used to start the cmake process and makes them available in a single, global scope. To reference these variables, use the \$ENV\{<name>\} syntax.
 
@@ -149,7 +149,7 @@ myenv in build is first
 Built target EchoEnv
 \end{tcblisting}
 
-\subsubsubsection{2.3.3\hspace{0.2cm}Using the cache variables}
+\subsubsubsection{2.3.3\hspace{0.2cm}缓存变量}
 
 We first mentioned cache variables when discussing command-line options for cmake in Chapter 1, First Steps with CMake. Essentially, they're persistent variables stored in a CMakeCache.txt file in your build tree. They contain information gathered during the project configuration stage, both from the system (path to compilers, linkers, tools, and others) and from the user through the GUI. Cache variables are not available in scripts (since there's no CMakeCache.txt file) – they only exist in projects.
 
@@ -199,7 +199,7 @@ Setting the cache variables has some unobvious implications. That is, any normal
 
 As a reminder, cache variables can be managed from the command line as well (check the appropriate section in Chapter 1, First Steps with CMake).
 
-\subsubsubsection{2.3.4\hspace{0.2cm}How to correctly use the variable scope in CMake}
+\subsubsubsection{2.3.4\hspace{0.2cm}如何正确使用变量作用域}
 
 Variable scope is probably the hardest part of the whole concept of the CMake Language.This is maybe because we're so accustomed to how things are done in more advanced languages that support namespaces and scope operators. CMake doesn't have those mechanisms, so it deals with this issue in its own, somewhat unusual way.
 
