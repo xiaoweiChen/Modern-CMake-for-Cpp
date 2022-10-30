@@ -1,6 +1,6 @@
-To store a list, CMake concatenates all elements into a string, using a semicolon (;) as a delimiter: a;list;of;5;elements. You can escape a semicolon in an element with a backslash, like so: a\verb|\|;single\verb|\|;element.
+要存储一个列表，CMake将所有元素连接成一个字符串，使用分号(;)作为分隔符:a;list;of;5;elements。可以用反斜杠转义元素中的分号，像这样: a\verb|\|;single\verb|\|;element.
 
-To create a list, we can use the set() command: set(myList a list of five elements). Because of how lists are stored, the following commands will have exactly the same effect:
+要创建一个列表，可以使用set()指令:set(myList一个包含五个元素的列表)。由于列表的存储方式不同，下面的命令将具有完全相同的效果:
 
 \begin{itemize}
 \item 
@@ -10,21 +10,21 @@ set(myList "a;list;of;five;elements")
 set(myList a list "of;five;elements")
 \end{itemize}
 
-CMake automatically unpacks lists in unquoted arguments. By passing an unquoted myList reference, we effectively send more arguments to the command:
+CMak会e自动解包未加引号的参数中的列表。通过传递一个不加引号的myList引用，可以有效地向指令传递更多的参数:
 
 \begin{lstlisting}[style=styleCMake]
 message("the list is:" ${myList})
 \end{lstlisting}
 
-The message() command will receive here six arguments: "the list is:", "a", "list", "of", "five", "elements". This may have unintended consequences, as the output will be printed without any additional spaces between the arguments:
+message()指令将在这里接收6个参数:“list is:”，“a”，“list”，“of”，“five”，“elements”。这可能会产生意想不到的后果，因为输出将在参数之间没有任何空格的情况下打印出来:
 
 \begin{tcblisting}{commandshell={}}
 the list is:alistoffiveelements
 \end{tcblisting}
 
-As you can see, this is a very simple mechanism, and it should be used carefully.
+这是一个非常简单的机制，应该谨慎使用。
 
-CMake offers a list() command that provides a multitude of subcommands to read, search, modify, and order lists. Here's a short summary:
+CMake提供了一个list()指令，该指令提供了大量子命令来读取、搜索、修改和排序列表。下面是其中一部分:
 
 \begin{lstlisting}[style=styleCMake]
 list(LENGTH <list> <out-var>)
@@ -46,9 +46,9 @@ list(REVERSE <list>)
 list(SORT <list> [...])
 \end{lstlisting}
 
-Most of the time, we don't really need to use lists in our projects. However, if you find yourself in that rare case where this concept would be convenient, you'll find a more in-depth reference of the list() command in the Appendix section.
+大多数时候，我们并不需要在项目中使用列表。但会发现在极少数情况下这个概念是方便的，可以在附录部分中找到list()指令的更多信息。
 
-Now that we know how to work with lists and variables of all kinds, let's shift our focus to controlling the execution flow and learn about control structures available in CMake.
+现在已经知道了如何使用各种类型的列表和变量，让我们将注意力转移到控制执行流上，并学习CMake中可用的控制结构。
 
 
 

@@ -27,90 +27,90 @@ message(${My\ String2})
 message(${My\ String\ 3})
 \end{lstlisting}
 
-As you can see, the use of brackets and quoted arguments allows for spaces to be included in the variable name. However, when referencing it later, we have to escape the whitespace with a backslash (\verb|\|). For that reason, it is recommended to use only alphanumeric characters, dashes (-), and underscores (\_) in variable names.
+使用括号和引号参数允许在变量名中包含空格。但当以后引用时，必须使用反斜杠来转义空格(\verb|\|)。因此，建议在变量名中只使用字母数字字符、破折号(-)和下划线(\_)。
 
-Also avoid reserved names (in upper, lower, or mixed case) that begin with any of the following: CMAKE\_, \_CMAKE\_, or underscore (\_), followed by the name of any CMake command.
+还要避免使用任何字符开头的保留名称(上、下或混合大小写):CMAKE\_、\_CMAKE\_或下划线(\_)，后面跟着CMake指令的名称。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-The set() command accepts a plain text variable name as its first argument, but the message() command uses a variable reference wrapped in the \$\{\} syntax. What would happen if we were to provide a variable wrapped in the \$\{\} syntax to the set() command? To answer that, we'll need to understand variable references better.
+set()指令接受纯文本变量名作为第一个参数，但message()使用包装在\$\{\}语法中的变量引用。若向set()提供包装在\$\{\}语法中的变量，会发生什么?要回答这个问题，需要更好地理解引用变量。
 \end{tcolorbox}
 
 要取消变量的设置，可以使用：unset(MyString1)。
 
-\subsubsubsection{2.3.1\hspace{0.2cm}变量引用}
+\subsubsubsection{2.3.1\hspace{0.2cm}引用变量}
 
-I already mentioned references briefly in the Command arguments section, as they're evaluated for quoted and unquoted arguments. And we learned that to create a reference to a defined variable, we need to use the \$\{\} syntax, like so: message(\$\{MyString1\}).
+已经在指令参数部分提到了引用，这是为引号和非引号参数进行计算的。要创建对已定义变量的引用，需要使用\$\{\}语法，就像这样:message(\$\{MyString1\})。
 
-On evaluation, CMake will traverse the scope stack (I'll explain that in a second) and replace \$\{MyString1\} with a value, or an empty string if no variable is found (CMake won't generate any error messages). This process is called variable evaluation, expansion, or interpolation.
+求值时，CMake将遍历作用域堆栈，并将\$\{MyString1\}替换为值，若没有找到变量则替换为空字符串(CMake不会产生错误)。这个过程称为变量求值、展开或插值。
 
-Such interpolation is performed in an inside-out fashion. This means two things:
-
-\begin{itemize}
-\item 
-If the following reference is encountered – \$\{MyOuter\$\{MyInner\}\} – CMake will try to evaluate MyInner first, rather than searching for a variable named MyOuter \$\{MyInner\}.
-
-\item 
-If the MyInner variable is successfully expanded, CMake will repeat the expansion process until no further expansion is possible.
-\end{itemize}
-
-Let's consider an example with the following variables:
+这样的插值是由内而外的方式执行的。这意味着:
 
 \begin{itemize}
 \item 
-MyInner with a Hello value
+若遇到以下引用—\$\{MyOuter\$\{MyInner\}\}—CMake将首先尝试求值MyInner，而不是搜索名为MyOuter\$\{MyInner\}的变量。
 
 \item 
-MyOuter with a \$\{My value
+若MyInner变量成功展开，CMake将重复展开过程，直到不能再展开为止。
 \end{itemize}
 
-If we call the message("\$\{MyOuter\}Inner\} World") command, the output we'll receive will be Hello World, and that is because \$\{MyOuter\} was replaced with a literal value, \$\{My, which, when combined with the top-level value, Inner\}, creates another variable reference – \$\{MyInner\}.
-
-CMake will perform this expansion to the full extent, and only then will it pass the resulting values as arguments to the command. This is why when we call set(\$\{MyInner\} "Hi"), we won't actually be changing the MyInner variable, but instead, we'll change the Hello variable. CMake expands \$\{MyInner\} to Hello and passes that string as the first argument to the set() command, along with a new value, Hi. Very often, this is not what we want.
-
-Variable references are a bit peculiar in how they work when it comes to variable categories, but in general, the following applies:
+考虑一个包含以下变量的例子:
 
 \begin{itemize}
 \item 
-The \$\{\} syntax is used to reference normal or cache variables.
+MyInner的值是Hello
 
 \item 
-The \$ENV\{\} syntax is used to reference environment variables.
-
-\item 
-The \$CACHE\{\} syntax is used to reference cache variables.
+MyOuter的值是\$\{My
 \end{itemize}
 
-That's right, with \$\{\}, you might get a value from one category or the other. I'll explain that in the How to correctly use the variable scope in CMake section, but first, let's introduce some other categories of variables so that we understand clearly what they are.
+若使用message("\$\{MyOuter\}Inner\} World")，输出将是Hello World，这是因为\$\{My替换了\$\{MyOuter\}，当它与顶层值Inner\}结合时，会创建另一个变量引用——\$\{MyInner\}。
+
+CMake执行这个扩展，只有这样它才会将结果值作为参数传递给命令。这就是为什么使用set(\$\{MyInner\} "Hi")时，实际上不会更改MyInner变量，而是更改Hello变量。CMake将\$\{MyInner\}展开为Hello，并将该字符串作为第一个参数传递给set()，以及一个新值Hi。很多时候，这并不是我们想要的。
+
+当涉及到变量类别时，变量引用的工作方式有点奇怪。通常情况下，以下是适用的方式:
+
+\begin{itemize}
+\item 
+\$\{\}语法用于引用普通变量或缓存变量。
+
+\item 
+\$ENV\{\}语法用于引用环境变量。
+
+\item 
+\$CACHE\{\}语法用于引用缓存变量。
+\end{itemize}
+
+没错，使用\$\{\}，以从一个类别或另一个类别获得值。我将在如何在CMake中正确使用变量作用域一节中对此进行解释，但首先，让我们介绍一些其他类型的变量，以便清楚地了解它们是什么。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-Remember that you can pass arguments to scripts through the command line after a -{}- token. Values will be stored in the CMAKE\_ARGV<n> variable and the count of the passed arguments will be in the CMAKE\_ARGC variable.
+请记住，可以通过命令行在-{}-标记之后将参数传递给脚本。值将存储在CMAKE\_ARGV<n>变量中，传递的参数的计数将存储在CMAKE\_ARGC变量中。
 \end{tcolorbox}
 
 \subsubsubsection{2.3.2\hspace{0.2cm}环境变量}
 
-This is the least complicated kind of variable. CMake makes a copy of the variables that were in the environment used to start the cmake process and makes them available in a single, global scope. To reference these variables, use the \$ENV\{<name>\} syntax.
+这是最简单的一种变量。CMake生成环境中用于启动CMake进程的变量的副本，并使它们在单一的全局作用域中可用。要引用这些变量，使用\$ENV\{<name>\}。
 
-CMake also allows you to set (set()) and unset (unset()) these variables, but changes will only be made to a local copy in the running cmake process and not the actual system environment; moreover, these changes won't be visible to subsequent runs of builds or tests.
+CMake还允许设置(set())和取消设置(unset())这些变量，但更改只会在运行的CMake进程中对本地副本进行，而不会对实际的系统环境进行更改;此外，这些更改对于构建或测试的后续运行是不可见的。
 
-To modify or create a variable, use the set(ENV\{<variable>\} <value>) command, like so:
+要修改或创建一个变量，使用set(ENV\{<variable>\} <value>)指令:
 
 \begin{lstlisting}[style=styleCMake]
 set(ENV{CXX} "clang++")
 \end{lstlisting}
 
-To clear an environment variable, use unset(ENV\{<variable>\}), like so:
+要清除一个环境变量，使用unset(ENV\{<variable>\}):
 
 \begin{lstlisting}[style=styleCMake]
 unset(ENV{VERBOSE})
 \end{lstlisting}
 
-Be aware that there are a few environment variables that affect different aspects of CMake behavior. The CXX variable is one of them – it specifies what executable will be used for compiling C++ files. We'll cover other environmental variables, as they will become relevant for this book. A full list is available in the documentation:
+注意，有几个环境变量会影响CMake行为的不同方面。CXX变量就是其中之一——它指定编译C++文件时，使用什么可执行文件。我们将讨论其他环境变量，因为它们与本书相关。完整的列表可以在文档中找到:
 
 \url{https://cmake.org/cmake/help/latest/manual/cmake-envvariables.7.html}
 
-If you use ENV variables as arguments to your commands, the values will be interpolated during the generation of the buildsystem. This means that they will get baked into the build tree, and changing the environment for the build stage won't have any effect.
+若使用ENV变量作为指令的参数，这些值将在生成构建系统期间插入，并且会将其嵌入到构建树中。
 
-For example, take the following project file:
+例如，以以下文件为例:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter02/03-environment/CMakeLists.txt
@@ -122,7 +122,7 @@ add_custom_target(EchoEnv ALL COMMAND echo "myenv in build
 	is" $ENV{myenv})
 \end{lstlisting}
 
-The preceding example has two steps: it will print the myenv environment variable during the configuration, and it will add a build stage through add\_custom\_target(), which echoes the same variable as part of the build process. We can test what happens with a bash script that uses one value for the configuration stage and another for the build stage:
+前面的示例有两个步骤:将在配置期间打印myenv环境变量，并通过add\_custom\_target()添加一个构建阶段，该阶段作为构建过程的一部分响应相同的变量。可以测试一个bash脚本会发生什么，在配置阶段使用一个值，在构建阶段使用另一个值:
 
 \begin{lstlisting}[style=stylePython]
 # chapter02/03-environment/build.sh
@@ -137,7 +137,7 @@ echo myenv is now $myenv
 cmake --build .
 \end{lstlisting}
 
-Running the preceding code clearly shows that the value set during the configuration is persisted to the generated buildsystem:
+运行上面的代码，可以清楚地看到在配置过程中设置的值会保留在生成的构建系统中:
 
 \begin{tcblisting}{commandshell={}}
 $ ./build.sh | grep -v "\-\-"
@@ -151,107 +151,110 @@ Built target EchoEnv
 
 \subsubsubsection{2.3.3\hspace{0.2cm}缓存变量}
 
-We first mentioned cache variables when discussing command-line options for cmake in Chapter 1, First Steps with CMake. Essentially, they're persistent variables stored in a CMakeCache.txt file in your build tree. They contain information gathered during the project configuration stage, both from the system (path to compilers, linkers, tools, and others) and from the user through the GUI. Cache variables are not available in scripts (since there's no CMakeCache.txt file) – they only exist in projects.
+本质上，它们是存储在构建树中的CMakeCache.txt文件中的变量。它们包含在项目配置阶段收集的信息，包括从系统(到编译器、链接器、工具和其他的路径)和通过GUI从用户收集的信息。缓存变量在脚本中不可用(因为没有CMakeCache.txt文件)-它们只存在于项目中。
 
-Cache variables can be referenced with the \$CACHE\{<name>\} syntax.
-To set a cache variable, use set() with the following syntax: 
+缓存变量可以通过\$CACHE\{<name>\} 语法来引用。
+
+要设置一个缓存变量，使用set():
 
 \begin{lstlisting}[style=styleCMake]
 set(<variable> <value> CACHE <type> <docstring> [FORCE]) 
 \end{lstlisting}
 
-As you can see, there are some new required arguments (in comparison to the set() command for normal variables), and it also introduces first keywords: CACHE and FORCE.
+这里有一些新的必需参数(与用于普通变量的set()命令相比)，它还引入了第一个关键字:CACHE和FORCE。
 
-Specifying CACHE as a set() argument means that we intend to change what was provided during the configuration stage, and it imposes a requirement to provide the variable <type> and <docstring> values. This is because these variables are configurable by the user and the GUI needs to know how to display it. The following types are accepted:
+将CACHE指定为set()参数可以更改在配置阶段提供的内容，要求提供变量<type>和<docstring>值。这是因为用户可以配置这些变量，GUI需要知道如何显示它们。接受以下类型:
 
 \begin{itemize}
 \item 
-BOOL: A Boolean on/off value. The GUI will show a checkbox.
+BOOL: 一个布尔的开/关值。GUI将显示一个复选框。
 
 \item 
-FILEPATH: A path to a file on a disk. The GUI will open a file dialog.
+FILEPATH: 磁盘上文件的路径。GUI将打开一个文件对话框。
 
 \item 
-STRING: A line of text. The GUI offers a text field to be filled. It can be replaced by a drop-down control by calling 
+STRING: 一行字符串。GUI提供了一个要填充的文本字段，可以通过下拉控件选择替换。
+
 \begin{lstlisting}[style=styleCMake]
 set_property(CACHE <variable> STRINGS <values>)
 \end{lstlisting}
 
 \item 
-INTERNAL: A line of text. The GUI skips internal entries. The internal entries may be used to store variables persistently across runs. Use of this type implicitly adds the FORCE keyword.
+INTERNAL: 一行字符串。GUI跳过内部条目。内部条目可以用于跨运行持久化存储变量。使用此类型会隐式添加FORCE关键字。
 \end{itemize}
 
-The <doctring> value is simply a label that will be displayed by the GUI next to the field to provide more detail about this setting to the user. It is required even for an INTERNAL type.
+<doctring>值只是一个标签，将由GUI显示在字段旁边，以便向用户提供关于该设置的更多详细信息。即使是INTERNAL类型也需要它。
 
-Setting cache variables follows the same rules as environmental variables to some extent – values are overwritten only for the current execution of CMake. Take a look at this example:
+设置缓存变量遵循与环境变量相同的规则——仅在当前执行CMake时覆盖值:
 
 \begin{lstlisting}[style=styleCMake]
 set(FOO "BAR" CACHE STRING "interesting value")
 \end{lstlisting}
 
-The above call has no permanent effect if the variable exists in the cache. However, if the value doesn't exist in cache or an optional FORCE argument is specified, the value will be persisted:
+若变量存在于缓存中，上述调用不会产生永久影响。然而，若该值在缓存中不存在或指定了可选的FORCE参数，则该值将固定:
 
 \begin{lstlisting}[style=styleCMake]
 set(FOO "BAR" CACHE STRING "interesting value" FORCE)
 \end{lstlisting}
 
-Setting the cache variables has some unobvious implications. That is, any normal variable with the same name will be removed. We'll find out why in the next section.
+设置缓存变量有一些不明显的含义，任何具有相同名称的普通变量都将删除。我们将在下一节中找出原因。
 
-As a reminder, cache variables can be managed from the command line as well (check the appropriate section in Chapter 1, First Steps with CMake).
+需要提醒的是，缓存变量也可以在命令行端进行管理。
 
 \subsubsubsection{2.3.4\hspace{0.2cm}如何正确使用变量作用域}
 
-Variable scope is probably the hardest part of the whole concept of the CMake Language.This is maybe because we're so accustomed to how things are done in more advanced languages that support namespaces and scope operators. CMake doesn't have those mechanisms, so it deals with this issue in its own, somewhat unusual way.
+变量作用域可能是CMake语言整个概念中最难的部分。这可能是因为我们太习惯于在支持名称空间和作用域操作符的更高级的语言中做事情的方式。CMake没有这些机制，所以它用自己的方式处理这个问题。
 
-Just to clarify, variable scopes as a general concept are meant to separate different layers of abstraction so that when a user-defined function is called, variables set in that function are local to it. These local variables aren't affecting the global scope, even if the names of the local variables are exactly the same as the global ones. If explicitly needed, functions should have read/write access to global variables as well. This separation of variables (or scopes) has to work on many levels – when one function calls another, the same separation rules apply.
+需要说明的是，变量作用域作为一个通用概念是为了分离不同的抽象层，以便在调用用户定义的函数时，该函数中设置的变量是局部的。这些局部变量不会影响全局作用域，即使局部变量的名称与全局变量的名称完全相同。若显式需要，函数也应该具有对全局变量的读/写访问权。这种变量(或作用域)分离必须在多个层面上工作——当一个函数调用另一个函数时，分离规则同样适用。
 
-CMake has two scopes:
+CMake有两个作用域:
 
 \begin{itemize}
 \item 
-Function scope: For when custom functions defined with function() are executed
+函数作用域:用于执行用Function()定义的自定义函数
 
 \item 
-Directory scope: For when a CMakeLists.txt listfile in a nested directory is executed from the add\_subdirectory() command
+目录作用域:当从add\_subdirectory()指令执行嵌套目录中的CMakeLists.txt文件时
 \end{itemize}
 
-We'll cover the preceding commands later in this book, but first, we need to know how the concept of variable scope is implemented. When a nested scope is created, CMake simply fills it with copies of all the variables from the current scope. Subsequent commands will affect these copies. But as soon as the execution of the nested scope is completed, all copies are deleted and the original, parent scope is restored.
+我们将在本书后面介绍上述指令。首先，需要知道变量作用域的概念是如何实现的。当创建嵌套作用域时，CMake只需用来自当前作用域的所有变量的副本填充它。后续命令将影响这些副本。但若完成了嵌套作用域的执行，所有的副本都将删除，而原始的父作用域将恢复。
 
-Let's consider the following scenario:
+考虑以下场景:
 
 \begin{enumerate}
 \item 
-The parent scope sets the VAR variable to ONE.
+父作用域将VAR变量设置为ONE。
 
 \item 
-The nested scope starts and VAR is printed to console.
+开始嵌套作用域，并将VAR输出到控制台。
 
 \item 
-The VAR variable is set to TWO, and VAR is printed to the console.
+VAR变量设置为TWO，并且VAR输出到控制台。
 
 \item 
-The nested scope ends, and VAR is printed to the console.
+嵌套的作用域结束，VAR再输出到控制台。
 \end{enumerate}
 
-The console's output will look like this: ONE, TWO, ONE. This is because the copied VAR variable is discarded after the nested scope ends.
+控制台的输出应该是:ONE, TWO, ONE。这是因为在嵌套作用域结束后，复制的VAR变量将丢弃。
 
-How the concept of scope works in CMake has interesting implications that aren't that common in other languages. If you unset (unset()) a variable created in the parent scope while executing in a nested scope, it will disappear, but only in the nested scope. When the nested scope is completed, the variable is restored to its previous value.
+CMake中作用域的概念如何工作，若在嵌套作用域中执行时取消设置(unset())父作用域中创建的变量，只会在嵌套作用域中消失。当嵌套作用域完成时，变量将恢复到以前的值。
 
-This brings us to the behavior of variable referencing and the \$\{\} syntax. Whenever we try to access the normal variable, CMake will search for the variables from the current scope, and if the variable with such a name is defined, it will return its value. So far, so good. However, when CMake can't find a variable with that name (for example, if it didn't exist or was unset (unset())), it will search through the cache variables and return a value from there if a match is found.
+这就引出了变量引用的行为和\$\{\}语法。每当尝试访问普通变量时，CMake将从当前作用域搜索变量，若定义了具有这样一个名称的变量，它将返回其值。到目前为止，一切顺利。但当CMake找不到具有该名称的变量时(例如，若它不存在或未设置(unset()))，它将搜索缓存变量，若找到匹配则从那里返回一个值。
 
-That's a possible gotcha if we have a nested scope calling unset(). Depending on where we reference that variable – in the inner or the outer scope – we'll be accessing the cache or the original value.
+若有一个使用unset()的嵌套作用域，这可能是个问题。根据引用该变量的位置——内部还是外部作用域——将访问缓存或原始值。
 
-But what can we do if we really need to change the variable in the calling (parent) scope?
-CMake has a PARENT\_SCOPE flag you can add at the end of the set() and unset() commands:
+但是，若真的需要更改调用(父)作用域中的变量，该怎么办呢?
+
+CMake有一个PARENT\_SCOPE标志，可以在set()和unset()指令的末尾添加:
 
 \begin{lstlisting}[style=styleCMake]
 set(MyVariable "New Value" PARENT_SCOPE)
 unset(MyVariable PARENT_SCOPE)
 \end{lstlisting}
 
-That workaround is a bit limited, as it doesn't allow accessing variables more than one level up. Another thing worth noting is the fact that using PARENT\_SCOPE doesn't change variables in the current scope.
+这种解决方法有一定的局限性，因为它不允许访问超过一个级别的变量。另一件值得注意的事情是，使用PARENT\_SCOPE不会改变当前作用域中的变量。
 
-Let's see how variable scope works in practice and consider the following example:
+来看看变量作用域在实践中是如何工作的，并考虑以下示例:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter02/04-scope/CMakeLists.txt
@@ -275,7 +278,7 @@ Outer()
 message("< Global: ${V}")
 \end{lstlisting}
 
-We set the global variable, V, to 1, and then we call the Outer function; then set V to 2 and call the Inner function, and then set V to 3. After every step, we print the variable to the console:
+我们将全局变量V设为1，然后调用Outer函数;然后将V设置为2并调用Inner函数，然后将V设置为3。在每一步之后，我们将变量打印到控制台:
 
 \begin{tcblisting}{commandshell={}}
 > Global: 1
@@ -286,9 +289,9 @@ We set the global variable, V, to 1, and then we call the Outer function; then s
 < Global: 1
 \end{tcblisting}
 
-As we explained previously, as we go deeper into the functions, the variable values are copied to the nested scope, but as we exit the scope, their original value is restored.
+当我们深入函数时，变量值会复制到嵌套作用域，但当退出作用域时，它们的原始值将恢复。
 
-What would the output be if we changed the set() command of the Inner function to operate in the parent scope: set(V 3 PARENT\_SCOPE)?
+若改变Inner函数的set()来操作父作用域:set(V 3 PARENT\_SCOPE)，输出会是什么?
 
 \begin{tcblisting}{commandshell={}}
 > Global: 1
@@ -299,11 +302,11 @@ What would the output be if we changed the set() command of the Inner function t
 < Global: 1
 \end{tcblisting}
 
-We affected the scope of the Outer function, but not the scope of the Inner function or the global scope!
+我们影响了外部函数的作用域，但没有影响内部函数的作用域或全局作用域!
 
-The CMake documentation also mentions that CMake scripts bind variables in one directory scope (which is a bit redundant, as the only command that effectively creates a directory scope, add\_subdirectory(), isn't allowed in scripts).
+CMake文档还提到CMake脚本在一个目录范围内绑定变量(这有点多余，因为唯一有效创建目录范围的命令add\_subdirectory()在脚本中是不允许的)。
 
-Since all variables are stored as strings, CMake has to take a more creative approach to more complex data structures such as lists.
+由于所有变量都存储为字符串，CMake必须采用更有效的方法来处理更复杂的数据结构，如列表。
 
 
 
