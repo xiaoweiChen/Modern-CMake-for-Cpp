@@ -1,6 +1,6 @@
-In Chapter 1, First Steps with CMake, we talked about in-source builds, and how it is recommended to always specify the build path to be out-of-source. This not only allows for a cleaner build tree and a simpler .gitignore file, but it also decreases the chances you'll accidentally overwrite or delete any source files.
+在第1章中，讨论了源代码内构建，以及如何建议始终将构建路径指定为源代码外的。这不仅允许更干净的构建树和更简单的.gitignore文件，而且还减少了不小心覆盖或删除任何源文件的机会。
 
-Searching for the solution online, you may stumble on a StackOverflow thread that asks the same question: \url{https://stackoverflow.com/q/1208681/6659218}. Here, the author notices that no matter what you do, it seems like CMake will still create a CMakeFiles/ directory and a CMakeCache.txt file. Some answers suggest using undocumented variables to make sure that the user can't write in the source directory under any circumstances:
+在网上搜索解决方案时，可能会偶然发现StackOverflow中有相同的问题:\url{https://stackoverflow.com/q/1208681/6659218}。作者注意到，无论您做什么，CMake似乎仍然会创建一个CMakeFiles/目录和一个CMakeCache.txt文件。一些答案建议使用无文档变量，确保用户在任何情况下都不能在源目录中写入:
 
 \begin{lstlisting}[style=styleCMake]
 # add this options before PROJECT keyword
@@ -8,7 +8,7 @@ set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 \end{lstlisting}
 
-I'd say to be cautious when using undocumented features of any software, as they may go away without warning. Setting the preceding variables in CMake 3.20 terminates the build with a rather ugly error:
+我想说，在使用任何软件的无文档特性时都要谨慎，因为它们可能会在没有警告的情况下消失。CMake 3.20中设置上述变量会终止构建并产生一个相当难看的错误:
 
 \begin{tcblisting}{commandshell={}}
 CMake Error at /opt/cmake/share/cmake-3.20/Modules/
@@ -19,7 +19,7 @@ log into a source
   directory.
 \end{tcblisting}
 
-However, it still creates the mentioned files anyway! Therefore, my recommendation is to go with an older – but fully supported – mechanism:
+然而，它仍然创建了上述文件!因此，我的建议是使用一个更老的——但得到充分支持的——机制:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter03/09-in-source/CMakeLists.txt
@@ -32,7 +32,7 @@ endif()
 message("Build successful!")
 \end{lstlisting}
 
-If Kitware (company behind the CMake) ever decides to officially support CMAKE\_DISABLE\_SOURCE\_CHANGES or CMAKE\_DISABLE\_IN\_SOURCE\_BUILD, then by all means, switch to that solution.
+若Kitware (CMake背后的公司)决定正式支持CMAKE\_DISABLE\_SOURCE\_CHANGES或CMAKE\_DISABLE\_IN\_SOURCE\_BUILD，那么可以切换到那种解决方案。
 
 
 

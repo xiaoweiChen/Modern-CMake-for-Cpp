@@ -1,5 +1,5 @@
 
-In Chapter 1, First Steps with CMake, we already looked at a simple project definition. Let's revisit it. It is a directory with a CMakeLists.txt file that contains a few commands configuring the language processor:
+在第1章中，我们已经了解了一个简单的项目定义。它是一个包含CMakeLists.txt文件的目录，其中包含一些配置语言处理器的命令:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter01/01-hello/CMakeLists.txt: Hello world in CMake language
@@ -9,23 +9,21 @@ project(Hello)
 add_executable(Hello hello.cpp)
 \end{lstlisting}
 
-In the same chapter, in the Project files section, we learned about a few basic commands. Let's explain them in depth.
+\subsubsubsection{3.2.1\hspace{0.2cm}指定最低的CMake版本 —— cmake\_minimum\_required()}
 
-\subsubsubsection{3.2.1\hspace{0.2cm}Specifying the minimum CMake version – cmake\_minimum\_required()}
+这不是严格意义上的特定于项目的命令，因为它也应该用于脚本。cmake\_minimum\_required()将检查系统是否有正确的cmake版本，它还将隐式调用另一个指令cmake\_policy(version)，该指令告诉cmake该项目使用什么正确的策略。这些策略是什么?
 
-This isn't strictly a project-specific command, as it should be used with scripts as well, but it is so important that we repeat it here. As you know, cmake\_minimum\_required() will check whether the system has the right CMake version, but implicitly, it will also call another command, cmake\_policy(VERSION), which will tell CMake what the right policies are to use for this project. What are these policies?
+在过去20年的CMake开发过程中，指令的行为方式发生了许多变化，CMake支持的语言也在不断发展。为了保持语法的干净和简单，CMake的团队决定引入一些策略来反映这些变化。每当引入一个向后不兼容的更改时，都会附带一个启用新行为的策略。
 
-Over the last 20 years of CMake's development, there have been many changes to how commands behave as CMake and the languages it supports have evolved. To keep the syntax clean and simple, CMake's team decided to introduce policies to reflect these changes. Whenever a backward-incompatible change was introduced, it came with a policy that enabled the new behavior.
+通过调用cmake\_minimum\_required()，告诉cmake需要将策略应用到参数中提供的版本为止。当CMake使用新策略进行升级时，因为新策略不会被启用，所以我们不需要担心我们的项目会破坏。用最新版本测试项目，若对结果满意，就可以将更新后的项目发送给用户。
 
-By calling cmake\_minimum\_required(), we tell CMake that it needs to apply the policies up to the version provided in the argument. When CMake gets upgraded with new policies, we don't need to worry about them breaking our project, as the new policies won't be enabled. If we test the project with the newest version and if we're happy with the outcome, we can send the updated project to our users.
+策略可以影响CMake的每一个方面，包括其他重要的指令，如project()。因此，通过设置正在使用的版本来启动CMakeLists.txt文件是很重要的。否则，将得到警告和错误。
 
-Policies can affect every single aspect of CMake, including other important commands like project(). For that reason, it is important to start your CMakeLists.txt file by setting the version you're working with. Otherwise, you will get warnings and errors.
+每个版本都引入了相当多的策略——描述它们没有实际价值，除非将遗留项目升级到最新的CMake版本时遇到了问题。这种情况下，请参考关于策略的官方文档:\url{https://cmake.org/cmake/help/latest/manual/cmake-policies.7.html}。
 
-Every version introduces quite a few policies – there isn't any real value in describing them unless you're having issues with upgrading legacy projects to the latest CMake version. In that case, refer to the official documentation on policies: \url{https://cmake.org/cmake/help/latest/manual/cmake-policies.7.html}.
+\subsubsubsection{3.2.2\hspace{0.2cm}定义语言和元数据 – project()}
 
-\subsubsubsection{3.2.2\hspace{0.2cm}Defining languages and metadata – project()}
-
-Technically, CMake doesn't need the project() command. Any directory containing the CMakeLists.txt file will be parsed in project mode. CMake implicitly adds that command to the top of the file. But we already know that we need to start by specifying the minimum version, so it's best not to forget about calling project(). We can use one of its two forms:
+从技术上讲，CMake不需要project()，包含CMakeLists.txt文件的目录都将在项目模式下进行解析。CMake隐式地将该命令添加到文件的顶部。但已知我们需要从指定最低版本开始，所以最好不要忘记使用project()。我们可以用它的两种形式之一:
 
 \begin{lstlisting}[style=styleCMake]
 project(<PROJECT-NAME> [<language-name>...])
@@ -36,14 +34,14 @@ project(<PROJECT-NAME>
 		[LANGUAGES <language-name>...])
 \end{lstlisting}
 
-We need to specify <PROJECT-NAME>, but the other arguments are optional. Calling this command will implicitly set the following variables:
+我们需要指定<PROJECT-NAME>，但其他参数是可选的。调用此命令将隐式设置以下变量:
 
 \begin{itemize}
 \item 
 PROJECT\_NAME
 
 \item 
-CMAKE\_PROJECT\_NAME (only in the top-level CMakeLists.txt)
+CMAKE\_PROJECT\_NAME (只有在顶层CMakeLists.txt中)
 
 \item 
 PROJECT\_SOURCE\_DIR, <PROJECT-NAME>\_SOURCE\_DIR
@@ -52,18 +50,18 @@ PROJECT\_SOURCE\_DIR, <PROJECT-NAME>\_SOURCE\_DIR
 PROJECT\_BINARY\_DIR, <PROJECT-NAME>\_BINARY\_DIR
 \end{itemize}
 
-What languages are supported? Quite a few. Here's a list of language keywords you can use to configure your project: C, CXX (C++), CUDA, OBJC (Objective-C), OBJCXX (Objective C++), Fortran, ISPC, ASM, as well as CSharp (C\#) and Java.
+支持哪些语言?不少。这里有一个语言关键字列表，你可以用来配置你的项目:C，CXX(C++)，CUDA，OBJC(Objective-C)，OBJCXX (Objective-C++)，Fortran，ISPC，ASM，以及CSharp(C\#)和Java。
 
-CMake enables C and C++ by default, so you may want to explicitly specify only CXX for your C++ projects. Why? The project() command will detect and test the available compilers for your chosen language, so choosing the correct ones will allow you to save time during the configuration stage by skipping any checks for unused languages.
+CMake默认启用C和C++，因此可能希望为C++项目显式地仅指定CXX。为什么?project()将为所选语言检测和测试可用的编译器，因此选择正确的编译器将允许您在配置阶段跳过对未使用语言的任何检查，从而节省时间。
 
-Specifying VERSION will make the following variables available:
+指定VERSION将使以下变量可用:
 
 \begin{itemize}
 \item 
 PROJECT\_VERSION, <PROJECT-NAME>\_VERSION
 
 \item 
-CMAKE\_PROJECT\_NAME (only in the top-level CMakeLists.txt)
+CMAKE\_PROJECT\_NAME (只有在顶层CMakeLists.txt中)
 
 \item 
 PROJECT\_VERSION\_MAJOR, <PROJECT-NAME>\_VERSION\_MAJOR
@@ -79,13 +77,13 @@ PROJECT\_VERSION\_TWEAK, <PROJECT-NAME>\_VERSION\_TWEAK
 \end{itemize}
 
 
-The preceding variables will be useful for configuring packages or for passing to compiled files to make the version available in the final executable.
+上述变量对于配置包或传递到已编译文件，在可执行文件中提供版本非常有用。
 
-Following this principle, we can set DESCRIPTION and HOMEPAGE\_URL, which will set the variables in the same way.
+按照这个原则，可以设置DESCRIPTION和HOMEPAGE\_URL，这将以同样的方式设置变量。
 
-CMake also allows specification of the used languages with enable\_language(<lang>), which will not create any metadata variables.
+CMake还允许使用enable\_language(<lang>)来规范所使用的语言，这将不会创建元数据。
 
-The preceding commands will allow us to create a basic listfile and initialize an empty project. Now, we can start adding things to build. Structure doesn't really matter for the tiny, single-file projects we have used in our examples so far. But what happens when there's more code?
+上面的命令允许我们创建一个基本的列表文件，并初始化一个空项目。现在，可以开始添加要构建的东西。到目前为止，对于我们在示例中使用的小型单文件项目，结构并不重要。但当代码更多时会发生什么呢?
 
 
 

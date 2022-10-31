@@ -1,13 +1,13 @@
 
-CMake provides multiple ways of querying the environment with CMAKE\_ variables, ENV variables, and special commands. For example, collected information can be used to support cross-platform scripts. These mechanisms allow us to avoid using platformspecific shell commands that may not be easily portable or differ in naming across environments.
+CMake通过CMAKE\_变量、ENV变量和特殊命令提供了多种查询环境的方法。例如，收集的信息可以用于支持跨平台脚本。这些机制允许我们避免使用特定于平台的shell命令，这些命令可能不容易移植，或者在不同的环境中命名不同。
 
-For performance-critical applications, it will be useful to know all the features of the destination platform (for example, instruction sets, CPU core count, and more). This information can then be passed to the compiled binaries so that they can be tuned to perfection (we'll learn how to do that in the next chapter). Let's see what information is available in CMake natively.
+对于性能关键型应用程序，了解目标平台的所有特性(例如，指令集、CPU核心数等)将非常有用。然后，可以将此信息传递给已编译的二进制文件，以便对它们进行优化(将在下一章学习如何做到这一点)。先来看看原生CMake中有哪些信息可用。
 
-\subsubsubsection{3.5.1\hspace{0.2cm}Discovering the operating system}
+\subsubsubsection{3.5.1\hspace{0.2cm}识别操作系统}
 
-There are many occasions when it is useful to know what the target operating system is. Even as mundane a thing as a filesystem differs greatly between Windows and Unix in things such as case sensitivity, file path structures, the presence of extensions, privileges, and so on. Most commands present on one system won't be available on another, or they could be named differently (even if it's by a single letter – for example, the ifconfig and ipconfig commands).
+很多情况下，了解目标操作系统是很有用的。即使是像文件系统这样普通的东西，Windows和Unix在大小写敏感、文件路径结构、扩展名、特权等方面也有很大的不同。一个系统上的大多数命令在另一个系统上是不可用的，或者它们可以以不同的方式命名(即使是用一个字母命名——例如，ifconfig和ipconfig命令)。
 
-If you ever need to support multiple target operating systems with a single CMake script, just check the CMAKE\_SYSTEM\_NAME variable so that you can act accordingly. Here's a simple example:
+若曾经需要用一个CMake脚本支持多个目标操作系统，只要检查CMAKE\_SYSTEM\_NAME变量，就可以采取相应的行动。这里有一个简单的例子:
 
 \begin{lstlisting}[style=styleCMake]
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -23,95 +23,94 @@ else()
 endif()
 \end{lstlisting}
 
-If needed, there's a variable containing the operating system version: CMAKE\_SYSTEM\_VERSION. However, my recommendation is to try and make your solutions as systemagnostic as possible and use the built-in CMake cross-platform functionality. Especially for operations on filesystems, you should use the file() command described in the Appendix section.
+有一个包含操作系统版本的变量:CMAKE\_SYSTEM\_VERSION。然而，我的建议是尽量使解决方案与系统无关，并使用内置的CMake跨平台功能。特别是对于文件系统上的操作，应该使用file()指令。
 
-\subsubsubsection{3.5.2\hspace{0.2cm}Cross-compilation – what are host and target systems?}
+\subsubsubsection{3.5.2\hspace{0.2cm}交叉编译——主机系统和目标系统?}
 
-Compiling code on one machine to be run on another is called cross-compilation. You can (with the right toolset) compile applications for Android by running CMake on a Windows machine. Cross-compilation isn't in the scope of this book, but it's important to understand how it impacts some parts of CMake.
+在一台机器上编译要在另一台机器上运行的代码，称为交叉编译。可以(使用正确的工具集)通过在Windows机器上运行CMake来编译Android应用程序。交叉编译不在本书的讨论范围内，但是理解它如何影响CMake的某些部分是很重要的。
 
-One of the necessary steps to allow cross-compilation is setting the CMAKE\_SYSTEM\_NAME and CMAKE\_SYSTEM\_VERSION variables to the values appropriate for the operating system that you're compiling for targets (the CMake documentation refers to it as the target system). The operating system used to perform the build is called a host system.
+允许交叉编译的必要步骤之一是将CMAKE\_SYSTEM\_NAME和CMAKE\_SYSTEM\_VERSION变量设置为适合您为目标编译的操作系统的值(CMAKE文档将其称为目标系统)。用于执行构建的操作系统称为主机系统。
 
-Regardless of the configuration, the information on the host system is always accessible in variables with a HOST keyword in their name: CMAKE\_HOST\_SYSTEM, CMAKE\_HOST\_SYSTEM\_NAME, CMAKE\_HOST\_SYSTEM\_PROCESSOR, and CMAKE\_HOST\_SYSTEM\_VERSION.
+无论如何配置，主机系统上的信息总是可以在名称中带有HOST关键字的变量中访问:CMAKE\_HOST\_SYSTEM\_NAME、CMAKE\_HOST\_SYSTEM\_PROCESSOR和CMAKE\_HOST\_SYSTEM\_VERSION。
 
-There are a few more variables with a HOST keyword in their name, so just keep in mind that they're explicitly referencing the host system. Otherwise, all variables reference the target system (which normally is the host system anyway, unless we're cross-compiling).
+还有一些变量的名称中带有HOST关键字，因此请记住它们显式引用主机系统。否则，所有变量都引用目标系统(通常是宿主系统，除非交叉编译)。
 
-If you're interested in reading more about cross-compilation, I suggest referencing the CMake documentation at \url{https://cmake.org/cmake/help/latest/manual/ cmake-toolchains.7.html}.
+如果您有兴趣阅读更多关于交叉编译的内容，我建议您参考CMake文档：\url{https://cmake.org/cmake/help/latest/manual/ cmake-toolchains.7.html}。
 
-\subsubsubsection{3.5.3\hspace{0.2cm}Abbreviated variables}
+\subsubsubsection{3.5.3\hspace{0.2cm}简化变量}
 
-CMake will predefine a few variables that will provide information about the host and target systems. If a specific system is used, an appropriate variable will be set to a non-false value (that is, 1 or true):
+CMake将预定义一些变量，这些变量将提供关于主机和目标系统的信息。如果使用特定的系统，则将适当的变量设置为非false值(即1或true):
 
 \begin{itemize}
 \item 
 ANDROID, APPLE, CYGWIN, UNIX, IOS, WIN32, WINCE, WINDOWS\_PHONE
 
 \item 
-CMAKE\_HOST\_APPLE, CMAKE\_HOST\_SOLARIS, CMAKE\_HOST\_UNIX, CMAKE\_
-HOST\_WIN32
+CMAKE\_HOST\_APPLE, CMAKE\_HOST\_SOLARIS, CMAKE\_HOST\_UNIX, CMAKE\_HOST\_WIN32
 \end{itemize}
 
-The WIN32 and CMAKE\_HOST\_WIN32 variables will be true for 32- and 64-bit versions of Windows and MSYS (this value is kept for legacy reasons). Also, UNIX will be true for Linux, macOS, and Cygwin.
+对于32和64位版本的Windows和MSYS，WIN32和CMAKE\_HOST\_WIN32变量将为真(此值为遗留原因保留)。此外，UNIX将适用于Linux、macOS和Cygwin。
 
-\subsubsubsection{3.5.4\hspace{0.2cm}Host system information}
+\subsubsubsection{3.5.4\hspace{0.2cm}主机系统信息}
 
-CMake could provide more variables, but to save time, it doesn't query the environment for rarely needed information, such as whether a processor supports MMX or what the total physical memory is. That doesn't mean this information isn't available – you just need to ask for it explicitly with the following command:
+CMake可以提供更多变量，但为了节省时间，不会查询环境中很少需要的信息，比如处理器是否支持MMX或总物理内存是多少。这并不意味着这个信息不可用——只需要用下面的命令显式地请求它:
 
 \begin{lstlisting}[style=styleCMake]
 cmake_host_system_information(RESULT <VARIABLE> QUERY <KEY>…)
 \end{lstlisting}
 
-We need to provide a target variable and a list of keys we're interested in. If we provide just one key, the variable will contain a single value; otherwise, it will be a list of values. We can ask for many details about the environment and the OS:
+需要提供一个目标变量和感兴趣的键的列表。如果只提供一个键，则变量将只包含一个值;否则，它将是一个值列表。我们可以询问很多关于环境和操作系统的细节:
 
 \begin{table}[H]
 	\begin{tabular}{|l|l|}
 		\hline
-		\textbf{Key}                & \textbf{Retured value}                              \\ \hline
-		HOSTNAME                    & The hostname.                                       \\ \hline
-		FQDN                        & The fully qualified dimian name                     \\ \hline
-		TOTAL\_VIRTUAL\_MEMORY      & The total virtual memory in MiB.                    \\ \hline
-		AVAILABLE\_VIRTUAL\_MEMORY  & The available virtual memory in MiB.                \\ \hline
-		TOTAL\_PHYSICAL\_MEMORY     & The total physical memory in MiB.                   \\ \hline
-		AVAILABLE\_PHYSICAL\_MEMORY & The available physical memory in MiB.               \\ \hline
+		\textbf{键值}                & \textbf{返回值}                              \\ \hline
+		HOSTNAME                    & 主机名                                      \\ \hline
+		FQDN                        & 完全限定的dimian名称                   \\ \hline
+		TOTAL\_VIRTUAL\_MEMORY      & 总虚拟内存(MiB)                    \\ \hline
+		AVAILABLE\_VIRTUAL\_MEMORY  & 可用的虚拟内存(MiB)                \\ \hline
+		TOTAL\_PHYSICAL\_MEMORY     & 总物理内存(MiB)                   \\ \hline
+		AVAILABLE\_PHYSICAL\_MEMORY & 可用的物理内存(MiB)               \\ \hline
 		OS\_NAME &
-		\begin{tabular}[c]{@{}l@{}}The output of uname -s if this command is present,\\ or one of Windows, Linux, or Darwin if it is not.\end{tabular} \\ \hline
-		OS\_RELEASE                 & The OS sub-type, for example, Windows Professional. \\ \hline
-		OS\_VERSION                 & The OS build ID.                                    \\ \hline
+		\begin{tabular}[c]{@{}l@{}}如果该命令存在，则uname -s的输出;如果没有，\\ 则uname -s是Windows、Linux或Darwin中的一个\end{tabular} \\ \hline
+		OS\_RELEASE                 & OS子类型，例如Windows Professional \\ \hline
+		OS\_VERSION                 & 操作系统构建ID                                    \\ \hline
 		OS\_PLATFORM &
-		\begin{tabular}[c]{@{}l@{}}On Windows the PROCESSOR\_ARCHITECTURE\\ environment variable is returned. On Unix and macOS,\\ the value contains the output of the uname -m command.\end{tabular} \\ \hline
+		\begin{tabular}[c]{@{}l@{}}在Windows上，返回的是 \\ PROCESSOR\_ARCHITECTURE环境变量。在Unix和\\ macOS上，该值包含uname -m命令的输出。\end{tabular} \\ \hline
 	\end{tabular}
 \end{table}
 
-If needed, we can even query processor-specific information:
+若需要，可以查询特定于处理器的信息:
 
 \begin{table}[H]
 	\begin{tabular}{|l|l|}
 		\hline
-		\textbf{Key}                & \textbf{Returned value}                          \\ \hline
-		NUMBER\_OF\_LOGICAL\_CORES  & The number of logical cores                      \\ \hline
-		NUMBER\_OF\_PHYSICAL\_CORES & The number of physical cores                     \\ \hline
-		HAS\_SERIAL\_NUMBER         & 1 if the processor has a serial number           \\ \hline
-		PROCESSOR\_SERIAL\_NUMBER   & The processor serial number                      \\ \hline
-		PROCESSOR\_NAME             & The human-readable processor name                \\ \hline
-		PROCESSOR\_DESCRIPTION      & The human-readable full processor description    \\ \hline
-		IS\_64BIT                   & 1 if the processor is 64 bit                     \\ \hline
-		HAS\_FPU                    & 1 if the proceesor has a floating-point unit     \\ \hline
-		HAS\_MMX                    & 1 if the processor support MMX instructions      \\ \hline
-		HAS\_MMX\_PLUS              & 1 if the processor support Ext. MMX instructions \\ \hline
-		HAS\_SSE                    & 1 if the processor support SSE instructions      \\ \hline
-		HAS\_SSE2                   & 1 if the processor support SSE2 instructions     \\ \hline
-		HAS\_SSE\_FP                & 1 if the processor support SSE FP instructions   \\ \hline
-		HAS\_SSE\_MMX               & 1 if the processor support SSE MMX instructions  \\ \hline
-		HAS\_AMD\_3DNOW             & 1 if the processor support 3DNow instructions    \\ \hline
-		HAS\_AMD\_3DNOW\_PLUS       & 1 if the processor support 3DNow+ instructions   \\ \hline
-		HAS\_IA64                   & 1 if it is an IA-64 processor emulating x86      \\ \hline
+		\textbf{键值}                & \textbf{返回值}                          \\ \hline
+		NUMBER\_OF\_LOGICAL\_CORES  & 逻辑核数                      \\ \hline
+		NUMBER\_OF\_PHYSICAL\_CORES & 物理核数                     \\ \hline
+		HAS\_SERIAL\_NUMBER         & 若处理器有序列号，则为1           \\ \hline
+		PROCESSOR\_SERIAL\_NUMBER   & 处理器序列号                      \\ \hline
+		PROCESSOR\_NAME             & 可读的处理器名称                \\ \hline
+		PROCESSOR\_DESCRIPTION      & 可读的完整处理器描述    \\ \hline
+		IS\_64BIT                   & 若处理器是64位，则为1                     \\ \hline
+		HAS\_FPU                    & 处理器有浮点单元，则返回1     \\ \hline
+		HAS\_MMX                    & 若处理器支持MMX指令，则返回1     \\ \hline
+		HAS\_MMX\_PLUS              & 若处理器支持Ext. MMX指令，则返回1 \\ \hline
+		HAS\_SSE                    & 若果处理器支持SSE指令 ，则返回1     \\ \hline
+		HAS\_SSE2                   & 若处理器支持SSE2指令，则返回1     \\ \hline
+		HAS\_SSE\_FP                & 若处理器支持SSE FP指令，则返回1   \\ \hline
+		HAS\_SSE\_MMX               & 若处理器支持SSE MMX指令，则返回1  \\ \hline
+		HAS\_AMD\_3DNOW             & 若处理器支持3DNow指令，则返回1    \\ \hline
+		HAS\_AMD\_3DNOW\_PLUS       & 若处理器支持3DNow+指令，则返回1   \\ \hline
+		HAS\_IA64                   & 若是模拟x86的IA-64处理器，则返回1      \\ \hline
 	\end{tabular}
 \end{table}
 
-\subsubsubsection{3.5.5\hspace{0.2cm}Does the platform have 32-bit or 64-bit architecture?}
+\subsubsubsection{3.5.5\hspace{0.2cm}平台是32位还是64位架构?}
 
-In 64-bit architecture, memory addresses, processor registers, processor instructions, address busses, and data buses are 64 bits wide. While this is a simplified definition, it gives a rough idea of how 64-bit platforms are different from 32-bit platforms.
+64位架构中，内存地址、处理器寄存器、处理器指令、地址总线和数据总线都是64位宽的。虽然这是一个简化的定义，但它大致说明了64位平台与32位平台的不同之处。
 
-In C++, different architectures mean different bit widths for some fundamental data types (int and long) and pointers. CMake utilizes the pointer size to gather information about the target machine. This information is available through the CMAKE\_SIZEOF\_VOID\_P variable, and it will contain a value of 8 for 64 bits (because a pointer is 8 bytes wide) and 4 for 32 bits (4 bytes):
+C++中，不同的体系结构意味着一些基本数据类型(int和long)和指针的位宽不同。CMake利用指针的大小来收集关于目标计算机的信息。这个信息可以通过CMAKE\_SIZEOF\_VOID\_P变量获得，它将包含64位的值8(因为指针是8字节宽的)和32位的值4(4字节):
 
 \begin{lstlisting}[style=styleCMake]
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -119,11 +118,11 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 endif()
 \end{lstlisting}
 
-\subsubsubsection{3.5.6\hspace{0.2cm}What is the endianness of the system?}
+\subsubsubsection{3.5.6\hspace{0.2cm}系统的端序}
 
-Architectures can be big-endian or little-endian. Endianness is the order of bytes in a word or the natural unit of data for a processor. A big-endian system stores the most significant byte at the lowest memory address and the least significant byte at the highest memory address. A little-endian system is the opposite of this.
+架构可以是大端的，也可以是小端的。端序是字的字节顺序或处理器的自然数据单位。大端存储系统将最高位字节存储在最低内存地址，将最低位字节存储在最高内存地址。小端系统正好相反。
 
-In most cases, endianness doesn't matter, but when you're writing bit-wise code that needs to be portable, CMake will provide you with a BIG\_ENDIAN or LITTLE\_ENDIAN value stored in the CMAKE\_<LANG>\_BYTE\_ORDER variable, where <LANG> is C, CXX, OBJC, or CUDA.
+大多数情况下，字节顺序并不重要，但当编写需要可移植的位代码时，CMake将为你提供一个BIG\_ENDIAN或LITTLE\_ENDIAN值存储在CMAKE\_<lang>\_BYTE\_ORDER变量中，其中<lang>为C、CXX、OBJC或CUDA。
 
-Now that we know how to query the environment, let's shift our focus to the key settings of the project.
+知道了如何查询环境，现在让我们将注意力转移到项目的关键设置上。
 

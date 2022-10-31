@@ -1,11 +1,11 @@
-We introduced a lot of valuable concepts in this chapter that will give us a strong foundation to go forward and build hardened, future-proof projects. We discussed how to set the minimum CMake version and how to configure the key aspects of the project – that is, the name, languages, and metadata fields.
+我们在本章中介绍了许多概念，这将为我们前进和构建坚固的、经得起未来考验的项目提供坚实的基础。我们讨论了如何设置CMake的最低版本以及如何配置项目的关键方面—即名称、语言和元数据字段。
 
-Laying good foundations will help ensure that our projects can grow quickly. This is why we discussed the partitioning of projects. We analyzed naïve code partitioning using include() and compared it with add\_subdirectory(). At this point, we learned about the benefits of managing the directory scope of variables, and we explored the use of simpler paths and increased modularity. Having an option to create a nested project and build it separately is very useful when we need to slowly break code down into more independent units.
+打下良好的基础将有助于确保我们的项目能够快速发展，这就是我们讨论项目划分的原因。使用include()分析了原生代码分区，并将其与add\_subdirectory()进行了比较。至此，我们了解了管理变量的目录作用域的好处，并探讨了使用更简单的路径和增加的模块化。当需要将代码分解成更独立的单元时，拥有创建嵌套项目并单独构建它的选项非常有用。
 
-After an overview of the partitioning mechanisms we have at our disposal, we explored how we want to use them – for example, how to make transparent, resilient, and extensible project structures. Specifically, we analyzed how CMake will traverse the listfiles and the correct order of the different configuration steps.
+概述了可以使用的分区机制之后，探讨了如何使用它们——例如，如何创建透明的、弹性的和可扩展的项目结构。具体来说，我们分析了CMake如何遍历列表文件以及不同配置步骤的正确顺序。
 
-Next, we studied how we can scope the environment of our target and host machines, what the differences are between them, and what kind of information about the platform and system is available through different queries.
+接下来，研究了如何确定目标计算机和主机计算机的环境范围、它们之间的区别，以及通过不同的查询可以获得关于平台和系统的哪些信息。
 
-Finally, we found out how to configure the toolchain – for example, how to specify the required C++ version, how to address the issue of vendor-specific compiler extensions, and how to enable important optimization. We wrapped up by discovering how to test our compiler for the required features and compile test files.
+最后，了解了如何配置工具链——例如，如何指定所需的C++版本，如何解决特定于供应商的编译器扩展问题，以及如何启用重要的优化。最后，发现了如何测试编译器所需的特性和编译测试文件。
 
-While this is all that a project technically requires, it's still not a very useful project. To change that, we need to introduce targets. So far, we've mentioned them here and there, but I tried to avoid the subject until we had learned more about some general concepts first. Now that's done, we'll look at them in detail.
+虽然这是一个项目在技术上需要的全部内容，但它仍然不是一个非常有用的项目，我们需要引入目标。到目前为止，我们已经在这里或那里提到了它们，但在我们首先了解了一些一般概念之前，我试图避开这个主题。现在完成了这些铺垫，接下来我们将详细研究目标。

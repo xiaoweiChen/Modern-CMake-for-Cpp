@@ -1,38 +1,38 @@
 
-For CMake projects, a toolchain consists of all of the tools used in building and running the application – for example, the working environment, the generator, the CMake executable itself, and the compilers.
+对于CMake项目，工具链包含构建和运行应用程序时使用的所有工具——例如，工作环境、生成器、CMake可执行程序本身和编译器。
 
-Imagine what a less-experienced user feels when your build stops with some mysterious compilation and syntax errors. They have to dig into the source code and try to understand what happened. After an hour of debugging, they discover that the correct solution is to update their compiler. Could we provide a better experience for users and check if all of the required functions are present in the compiler before starting the build?
+当构建因一些神秘的编译和语法错误而停止时，缺乏经验的用户会有什么感受。他们必须深入研究源代码，并试图理解发生了什么。经过一个小时的调试后，他们发现正确的解决方案是更新编译器。我们能否为用户提供更好的体验，并在开始构建之前检查编译器中是否存在所有所需的函数?
 
-Sure! There are ways to specify these requirements. If the toolchain doesn't support all of the required features, CMake will stop early and show a clear message of what happened, asking the user to step in.
+当然!有几种方法可以指定这些需求。若工具链不支持所有必需的特性，CMake将提前停止并显示发生了什么事情的明确消息，要求用户介入。
 
-\subsubsubsection{3.6.1\hspace{0.2cm}Setting the C++ standard}
+\subsubsubsection{3.6.1\hspace{0.2cm}设定C++标准}
 
-The first thing we might want to do is to set the C++ standard we require the compiler to support if the user wants to build our project. For new projects, this should be at least C++14, but preferably C++17 or C++20. CMake also supports setting the standard to the experimental C++23, but that's just a draft version.
+若用户想要构建我们的项目，可能要做的第一件事是设置编译器需要支持的C++标准。对于新项目，这应该至少是C++14，但最好是C++17或C++20。CMake还支持将标准设置为实验性的C++23，但这只是一个草案版本。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-It has been 10 years since the official release of C++11, and it is no longer considered to be the modern C++ standard. It's not recommended to start projects with this version unless your target environment is very old.
+从C++11正式发布到现在已经10年了，它不再认为是现代C++标准。不建议使用此版本启动项目，除非目标环境非常旧。
 
-Another reason to stick to old standards is if you are building legacy targets that are too hard to upgrade. However, the C++ committee works very hard to keep C++ backward compatible, and in most cases, you won't have any problems bumping the standard to a higher version.
+坚持旧标准的另一个原因是，若正在构建难以升级的历史项目。然而，C++委员会非常努力地保持向后兼容，大多数情况下，升级标准不会遇到任何问题。
 \end{tcolorbox}
 
-CMake supports setting the standard on a target-per-target basis, which means that you can have any granularity you like. I believe it's better to converge to a single standard across the project. This can be done by setting the CMAKE\_CXX\_STANDARD variable to one of the following values: 98, 11, 14, 17, 20, or 23 (since CMake 3.20). This will be a default value for all subsequently defined targets (so it's best to set it close to the top of the root listfile). You can override it on a per-target basis if needed, like so:
+CMake支持在每个目标的基础上设置标准，所以可以根据您偏好的粒度使用。我认为最好在整个项目中采用单一标准。这可以通过设置CMAKE\_CXX\_STANDARD变量为以下值之一来实现:98、11、14、17、20或23(自CMake 3.20以来)。这将是所有随后定义的目标的默认值(因此最好将其设置在根列表文件顶部附近)。可以在每个目标的基础上覆写:
 
 
 \begin{lstlisting}[style=styleCMake]
 set_property(TARGET <target> PROPERTY CXX_STANDARD <standard>)
 \end{lstlisting}
 
-\subsubsubsection{3.6.2\hspace{0.2cm}Insisting on standard support}
+\subsubsubsection{3.6.2\hspace{0.2cm}坚持支持标准}
 
-The CXX\_STANDARD property mentioned in the previous section won't stop CMake from continuing with the build, even if the compiler isn't supporting the desired version – it's treated as a preference. CMake doesn't know if our code actually uses the brand-new features that aren't available in the previous compilers, and it will try to work with what it has available.
+上一节中提到的CXX\_STANDARD属性不会阻止CMake继续构建，即使编译器不支持所需的版本——视为首选项。CMake不知道我们的代码是否真的使用了以前编译器中没有的全新功能，它将尝试使用现有的功能。
 
-If we know for certain that this won't be successful, we can set another default flag (which is overridable in the same manner as the previous one) and explicitly require the standard we target:
+若确定这不会成功，可以设置另一个默认标志(它可以以与前一个相同的方式被覆盖)，并显式要求目标的标准:
 
 \begin{lstlisting}[style=styleCMake]
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 \end{lstlisting}
 
-In that case, if the latest compiler isn't present in the system (in this case, GNU GCC 11), the user will just see the following message and the build will stop:
+若系统中没有最新的编译器(在这种情况下，GNU GCC 11)，用户只会看到以下消息，构建将停止:
 
 \begin{tcblisting}{commandshell={}}
 Target "Standard" requires the language dialect "CXX23" (with
@@ -40,27 +40,27 @@ compiler extensions), but CMake does not know the compile flags
 to use to enable it.
 \end{tcblisting}
 
-Asking for C++23 might be a bit excessive, even for a modern environment. But C++14 should be perfectly fine, as it has been fully supported in GCC/Clang since 2015.
+即使是在现代环境中，要求使用C++23也可能有点过分。但C++14应该没问题，因为自2015年以来GCC/Clang已经完全支持它了。
 
-\subsubsubsection{3.6.3\hspace{0.2cm}Vendor-specific extensions}
+\subsubsubsection{3.6.3\hspace{0.2cm}特定于供应商的扩展}
 
-Depending on the policy you implement in your organization, you might be interested in allowing or disabling vendor-specific extensions. What are these? Well, let's just say that the C++ standard is moving a bit slow for the needs of some compiler producers, so they decided to add their own enhancements to the language – plugins, if you like. To achieve this, CMake will add -std=gnu++14 instead of -std=c++14 to the compile line.
+根据组织中实现的策略，可能会对允许或禁用特定于供应商的扩展感兴趣。这些是什么?这么说吧，对于一些编译器生产者的需求，C++标准的发展有点慢，所以他们决定在语言中添加他们自己的增强——也可以叫插件。为了实现这一点，CMake会将-std=gnu++14，而不是-std=c++14添加到编译行。
 
-On one hand, this may be desired, as it allows for some convenient functionality. But on the other, your code will fail to build if you switch to a different compiler (or if your users do!).
+一方面，这可能是需要的，因为它允许一些方便的功能。但另一方面，若切换到另一个编译器(或者您的用户切换到另一个编译器!)，您的代码将无法构建。
 
-This is also a per-target property for which there is a default variable, CMAKE\_CXX\_EXTENSIONS. CMake is more liberal here, and allows the extensions unless we specifically tell it not to:
+这也是一个每个目标的属性，它有一个默认变量CMAKE\_CXX\_EXTENSIONS。CMake在这里更加自由，并且允许扩展，除非我们特别告诉它不要这样做:
 
 \begin{lstlisting}[style=styleCMake]
 set(CMAKE_CXX_EXTENSIONS OFF)
 \end{lstlisting}
 
-I recommend doing so if possible, as this option will insist on having vendor-agnostic code. Such code won't impose any unnecessary requirements on the users. In a similar way, you can use set\_property() to change this value on a per-target basis.
+若可能的话，我建议这样做，因为这个选项将坚持使用与供应商无关的代码。这样的代码不会对用户施加任何不必要的要求。以类似的方式，可以使用set\_property()在每个目标的基础上更改这个值。
 
-\subsubsubsection{3.6.4\hspace{0.2cm}Interprocedural optimization}
+\subsubsubsection{3.6.4\hspace{0.2cm}过程间优化}
 
-Usually, compilers optimize the code on the level of a single translation unit, which means that your .cpp file will be preprocessed, compiled, and then optimized. Later, these files will be passed to the linker to build a single binary. Modern compilers can perform optimization after linking (this is called link time optimization) so that all compilation units can be optimized as a single module. If your compiler supports interprocedural optimization, it may be a good idea to use it.
+通常，编译器在单个翻译单元的级别上优化代码，这意味着.cpp文件会进行预处理、编译，然后进行优化。稍后，这些文件将被传递给链接器以构建一个二进制文件。现代编译器可以在链接之后执行优化(这称为链接时优化)，以便所有编译单元都可以作为单个模块进行优化。如果编译器支持过程间优化，那么使用它可能是个好主意。
 
-We'll follow the same method as previously. The default variable for this setting is called CMAKE\_INTERPROCEDURAL\_OPTIMIZATION. But before we set it, we need to make sure it is supported to avoid errors:
+我们将遵循与前面相同的方法。这个设置的默认变量叫做CMAKE\_INTERPROCEDURAL\_OPTIMIZATION。在设置它之前，需要确保支持，以避免错误:
 
 \begin{lstlisting}[style=styleCMake]
 include(CheckIPOSupported)
@@ -70,11 +70,11 @@ if(ipo_supported)
 endif()
 \end{lstlisting}
 
-As you can see, we had to include a built-in module to get access to the check\_ipo\_supported() command.
+必须包含一个内置模块来访问check\_ipo\_supported()指令。
 
-\subsubsubsection{3.6.5\hspace{0.2cm}Checking for supported compiler features}
+\subsubsubsection{3.6.5\hspace{0.2cm}检查支持的编译器特性}
 
-As we discussed earlier, if our build is to fail, it's best if it fails early, so we can provide a clear feedback message to the user. What we're especially interested in is gauging which C++ features are supported (and which aren't). CMake will question the compiler during the configuration stage and store a list of the available features in the CMAKE\_CXX\_ COMPILE\_FEATURES variable. We may write a very specific check and ask if a certain feature is available:
+若我们的构建要失败，最好尽早失败，这样我们就可以向用户提供明确的反馈消息。我们特别感兴趣的是衡量支持哪些C++特性(哪些不支持)。CMake会在配置阶段询问编译器，并在CMAKE\_CXX\_COMPILE\_FEATURES变量中存储可用特性的列表。我们可以写一个非常具体的检查脚本，询问是否有某种特性可用:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter03/07-features/CMakeLists.txt
@@ -86,21 +86,19 @@ if(result EQUAL -1)
 endif()
 \end{lstlisting}
 
-As you may guess, writing one for every feature we use is a daunting task. Even the authors of CMake recommend to only check if certain high-level meta-features are present: cxx\_std\_98, cxx\_std\_11, cxx\_std\_14, cxx\_std\_17, cxx\_std\_20, and cxx\_std\_23. Each meta-feature indicates that the compiler supports a specific C++ standard. If you wish, you can use them exactly as we did in the previous example.
+使用的每个功能编写一个文档是一项艰巨的任务。甚至CMake的作者也建议只检查是否存在某些高级元特性:cxx\_std\_98、cxx\_std\_11、cxx\_std\_14、cxx\_std\_17、cxx\_std\_20和cxx\_std\_23，每个元特性都表明编译器支持特定的C++标准。
 
-A full list of features known to CMake can be found in the documentation:
+CMake功能的完整列表可以在文档中找到:\url{https://cmake.org/cmake/help/latest/prop_gbl/CMAKE_CXX_KNOWN_ FEATURES.html}。
 
-\url{https://cmake.org/cmake/help/latest/prop_gbl/CMAKE_CXX_KNOWN_ FEATURES.html}|
+\subsubsubsection{3.6.6\hspace{0.2cm}编译测试文件}
 
-\subsubsubsection{3.6.6\hspace{0.2cm}Compiling a test file}
+用GCC 4.7.x编译一个应用程序时，我想到了一个特别有趣的场景。我已经在编译器的参考中手动确认，我们使用的所有C++11特性都得到了支持。然而，解决方案仍然不能正常工作。代码静默地忽略了对标准<regex>头文件。结果是GCC 4.7.x有一个bug，正则表达式库没有实现。
 
-One particularly interesting scenario occurred to me when I was compiling an application with GCC 4.7.x. I had manually confirmed in the compiler's reference that all of the C++11 features we were using were supported. However, the solution still didn't work correctly. The code silently ignored the call to the standard <regex> header. As it turned out, GCC 4.7.x had a bug and the regex library wasn't implemented.
+没有检查可以保护您不受这种错误的影响，但是可以通过创建一个测试文件来减少这种行为，该文件可以填充您想要检查的所有特性。CMake提供了两个配置时间命令，try\_compile()和try\_run()，以验证目标平台上支持所需的一切。
 
-No single check can protect you from such bugs, but there's a chance to reduce such behavior by creating a test file that you can fill with all of the features that you'd like to check. CMake provides two configure-time commands, try\_compile() and try\_run(), to verify that everything you need is supported on the target platform.
+第二个命令为您提供了更多的自由，因为可以确保代码不仅在编译，而且在正确地执行(可以测试regex是否在工作)。当然，这不适用于交叉编译场景(因为主机无法运行为不同目标构建的可执行文件)。只要记住，这个检查的目的是在编译工作时向用户提供一个快速反馈，所以它并不意味着要运行单元测试或复杂的东西。
 
-The second command gives you more freedom, as you can ensure that the code is not only compiling but that it is also executing correctly (you could potentially test if regex is working). Of course, this won't work for cross-compilation scenarios (as the host won't be able to run an executable built for a different target). Just remember that the aim of this check is to provide a quick piece of feedback to the user if the compilation is working, so it's not meant to run any unit tests or anything complex – keep the file as basic as possible.
-
-For example, something like this:
+例如，像这样:
 
 \begin{lstlisting}[style=styleCXX]
 //chapter03/08-test_run/main.cpp
@@ -112,7 +110,7 @@ int main()
 }
 \end{lstlisting}
 
-Calling test\_run() isn't very complicated at all. We start by setting the required standard, after which we call test\_run() and print the collected information to the user:
+使用test\_run()一点也不复杂。首先设置所需的标准，然后调用test\_run()并将收集到的信息打印给用户:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter03/08-test_run/CMakeLists.txt
@@ -131,7 +129,7 @@ message("compile_result: ${compile_result}")
 message("output:\n" ${output})
 \end{lstlisting}
 
-This command has a lot of optional fields to set, which may seem overwhelming at first, but as we read and compare it with the call made in the example, everything comes together:
+这个指令有很多可选的字段要设置，乍一看可能会让人不知所措，但当我们阅读并将其与示例中的调用进行比较时，就会发现所有内容都在一起:
 
 \begin{lstlisting}[style=styleCMake]
 try_run(<runResultVar> <compileResultVar>
@@ -146,11 +144,11 @@ try_run(<runResultVar> <compileResultVar>
 		[ARGS <args>...])
 \end{lstlisting}
 
-Only a few fields are required to compile and run a very basic test file. I also used the optional RUN\_OUTPUT\_VARIABLE keyword to collect the output from stdout.
+编译和运行一个非常基本的测试文件只需要几个字段，还使用可选的RUN\_OUTPUT\_VARIABLE关键字从stdout收集输出。
 
-The next step is to extend this simple file by using some of the more modern C++ features that we're going to use throughout the actual project – perhaps by adding a variadic template to see if the compiler on the target machine can digest it. Each time we introduce a new feature to the actual project, we can put a tiny sample of the same feature into the test file. But remember – keep it lean. We want to check if the compilation works in the shortest time possible.
+下一步是使用一些更现代的C++特性来扩展这个简单的文件，将在整个实际项目中使用这些特性——可能是添加一个可变变量模板，看看目标机器上的编译器是否能够消化它。每次我们在实际项目中引入一个新特性时，可以在测试文件中放入一个相同特性的小样本，希望检查编译是否在尽可能短的时间内工作。
 
-Finally, we can check in the conditional blocks if the collected output is meeting our expectations and message(SEND\_ERROR) is printed when something isn't right. Remember that SEND\_ERROR will continue through the configuration stage but won't start the generation. This is useful to show all of the encountered errors before aborting the build.
+最后，可以检入条件块，若收集的输出满足期望，并且当有些东西不正确时打印消息(SEND\_ERROR)。记住SEND\_ERROR将继续通过配置阶段，但不会生成。这有助于在中止构建之前显示遇到的所有错误。
 
 
 
