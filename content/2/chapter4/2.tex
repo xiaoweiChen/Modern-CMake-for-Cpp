@@ -1,15 +1,15 @@
 
-If you have ever used GNU Make, you will have already seen the concept of a target. Essentially, it's a recipe that a buildsystem uses to compile a list of files into another file. It can be a .cpp implementation file compiled into an .o object file, a group of .o files packaged into an .a static library, and many other combinations.
+若曾经使用过GNU Make，应该已经了解过目标的概念。本质上，它是构建系统用来将文件列表编译为另一个文件的一个方式。它可以是一个编译成.o对象文件的.cpp实现文件，一组打包成.o静态库的.o文件，以及许多其他组合。
 
-CMake, however, allows you to save time and skip the intermediate steps of those recipes; it works on a higher level of abstraction. It understands how to build an executable directly from source files. So, you don't need to write an explicit recipe to compile any object files. All that's required is an add\_executable() command with the name of the executable target and a list of the files that are to be its elements:
+然而，CMake可以节省时间，跳过这些食谱的中间步骤，其可以在更高的抽象级别上工作。CMake会理解如何直接从源文件构建可执行文件。因此，不需要编写显式的配方来编译任何目标文件。所需要的只是一个add\_executable()指令，该指令带有可执行目标的名称和将成为其元素的文件列表:
 
 \begin{lstlisting}[style=styleCMake]
 add_executable(app1 a.cpp b.cpp c.cpp)
 \end{lstlisting}
 
-We already used this command in previous chapters and we already know how executable targets are used in practice – during the generation step, CMake will create a buildsystem and fill it with recipes to compile each of the source files and link them together into a single binary executable.
+我们已经在前面的章节中使用了这个指令，并且已经知道了在实践中如何使用可执行目标——生成步骤中，CMake将创建一个构建系统，并将其填充为方案编译每个源文件，并将它们链接到单个二进制可执行文件中。
 
-In CMake, we can create a target using one of three commands:
+在CMake中，可以使用以下指令创建目标:
 
 \begin{itemize}
 \item 
@@ -22,22 +22,22 @@ add\_library()
 add\_custom\_target()
 \end{itemize}
 
-The first two are pretty self-explanatory; we briefly used them already in previous chapters to build executables and libraries (and we'll discuss them in depth in Chapter 5, Compiling C++ Sources with CMake). But what are those custom targets?
+前两个不言自明，在前几章中已经简要地使用过它们来构建可执行程序和库(我们将在第5章中深入讨论)。但是这些定制目标是什么呢?
 
-They allow you to specify your own command line that will be executed without checking whether the produced output is up to date, for example:
+其允许你指定自己的命令行，在不检查输出是否最新的情况下执行，例如:
 
 \begin{itemize}
 \item 
-Calculate the checksums of other binaries.
+计算其他二进制文件的校验和。
 
 \item 
-Run the code-sanitizer and collect the results.
+运行代码消毒程序并收集结果。
 
 \item 
-Send a compilation report to the data processing pipeline.
+向数据处理管道发送编译报告。
 \end{itemize}
 
-Here's the full signature of the add\_custom\_target() command:
+下面是add\_custom\_target()指令的完整签名:
 
 \begin{lstlisting}[style=styleCMake]
 add_custom_target(Name [ALL] [command1 [args1...]]
@@ -52,27 +52,27 @@ add_custom_target(Name [ALL] [command1 [args1...]]
 				[SOURCES src1 [src2...]])
 \end{lstlisting}
 
-We won't discuss every option here, as we want to quickly move on to other targets, but let's just say that custom targets don't necessarily have to produce tangible artifacts in the form of files.
+不会在这里详述每个选项，但定制目标不一定要以文件的形式产生工件。
 
-One good use case for custom targets might be the need to remove specific files on every build – for example, to make sure that code-coverage reports don't contain stale data. All we need to do is define a custom target like so:
+定制目标的一个好的用例，可能是需要在每个构建中删除特定的文件——例如，以确保代码覆盖率报告不包含过时的数据。需要做的就是像这样定义一个自定义目标:
 
 \begin{lstlisting}[style=styleCMake]
 add_custom_target(clean_stale_coverage_files
 		COMMAND find . -name "*.gcda" -type f -delete)
 \end{lstlisting}
 
-The preceding command will search for all files with a .gcda extension and remove them. There is one catch though; unlike executable and library targets, custom targets won't be built until they are added to a dependency graph. Let's find out what that is.
+上面的命令将搜索所有扩展名为.gcda的文件，并删除它们。不过有一个问题;与可执行目标和库目标不同，自定义目标只有添加到依赖关系图中才会构建。
 
-\subsubsubsection{4.2.1\hspace{0.2cm}Dependency graph}
+\subsubsubsection{4.2.1\hspace{0.2cm}依赖图}
 
-Mature applications are often built from many components, and I don't mean external dependencies here. Specifically, I'm talking about internal libraries. Adding them to the project is useful from a structural perspective, as related things are packaged together in a single logical entity. And they can be linked with other targets – another library or an executable. This is especially convenient when multiple targets are using the same library. Take a look at Figure 4.1, which describes an exemplary dependency graph:
+成熟的应用通常是由许多组件构建，这里指的不是外部依赖关系。具体来说是内部库。从结构的角度来看，将它们添加到项目中是有用的，可以将相关的东西打包在一个逻辑实体中，还可以链接到其他目标——另一个库或可执行文件。当多个目标使用同一个库时，这尤其方便。请看图4.1，其描述了一个示例依赖性图:
 
 \begin{center}
-\includegraphics[width=0.5\textwidth]{content/2/chapter4/images/1.jpg}\\
-Figure 4.1 – Order of building dependencies in the BankApp project
+\includegraphics[width=0.4\textwidth]{content/2/chapter4/images/1.jpg}\\
+图4.1  BankApp项目中构建依赖的顺序
 \end{center}
 
-In this project, we have two libraries, two executables, and a custom target. Our use case here is to provide a banking application with a nice GUI for users (GuiApp), and a command-line version to be used as part of an automated script (TerminalApp). Both executables are depending on the same Calculations library, but only one of them needs the Drawing library. To guarantee that our app wasn't modified when it was downloaded from the internet by an end user, we'll calculate a checksum, store it in a file, and distribute it through separate secure channels. CMake is pretty flexible when it comes to writing list files for such a solution:
+这个项目中，有两个库、两个可执行程序和一个自定义目标。这里的用例是为用户提供一个银行应用，该应用程序具有一个漂亮的GUI(GuiApp)，以及一个命令行版本，可作为自动化脚本(TerminalApp)的一部分使用。两个可执行程序都依赖于相同的计算库，但只有一个需要绘图库。为了确保应用程序下载正确，将计算一个校验和，将其存储在一个文件中，并通过单独的安全通道分发它。CMake在为这样的解决方案编写列表文件时非常灵活:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter04/01-targets/CMakeLists.txt
@@ -97,67 +97,67 @@ add_custom_target(checksum ALL
 )
 \end{lstlisting}
 
-We connect our libraries with executables by using the target\_link\_libraries() command. Without it, the compilation for executables would fail because of undefined symbols. Have you noticed that we invoked this command before actually declaring any of the libraries? When CMake configures the project, it collects the information about targets and their properties – their names, dependencies, source files, and other details.
+们使用target\_link\_libraries()指令将库与可执行文件连接起来。若没有它，可执行文件的编译将会因为未定义的符号而失败。我们在实际声明库之前调用了这个命令。当CMake配置项目时，其会收集关于目标，及其属性的信息——名称、依赖项、源文件和其他信息。
 
-After parsing all the files, CMake will attempt to build a dependency graph. And like with all valid dependency graphs, they're directional acyclic graphs. This means that there is a clear direction of which target depends on which, and such dependencies cannot form cycles.
+解析所有文件之后，CMake将尝试构建一个依赖图。和所有有效的依赖图一样，它们是有向无环图。有着一个明确的方向，确定哪个目标依赖于哪个目标，不过这样的依赖不能形成环。
 
-When we execute cmake in build mode, the generated buildsystem will check what top-level targets we have defined and recursively build their dependencies. Let's consider our example from Figure 4.1:
+当在构建模式下执行cmake时，生成的构建系统将检查我们已经定义的顶级目标并递归构建它们的依赖项。考虑一下图4.1中的例子:
 
 \begin{enumerate}
 \item 
-Start from the top, and build both libraries in group 1.
+从顶部开始，构建第1组中的两个库。
 
 \item 
-When the Calculations and Drawing libraries are complete, build group 2 – GuiApp and TerminalApp.
+计算和绘图库完成后，构建组2 - GuiApp和TerminalApp。
 
 \item 
-Build a checksum target; run specified command lines to generate checksums (cksum is a Unix checksum tool).
+构建一个校验和目标;运行指定的命令行生成校验和(cksum是一个Unix校验和工具)。
 \end{enumerate}
 
-There's a slight issue though – the preceding solution doesn't guarantee that a checksum target will be built after executables. CMake doesn't know that a checksum depends on the executable binaries being present, so it's free to start building it first. To resolve this problem, we can put the add\_dependencies() command at the end of the file:
+有一个小问题——前面的解决方案并不能保证在可执行文件之后构建校验和目标。CMake不知道校验和依赖于当前的可执行二进制文件，所以可以自由地先开始构建它。为了解决这个问题，可以把add\_dependencies()指令放在文件的末尾:
 
 \begin{lstlisting}[style=styleCMake]
 add_dependencies(checksum terminal_app gui_app)
 \end{lstlisting}
 
-This will ensure that CMake understands the relation between the Checksum target and the executables.
+这将确保CMake理解Checksum目标和可执行程序之间的关系。
 
-That's great, but what's the difference between target\_link\_libraries() and add\_dependencies()? The first is intended to be used with actual libraries and allows you to control property propagation. The second is meant to be used only with top-level targets to set their build order.
+这很好，不过target\_link\_libraries()和add\_dependencies()之间有什么区别呢?第一个用于与实际库一起使用，并允许控制属性传播。第二种方法只能用于顶层目标，以设置它们的构建顺序。
 
-As projects grow in complexity, the dependency tree gets harder to understand. How can we simplify this process?
+随着项目变得越来越复杂，依赖树变得越来越难以理解。如何简化这个过程?
 
-\subsubsubsection{4.2.2\hspace{0.2cm}Visualizing dependencies}
+\subsubsubsection{4.2.2\hspace{0.2cm}可视化的依赖性}
 
-Even small projects can be difficult to reason about and share with other developers. The easiest way to do so is through a nice diagram. After all, a picture is worth a thousand words. We can do the work and draw a diagram ourselves, just like I did in Figure 4.1. But this is tedious and would require constant updates. Luckily, CMake has a great module to generate dependency graphs in the dot/graphviz format. And it supports both internal and external dependencies!
+即使是小项目也很有难和与其他开发人员直接分享。最简单的方法是通过一个漂亮的图表。毕竟，一张图片胜过千言万语。我们可以自己做这个工作并画一个图表，就像我在图4.1中所做的那样。但这很没意思，而且需要不断更新。幸运的是，CMake有一个很好的模块来生成点/graphviz格式的依赖关系图。它支持内部和外部依赖关系!
 
-To use it, we can simply execute this command:
+要使用它，可以简单地执行以下命令:
 
 \begin{tcblisting}{commandshell={}}
 cmake --graphviz=test.dot .
 \end{tcblisting}
 
-The module will produce a text file that we can import to the Graphviz visualization software, which can render an image or produce a PDF or SVG file that can be stored as part of the software documentation. Everybody loves great documentation, but hardly anyone likes to create it – now, you don't need to!
+该模块将生成一个文本文件，可以将该文本文件导入Graphviz可视化软件，该软件可以渲染图像或生成PDF或SVG文件，这些文件可以作为软件文档的一部分存储。每个人都喜欢好的文档，但是几乎没有人喜欢创建文档——现在，不需要自己来做了!
 
-If you're in a rush, you can even run Graphviz straight from your browser at this address:
+如果你赶时间，甚至可以直接从浏览器运行Graphviz，地址如下:
 
 \url{https://dreampuf.github.io/GraphvizOnline/}
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Important Note]
-Custom targets are not visible by default and we need to create a special configuration file, CMakeGraphVizOptions.cmake, that will allow us to customize the graph. One handy customization command is set(GRAPHVIZ\_CUSTOM\_TARGETS TRUE); add it to the special configuration file to enable reporting custom targets in your graph. You can find more options in the documentation for the module.
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=重要的Note]
+自定义目标在默认情况下是不可见的，需要创建一个特殊的配置文件CMakeGraphVizOptions.cmake，它允许自定义图形。设置了一个方便的定制命令(GRAPHVIZ\_CUSTOM\_TARGETS TRUE);将其添加到特殊的配置文件中，以支持报告图中的自定义目标。可以在该模块的文档中找到更多选项。
 \end{tcolorbox}
 
-All you need to do is copy and paste the contents of the test.dot file into the window on the left and your project will be visualized. Quite convenient, isn't it?
+所需要做的就是复制和粘贴测试的内容。点文件到左边的窗口，项目将会可视化。很方便，不是吗?
 
 \begin{center}
 \includegraphics[width=0.8\textwidth]{content/2/chapter4/images/2.jpg}\\
-Figure 4.2 – A visualization of the BankApp example in Graphviz
+图4.2  Graphviz中BankApp示例的可视化
 \end{center}
 
-I have removed the automatically generated legend section from the preceding figure for clarity.
+为了清晰起见，从上图中删除了自动生成的图例部分。
 
-Using this method, we can quickly see all the explicitly defined targets. Now that we have this global perspective, let's do a deep dive and see how to configure them.
+使用这种方法，可以快速地看到所有显式定义的目标。现在有了这个全局视角，让我们深入研究一下如何配置。
  
-\subsubsubsection{4.2.3\hspace{0.2cm}Target properties}
+\subsubsubsection{4.2.3\hspace{0.2cm}目标属性}
 
 Targets have properties that work in a similar way to fields of C++ objects. We can modify some of these properties and others are read-only. CMake defines a large list of "known properties" (see the Further reading section) that are available depending on the type of the target (executable, library, or custom). You can also add your own properties if you like. Use the following commands to manipulate the properties of a target:
 
@@ -182,7 +182,7 @@ Generally, it's better to use as many high-level commands as you can. CMake offe
 
 We'll introduce more property setting commands when we discuss compiling and linking in upcoming chapters. Meanwhile, let's focus on how the properties of one target can transition to another.
 
-\subsubsubsection{4.2.4\hspace{0.2cm}What are transitive usage requirements?}
+\subsubsubsection{4.2.4\hspace{0.2cm}可传递需求}
 
 Let's just agree that naming is hard, and sometimes one ends up with a result that's hard to understand. "Transitive usage requirements" is, unfortunately, one of those cryptic titles that you will encounter in the online CMake documents. Let's untangle this strange name and perhaps propose a term easier to understand.
 
@@ -301,7 +301,7 @@ The basic target\_link\_libraries(<target> <item>...) command that we used befor
 
 If you correctly set propagation keywords for your source targets, properties will be automatically placed on destination targets for you – unless there's a conflict…
 
-\subsubsubsection{4.2.5\hspace{0.2cm}Dealing with conflicting propagated properties}
+\subsubsubsection{4.2.5\hspace{0.2cm}处理冲突的传播属性}
 
 When one target depends on multiple other targets, there may be a situation where propagated properties are in outright conflict with each other. Say that one used target specifies the POSITION\_INDEPENDENT\_CODE property as true and the other as false. CMake understands this as a conflict and will print an error similar to this:
 
@@ -363,13 +363,13 @@ CMake will propagate this custom property to the destination target and check wh
 
 Now that we understand what targets are, let's take a look at other things that look like targets, smell like targets, and sometimes act like targets but, as it turns out, aren't the real deal.
 
-\subsubsubsection{4.2.6\hspace{0.2cm}Meet the pseudo targets}
+\subsubsubsection{4.2.6\hspace{0.2cm}实现伪目标}
 
 The concept of a target is so useful that it would be great if some of its behaviors could be borrowed for other things too. This is, specifically, things that do not represent outputs of the buildsystem but rather inputs – external dependencies, aliases, and so on. These are the pseudo targets, or targets that don't make it to the generated buildsystem.
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Imported targets}
+\textbf{导入目标}
 
 If you skimmed the table of contents, you know that we'll be talking about how CMake manages external dependencies – other projects, libraries, and so on. IMPORTED targets are essentially products of this process. CMake can define them as a result of the find\_ package() command.
 
@@ -379,7 +379,7 @@ The scope of the definition of an IMPORTED target can be global or local to the 
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Alias targets}
+\textbf{别名目标}
 
 Alias targets do exactly what you expect – they create another reference to a target under a different name. You can create alias targets for executables and libraries with the following commands:
 
@@ -394,7 +394,7 @@ So, what is the reason to have aliases at all? They come in handy in scenarios w
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Interface libraries}
+\textbf{接口库}
 
 This is an interesting construct – a library that doesn't compile anything but instead serves as a utility target. Its whole concept is built around propagated properties (transitive usage requirements).
 
@@ -436,7 +436,7 @@ The add\_library(INTERFACE) command creates a logical warning\_props target that
 
 Are pseudo targets exhausting the concept of the target? Of course not! That would simply be too easy. We still need to understand how these targets translate to produced buildsystems.
 
-\subsubsubsection{4.2.7\hspace{0.2cm}Build targets}
+\subsubsubsection{4.2.7\hspace{0.2cm}构建目标}
 
 Target is a bit of a loaded word. It means different things in the context of a project and the context of generated buildsystems. When CMake generates a buildsystem, it "compiles" list files from CMake language to the language of a chosen build tool; perhaps it creates a Makefile for GNU Make. Such Makefiles have their own targets – some of them are direct conversions of list file targets, and others are created implicitly.
 

@@ -1,22 +1,23 @@
-The most basic target we can build in CMake is a single binary executable file that encompasses an entire application. It can be made out of a single piece of source code, such as the classic helloworld.cpp. Or it can be something complex – built with hundreds or even tens of thousands of files. This is what many beginner projects look like – create a binary with one source file, add another, and, before you know it, everything is linked to a single binary without any structure whatsoever.
 
-As software developers, we deliberately draw boundaries and designate components to group one or more units of translation (.cpp files). We do it for multiple reasons: to increase code readability, manage coupling and connascence, speed up the build process, and finally, extract the reusable components. Every project that is big enough will push you to introduce some form of partitioning.
+可以在CMake中构建的最基本目标是包含整个应用程序的单个二进制可执行文件，其可由一段源码组成，例如经典的helloworld.cpp。也可以是一些复杂的东西——由数百甚至数万个文件构建。这就是许多初级项目看起来的样子——用一个源文件创建一个二进制文件，添加另一个，然后，所有内容都链接到单个二进制文件，没有任何文件结构。
 
-A target in CMake is an answer to exactly that problem – a high-level logical unit that forms a single objective for CMake. A target may depend on other targets, and they are produced in a declarative way. CMake will take care of determining in what order targets have to be built and then execute the necessary steps one by one. As a general rule, building a target will produce an artifact that will be fed into other targets or delivered as a final product of the build.
+作为软件开发人员，我们故意划定边界并指定组件来分组一个或多个翻译单元(.cpp文件)。这样做的原因有很多:增加代码可读性，管理耦合和连接，加快构建过程，最后提取可重用组件。每个足够大的项目都需要引入某种形式的分区。
 
-I deliberately use the inexact word artifact because CMake doesn't limit you to producing executables or libraries. In reality, we can use generated buildsystems to create many kinds of output: more source files, headers, object files, archives, and configuration files – anything really. All we need is a command-line tool (such as a compiler), optional input files, and an output path.
+CMake中的目标就是这个问题的解决方案——为CMake形成单一目标的高级逻辑单元。一个目标可能依赖于其他目标，并且可以以声明的方式产生的。CMake将负责确定构建目标的顺序，然后逐个执行必要的步骤。作为一般规则，构建一个目标将产生一个工件，该工件将发送到其他目标或作为构建的最终产品交付。
 
-Targets are a very powerful concept and simplify building a project greatly. It is key to understand how they work and how to configure them in the most elegant and clean way.
+故意使用“工件”这个不准确的词，是因为CMake不限制只生成可执行文件或库。实际上，可以使用生成的构建系统来创建多种类型的输出:更多的源文件、头文件、目标文件、存档和配置文件——可以是任何东西。我们所需要的只是一个命令行工具(如编译器)、可选的输入文件和一个输出路径。
 
-In this chapter, we're going to cover the following main topics:
+目标是一个非常强大的概念，极大地简化了项目的构建。理解其如何工作，以及如何以最优雅和干净的方式配置它们非常重要。
+
+本章中，我们将讨论以下主题:
 
 \begin{itemize}
 \item 
-The concept of a target
+目标的概念
 
 \item 
-Writing custom commands
+编写自定义命令
 
 \item 
-Understanding generator expressions
+生成器表达式
 \end{itemize}
