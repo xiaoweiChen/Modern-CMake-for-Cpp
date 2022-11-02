@@ -1,137 +1,138 @@
 
-CMake builds the solution in three stages – configuration, generation, and running the build tool. Generally, we have all the required data during the configuration stage. But every once in a while, we encounter the chicken and the egg problem. Take an example from the previous section – a target needs to know the path of a binary artifact of another target. But that information is only available after all the list files are parsed and the configuration stage is complete.
+CMake通过三个阶段构建解决方案——配置、生成和运行构建工具。通常，在配置阶段就有了所有所需的数据。但每隔一段时间，我们就会遇到先有鸡还是先有蛋的问题。举一个前一节的例子——一个目标需要知道另一个目标的二进制工件的路径。但是，只有在解析所有列表文件并完成配置阶段之后，这些信息才可用。
 
-How do we deal with that kind of problem? We could create a placeholder for that information and postpone its evaluation to the next stage – the generation stage.
+该如何处理这种问题呢?可以为该信息创建一个占位符，并将其评估推迟到下一个阶段——生成阶段。
 
-This is what generator expressions (sometimes called genexes) do. They are built around target properties such as LINK\_LIBRARIES, INCLUDE\_DIRECTORIES, COMPILE\_DEFINITIONS, propagated properties, and many others, but not all. They follow rules similar to conditional statements and variable evaluation.
+这就是生成器表达式(有时称为genexes)所做的事，其是围绕目标属性构建的，如LINK\_LIBRARIES、INCLUDE\_DIRECTORIES、COMPILE\_DEFINITIONS、传播属性和许多其他属性，但不是全部。遵循类似条件语句和变量求值的规则。
 
-It's worth noting that expressions are generally evaluated in the context of the target using the expression (unless explicitly stated otherwise).
+值得注意的是，表达式通常是在使用的目标上下文中求值的(除非另有明确说明)。
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Important Note]
-Generator expressions will be evaluated at the generation stage (when the configuration is complete and the buildsystem is created), which means that you can't capture their output into a variable and print it to the console very easily. To debug them, you can use either of these methods: 
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=重要的Note]
+生成器表达式将在生成阶段计算(当配置完成并创建构建系统时)，所以不能将其输出捕获到变量中，并打印到控制台。要调试它们，可以使用以下方法中的任何一种:
 
 \begin{itemize}
 \item 
-Write it to a file (this specific version of the file() command supports generator expressions): \begin{lstlisting}[style=styleCMake]
+将其写入一个文件(file()指令的这个特定版本支持生成器表达式):
+\begin{lstlisting}[style=styleCMake]
 file(GENERATE OUTPUT filename CONTENT "$<...>")
 \end{lstlisting}
 
 \item 
-Add a custom target and build it explicitly from the command line: 
+添加一个自定义目标，并从命令行显式地构建它:
 \begin{lstlisting}[style=styleCMake]
 custom_target(gendbg COMMAND ${CMAKE_COMMAND} -E echo "$<...>")
 \end{lstlisting}
 \end{itemize}
 \end{tcolorbox}
 
-\subsubsubsection{4.4.1\hspace{0.2cm}General syntax}
+\subsubsubsection{4.4.1\hspace{0.2cm}一般语法}
 
-Let's take the simplest possible example:
+举一个最简单的例子:
 
 \begin{lstlisting}[style=styleCMake]
 target_compile_definitions(foo PUBLIC
 	BAR=$<TARGET_FILE:foo>)
 \end{lstlisting}
 
-The preceding command adds a -D definition flag to the compiler's arguments (ignore PUBLIC for now) that sets the BAR preprocessor definition to the path of the binary artifact of the foo target.
+上面的命令在编译器的参数中添加了一个-D定义标志(暂时忽略PUBLIC)，将BAR预处理器定义设置为foo目标的二进制工件的路径。
 
-How is the generator expression formed?
+生成器表达式如何形成的?
 
 \begin{center}
 \includegraphics[width=0.5\textwidth]{content/2/chapter4/images/4.jpg}\\
-Figure 4.4 – The syntax of a generator expression
+图4.4 生成器表达式的语法
 \end{center}
 
-As you can see in Figure 4.4, the structure seems fairly simple and readable:
+如图4.4所示，该结构看起来相当简单且可读:
 
 \begin{itemize}
 \item 
-Open with a dollar and a bracket (\$<)
+以\$和括号(\$<)开头
 
 \item 
-Add the EXPRESSION name
+添加EXPRESSION名称
 
 \item 
-If an expression requires arguments, add a colon (:) and provide the arg1, arg2, and arg3 values, separated with a comma (,).
+如果表达式需要参数，则添加冒号(:)并提供arg1、arg2和arg3值，用逗号分隔。
 
 \item 
-Close the expression with >.
+用>关闭表达式。
 \end{itemize}
 
-There are even expressions that do not require any arguments, such as \$<PLATFORM\_ID>. However, generator expressions can quickly become very confusing and complicated when using their more advanced features.
+甚至有些表达式不需要任何参数，例如\$<PLATFORM\_ID>。然而，在使用生成器表达式更高级的特性时，生成器表达式很快就会变得非常混乱和复杂。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Nesting}
+\textbf{嵌套}
 
-Let's start with the ability to pass a general expression as an argument to another expression or, in other words, general expression nesting:
+将通用表达式作为参数传递给另一个表达式的能力开始，换句话说，通用表达式嵌套:
 
 \begin{lstlisting}[style=styleCMake]
 $<UPPER_CASE:$<PLATFORM_ID>>
 \end{lstlisting}
 
-This isn't a very complex example, but it's easy to imagine what happens when we increase nesting levels and work with commands using multiple arguments.
+这不是一个非常复杂的示例，但很容易想象当增加嵌套级别并使用使用多个参数的命令时会发生什么。
 
-As if that's not enough, you can technically add a variable expansion to this mix:
+若这还不够，可以在组合中添加一个变量展开:
 
 \begin{lstlisting}[style=styleCMake]
 $<UPPER_CASE:${my_variable}>
 \end{lstlisting}
 
-A variable will be expanded at the configuration stage and a generation expression at the generation stage. There are some rare uses for this feature, but I strongly recommend avoiding it.
+在配置阶段将展开一个变量，生成阶段将展开一个生成表达式。这个功能有一些罕见的用法，但强烈建议别去使用。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Conditional expressions}
+\textbf{条件表达式}
 
-Boolean logic is supported in generator expressions. It's a great feature, but for legacy reasons, its syntax is inconsistent and can be hard to read. It's available in two forms. The first form supports both happy and sad paths:
+生成器表达式支持布尔逻辑。这是一个很好的特性，但是由于历史原因，它的语法不一致，很难阅读。它有两种形式。第一种形式支持成功和失败的路径:
 
 \begin{lstlisting}[style=styleCMake]
 $<IF:condition,true_string,false_string>
 \end{lstlisting}
 
-The syntax here is aligned with all other expressions and, like all expressions, nesting is allowed. So, you can replace any of the arguments with another expression and produce some very complex evaluations – you can even nest one condition in another. This form requires exactly three arguments, so we can't omit anything. Our best option to skip a value in case of an unmet condition is the following:
+这里的语法与所有其他表达式对齐，并且与所有表达式一样，允许嵌套。因此，可以用另一个表达式替换任何参数，并生成一些非常复杂的计算——甚至可以将一个条件嵌套在另一个条件中。这种形式恰好需要三个参数，因此不能省略任何内容。在未满足条件的情况下，跳过值的最佳选项如下:
 
 \begin{lstlisting}[style=styleCMake]
 $<IF:condition,true_string,>
 \end{lstlisting}
 
-The second form is a shorthand for the preceding; it will only expand to a string if the condition is met:
+第二种形式是前一种的缩写;只有满足以下条件，才会展开为字符串:
 
 \begin{lstlisting}[style=styleCMake]
 $<condition:true_string >
 \end{lstlisting}
 
-As you can see, it breaks the convention of providing the EXPRESSION name as the first token. I assume that the intention here was to shorten the expression and skip those precious three characters, but the outcome can be really hard to rationalize. Here's one example from the CMake documentation:
+这打破了提供EXPRESSION名称作为第一个标记的惯例。我认为这里的意图是缩短表达并跳过这三个宝贵的字符，但结果真的很难合理解释。下面是CMake文档中的一个例子:
 
 \begin{lstlisting}[style=styleCMake]
 $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:AppleClan
 	g,Clang>>:COMPILING_CXX_WITH_CLANG>
 \end{lstlisting}
 
-I wish the syntax was aligned with conditions for the regular IF command, but sadly that's not the case.
+希望语法与常规if指令的条件一样，但遗憾的是事实并非如此。
 
-\subsubsubsection{4.4.2\hspace{0.2cm}Types of evaluation}
+\subsubsubsection{4.4.2\hspace{0.2cm}计算类型}
 
-Generator expressions are evaluated to one of two types – Boolean or string. Boolean is represented by 1 (true) and 0 (false). Everything else is just a string.
+生成器表达式可以计算成两种类型——布尔或字符串。布尔值由1(真)和0(假)表示。其他的都只是一个字符串。
 
-It's important to remember that nested expressions passed as conditions in conditional expressions are explicitly required to evaluate to Boolean.
+在条件表达式中作为条件传递的嵌套表达式，显式为布尔值。
 
-There's an explicit logical operator to convert strings to Boolean, but Boolean types can be converted to strings implicitly.
+有一个显式逻辑运算符可以将字符串转换为布尔类型，但布尔类型可以隐式转换为字符串。
 
-Now that we know the basic syntax, let's take a look at what we can do with it.
-
-\hspace*{\fill} \\ %插入空行
-\noindent
-\textbf{Evaluation to Boolean}
-
-We started discussing conditional expressions in the previous section. I want to get the whole concept covered right off the bat so that there's no need to return to it later. There are three categories of expressions that get evaluated to Boolean.
+现在我们知道了基本的语法，来看看能用它做什么。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Logical operators}
+\textbf{布尔型}
 
-There are four logical operators:
+在前一节开始讨论条件表达式。这里先把整个概念讲完，这样以后就不需要再回头讲了。有三种类型的表达式的值为布尔值。
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{逻辑运算符}
+
+逻辑运算符有4种:
 
 \begin{itemize}
 \item 
@@ -139,14 +140,14 @@ There are four logical operators:
 $<NOT:arg> 
 \end{lstlisting}
 
-negates the Boolean argument.
+否定布尔参数。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<AND:arg1,arg2,arg3...> 
 \end{lstlisting}
 
-returns 1 if all the arguments are 1.
+若所有参数都为1，则返回1。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
@@ -159,27 +160,27 @@ $<OR:arg1,arg2,arg3...>
 $<BOOL:string_arg> 
 \end{lstlisting}
 
-converts arguments from a string to a Boolean type.
+将参数从字符串转换为布尔类型。
 \end{itemize}
 
-String conversion will evaluate to 1 if none of these conditions are met:
+若这些条件都不满足，字符串转换将计算为1:
 
 \begin{itemize}
 \item 
-The string is empty.
+字符串为空。
 
 \item 
-The string is a case-insensitive equivalent of 0, FALSE, OFF, N, NO, IGNORE, or NOTFOUND.
+字符串不区分大小写，相当于0、FALSE、OFF、N、NO、IGNORE或NOTFOUND。
 
 \item 
-The string ends in the -NOTFOUND suffix (case-sensitive).
+字符串以-NOTFOUND后缀结尾(区分大小写)。
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{String comparison}
+\textbf{字符串比较}
 
-Comparisons will evaluate to 1 if their condition is met and 0 otherwise:
+若满足条件比较的值为1，否则为0:
 
 \begin{itemize}
 \item 
@@ -187,21 +188,21 @@ Comparisons will evaluate to 1 if their condition is met and 0 otherwise:
 $<STREQUAL:arg1,arg2> 
 \end{lstlisting}
 
-is a case-sensitive string comparison.
+是区分大小写的字符串比较。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<EQUAL:arg1,arg2> 
 \end{lstlisting}
 
-converts a string to a number and compares equality.
+将字符串转换为数字并比较是否相等。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<IN_LIST:arg,list> 
 \end{lstlisting}
 
-checks whether the arg element is in the list list (case-sensitive).
+检查arg元素是否在列表列表中(区分大小写)。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
@@ -209,63 +210,63 @@ $<VERSION_EQUAL:v1,v2>, $<VERSION_LESS:v1,v2>,
 $<VERSION_GREATER:v1,v2>, $<VERSION_LESS_EQUAL:v1,v2>,
 $<VERSION_GREATER_EQUAL:v1,v2> 
 \end{lstlisting}
-are component-wise version comparisons.
+版本组件的比较。
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Variable queries}
+\textbf{查询变量}
 
-There are plenty of variables that contain Boolean-typed values. They also will evaluate to 1 if their condition is met and 0 otherwise.
+有许多变量包含布尔类型的值。如果满足条件，则求值为1，否则为0。
 
-There is one simple query:
+简单的查询:
 
 \begin{itemize}
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_EXISTS:arg> 
 \end{lstlisting}
-does the arg target exist?
+arg目标是否存在?
 \end{itemize}
 
-There are multiple queries scanning passed arguments for a specific value:
+有多个查询扫描传递的参数以获取特定值:
 
 \begin{itemize}
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<CONFIG:args>
 \end{lstlisting}
-is the current config (Debug, Release, and so on) in args (case-insensitive).
+是args中的当前配置(Debug, Release，等等)(不区分大小写)。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<PLATFORM_ID:args>
 \end{lstlisting}
-is the current platform ID in args.
+是args中的当前平台ID。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<LANG_COMPILER_ID:args>
 \end{lstlisting}
-is CMake's LANG compiler ID in args, where LANG is one of C, CXX, CUDA, OBJC, OBJCXX, Fortran, or ISPC.
+是CMake的LANG编译器ID在args中，其中LANG是C、CXX、CUDA、OBJC、OBJCXX、Fortran或ISPC中的一种。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<LANG_COMPILER_VERSION:args>
 \end{lstlisting}
-is the CMake's LANG compiler version in args, where LANG is one of C, CXX, CUDA, OBJC, OBJCXX, Fortran, or ISPC.
+是CMake的LANG编译器的args版本，其中LANG是C、CXX、CUDA、OBJC、OBJCXX、Fortran或ISPC中的一种。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<COMPILE_FEATURES:features>
 \end{lstlisting}
-will return true if features is supported by the compiler for this target.
+若编译器支持此目标的特性，则返回true。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<COMPILE_LANG_AND_ID:lang,compiler_id1,compiler_id2...>
 \end{lstlisting}
-is the language of this lang target and is the compiler used for this target present in the compiler\_ids list. This expression is useful to specify details of a configuration for specific compilers:
+是这个lang目标的语言，是在compiler\_ids列表中为这个目标使用的编译器。这个表达式对于指定特定编译器的配置细节很有用:
 
 \begin{lstlisting}[style=styleCMake]
 target_compile_definitions(myapp PRIVATE
@@ -275,14 +276,14 @@ target_compile_definitions(myapp PRIVATE
 )
 \end{lstlisting}
 
-In the preceding example, if we compile the CXX compiler with AppleClang or Clang, the -DCXX\_CLANG definition will be set. For the CXX compiler from Intel, the -DCXX\_INTEL definition flag will be set. Lastly, for the C and Clang compiler, we'll get a -DC\_CLANG definition.
+在前面的例子中，若用AppleClang或Clang编译CXX编译器，则会设置-DCXX\_CLANG定义。对于来自Intel的CXX编译器，将设置-DCXX\_INTEL标志。最后，对于C和Clang编译器，我们将得到-DC\_CLANG定义。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<COMPILE_LANGUAGE:args>
 \end{lstlisting}
 
-if a language is used for the compilation of this target in args. This can be used to provide language-specific flags to the compiler:
+若使用一种语言在args中编译此目标。可以用来为编译器提供特定于语言的标志:
 
 \begin{lstlisting}[style=styleCMake]
 target_compile_options(myapp
@@ -290,33 +291,34 @@ target_compile_options(myapp
 )
 \end{lstlisting}
 
-If we compile CXX, the compiler will use the -fno-exceptions flag
+若编译CXX，编译器将使用-fno-exceptions标志
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<LINK_LANG_AND_ID:lang,compiler_id1,compiler_id2...>
 \end{lstlisting}
-works similarly to COMPILE\_LANG\_AND\_ID but checks the language used for the link step instead. Use this expression to specify link libraries, link options, link directories, and link dependencies of a particular language and a linker combination in a target.
+
+与COMPILE\_LANG\_AND\_ID的工作原理类似，但会检查链接步骤使用的语言。使用此表达式指定特定语言的链接库、链接选项、链接目录和链接依赖项，以及目标中的链接器组合。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<LINK_LANGUAGE:args>
 \end{lstlisting}
 
-is the language used for the link step in args.
+args中用于链接步骤的语言。
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Evaluation to a string}
+\textbf{字符串的求值}
 
-There are plenty of expressions that get evaluated to a string. We can output them directly to the placeholder of the target or consume as an argument to another expression. We already learned about one – conditional expression evaluates to a string. What else is available?
+有很多表达式最后求值为字符串。可以将它们直接输出到目标的占位符，也可以将它们作为另一个表达式的参数使用。我们已经了解了单条件表达式的计算结果是字符串。还有什么可选的?
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Variable queries}
+\textbf{的查变量}
 
-These expressions will evaluate to a specific value at the generation stage:
+表达式在生成阶段会求出特定的值:
 
 \begin{itemize}
 \item 
@@ -324,49 +326,49 @@ These expressions will evaluate to a specific value at the generation stage:
 $<CONFIG> 
 \end{lstlisting}
 
-the configuration (Debug and Release) name.
+配置(Debug和Release)名称。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<PLATFORM_ID>
 \end{lstlisting}
 
-the current system's CMake platform ID (Linux, Windows, or Darwin). We discussed platform in the previous chapter, in the Scoping the environment section.
+当前系统的CMake平台ID (Linux、Windows或Darwin)。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<LANG_COMPILER_ID> 
 \end{lstlisting}
 
-CMake's compiler ID of the LANG compiler used, where LANG is one of C, CXX, CUDA, OBJC, OBJCXX, Fortran, or ISPC.
+使用的LANG编译器的CMake编译器ID，其中LANG是C、CXX、CUDA、OBJC、OBJCXX、Fortran或ISPC中的一种。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<LANG_COMPILER_VERSION> 
 \end{lstlisting}
 
-CMake's compiler version of the LANG compiler used, where LANG is one of C, CXX, CUDA, OBJC, OBJCXX, Fortran, or ISPC.
+所使用的LANG编译器的CMake编译器版本，其中LANG是C、CXX、CUDA、OBJC、OBJCXX、Fortran或ISPC中的一种。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<COMPILE_LANGUAGE>
 \end{lstlisting}
 
-the compiled language of source files when evaluating compile options.
+计算编译选项时源文件的编译语言。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<LINK_LANGUAGE>
 \end{lstlisting}
 
-the link language of a target when evaluating link options.
+计算链接选项时目标的链接语言。
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Target-dependent queries}
+\textbf{查询依赖的目标}
 
-With the following queries, you can evaluate properties of an executable or library target. Note that since CMake 3.19, for most expressions querying a target in the context of another target no longer creates an automated dependency between these targets (as was happening before 3.19):
+通过以下查询，可以计算可执行文件或库目标的属性。注意，从CMake 3.19开始，对于大多数表达式来说，在另一个目标的上下文中查询一个目标不再在这些目标之间创建自动依赖关系(就像在3.19之前那样):
 
 \begin{itemize}
 \item 
@@ -374,64 +376,64 @@ With the following queries, you can evaluate properties of an executable or libr
 $<TARGET_NAME_IF_EXISTS:target>
 \end{lstlisting}
 
-the target name of target if it exists; it is an empty string otherwise.
+若目标存在，则为目标的目标名称;否则为空字符串。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_FILE:target>
 \end{lstlisting}
 
-the full path to the target binary file.
+目标二进制文件的完整路径。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_FILE_NAME:target>
 \end{lstlisting}
 
-the target filename.
+目标文件名。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_FILE_BASE_NAME:target>
 \end{lstlisting}
 
-the base name of target, or
+目标的基名或
 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_FILE_NAME:target>
 \end{lstlisting}
 
-without a prefix and suffix. For libmylib.so, the base name would be mylib.
+没有前缀和后缀。比如：libmylib.so的基名是mylib。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_FILE_PREFIX:target> 
 \end{lstlisting}
 
-the prefix of the target filename (lib).
+目标文件名(lib)的前缀。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_FILE_SUFFIX:target>
 \end{lstlisting}
 
-the suffix (or extension) of the target filename (.so, .exe).
+目标文件名的后缀(或扩展名)(.so，.exe)。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_FILE_DIR:target>
 \end{lstlisting}
 
-the directory of the target binary file
+目标二进制文件的目录
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_LINKER_FILE:target>
 \end{lstlisting}
 
-the file used when linking to the target target. Usually, it is the library that target represents (.a, .lib, .so) on platforms with Dynamically Linked Libraries (DLL); for a shared library, it will be a .lib import library.
+链接到目标目标时使用的文件。通常，目标表示的是库(.a，.lib，.so)在具有动态链接库(DLL)的平台上;对于动态库，将是.lib导入库。
 
-TARGET\_LINKER\_FILE offers the same family of expressions as the regular TARGET\_FILE expression:
+TARGET\_LINKER\_FILE提供了与常规TARGET\_FILE表达式相同的表达式群:
 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_LINKER_FILE_NAME:target>, $<TARGET_LINKER_FILE_
@@ -445,30 +447,30 @@ $<TARGET_LINKER_FILE_DIR:target>
 $<TARGET_SONAME_FILE:target>
 \end{lstlisting}
 
-the full path to a file with a soname(.so.3).
+带有soname(.so.3)的文件的完整路径。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_SONAME_FILE_NAME:target>
 \end{lstlisting}
 
-the name of a file with a soname.
+带有soname的文件名。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_SONAME_FILE_DIR:target> 
 \end{lstlisting}
 
-the directory of a file with a soname.
+带有soname的文件的目录。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_PDB_FILE:target>
 \end{lstlisting}
 
-the full path to the linker generated program database file (.pdb) for target.
+链接器为目标生成的程序数据库文件(.pdb)的完整路径。
 
-PDB files offer the same expressions as a regular TARGET\_FILE:
+PDB文件提供与常规TARGET\_FILE相同的表达式:
 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_PDB_FILE_BASE_NAME:target>, $<TARGET_PDB_FILE_NAME:target>,
@@ -480,36 +482,36 @@ $<TARGET_PDB_FILE_DIR:target>
 $<TARGET_BUNDLE_DIR:target> 
 \end{lstlisting}
 
-the full path to the bundle (Apple–specific package) directory (my.app, my.framework, or my.bundle) for target.
+bundle(apple特定的包)目录的完整路径(my.app, my.framework或my.bundle)为目标。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_PROPERTY:target,prop>
 \end{lstlisting}
 
-the prop value for target.
+目标的prop值。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_PROPERTY:prop>
 \end{lstlisting}
 
-the prop value for target for which the expression is being evaluated.
+要对表达式求值的目标的prop值。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<INSTALL_PREFIX> 
 \end{lstlisting}
 
-the install prefix when the target is exported with install(EXPORT) or when evaluated in INSTALL\_NAME\_DIR; otherwise, it is empty.
+当目标用install(EXPORT)导出时，或者当在install \_NAME\_DIR中求值时，安装前缀;否则，它为空。
 
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Escaping}
+\textbf{特殊用法}
 
-On a rare occasion, you may need to pass a character to a generator expression that has a special meaning. To escape this behavior, use the following expressions:
+极少数情况下，可能需要将一个字符传递给具有特殊含义的生成器表达式。要避免此行为，使用以下表达式:
 
 \begin{itemize}
 \item 
@@ -517,28 +519,28 @@ On a rare occasion, you may need to pass a character to a generator expression t
 $<ANGLE-R>
 \end{lstlisting}
 
-a literal > symbol (which compares strings containing >)
+字面值>符号(比较包含>的字符串)
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<COMMA>
 \end{lstlisting}
 
-a literal , symbol (which compares strings containing ,)
+字面值，符号(比较包含，的字符串)
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<SEMICOLON>
 \end{lstlisting}
 
-a literal ; symbol (which prevents a list expansion on an argument with ;)
+字面值，符号(防止对参数进行列表展开)
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{String transformations}
+\textbf{字符串转换}
 
-Working with strings in the generator stage is possible with the following expressions:
+使用以下表达式可以在生成器阶段处理字符串:
 
 \begin{itemize}
 \item 
@@ -546,55 +548,55 @@ Working with strings in the generator stage is possible with the following expre
 $<JOIN:list,d> 
 \end{lstlisting}
 
-join a semicolon-separated list using a d delimiter.
+使用d分隔符连接以分号分隔的列表。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<REMOVE_DUPLICATES:list>
 \end{lstlisting}
 
-remove duplicates without sorting list.
+在没有排序列表的情况下删除副本。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<FILTER:list,INCLUDE|EXCLUDE,regex>
 \end{lstlisting}
 
-include/exclude items from a list using a regex regular expression.
+使用正则表达式从列表中包含/排除项。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<LOWER_CASE:string>, $<UPPER_CASE:string>
 \end{lstlisting}
 
-convert the string to another case.
+将字符串转换为另一种情况。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<GENEX_EVAL:expr>
 \end{lstlisting}
 
-evaluate the expr string as a nested expression in the context of the current target. This is useful when an evaluation of a nested expression returns another expression (they aren't evaluated recursively).
+将expr字符串作为当前目标上下文中的嵌套表达式求值。当嵌套表达式的求值返回另一个表达式(它们不是递归求值)时，这很有用。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<TARGET_GENEX_EVAL:target,expr>
 \end{lstlisting}
 
-evaluate expr similarly to the GENEX\_EVAL transformation but in the context of target.
+与GENEX\_EVAL转换类似，但是在目标的上下文中。
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Output-related expressions}
+\textbf{输出相关的表达式}
 
-CMake documentation fails to provide a good explanation of what "output-related expressions" are. That leaves us a little lost; how are they related to output?
+CMake文档未能很好地解释什么是“与输出相关的表达式”。这让我们有点困惑，其与产出有什么关系?
 
-As per the v3.13 documentation (removed in newer revisions), "These expressions generate output, in some cases depending on an input." 
+根据v3.13文档(在更新的版本中删除了)，“这些表达式生成输出，在某些情况下取决于输入。” 
 
-It turns out that they are a little bit of everything really. Some are a legacy version of the shorthand conditional expression. Others are just a string transformation expression that hadn't yet made its way into the other section.
+有些是简易条件表达式的遗留版本。其他的只是一个字符串转换表达式，它还没有进入其他部分。
 
-The following expressions will return their first arguments if a specific condition is met and an empty string otherwise:
+若满足特定条件，以下表达式将返回它们的第一个参数，否则返回空字符串:
 
 \begin{itemize}
 \item 
@@ -602,24 +604,24 @@ The following expressions will return their first arguments if a specific condit
 $<LINK_ONLY:deps>
 \end{lstlisting}
 
-sets implicitly with target\_link\_libraries() to store PRIVATE deps link dependencies, which won't be propagated as usage requirements
+使用target\_link\_libraries()隐式设置以存储PRIVATE deps链接依赖，这不会作为使用需求传播
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<INSTALL_INTERFACE:content>
 \end{lstlisting}
 
-returns content if used with install(EXPORT)
+若与install(EXPORT)一起使用，则返回内容
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<BUILD_INTERFACE:content> 
 \end{lstlisting}
 
-returns content if used with an export() command or by another target in the same buildsystem
+若与export()一起使用或由同一构建系统中的另一个目标使用，则返回内容
 \end{itemize}
 
-The following output expressions will perform a string transformation on their arguments:
+以下输出表达式将对它们的参数执行字符串转换:
 
 \begin{itemize}
 \item 
@@ -627,17 +629,17 @@ The following output expressions will perform a string transformation on their a
 $<MAKE_C_IDENTIFIER:input> 
 \end{lstlisting}
 
-converts to a C identifier following the same behavior as string(MAKE\_C\_IDENTIFIER).
+转换为C标识符，遵循与字符串相同的行为(MAKE\_C\_IDENTIFIER)。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<SHELL_PATH:input>
 \end{lstlisting}
 
-converts an absolute path (or list of paths) to a shell path style matching the target OS. Slashes are converted to backslashes in Windows shells and drive letters are converted to POSIX paths in MSYS shells.
+将绝对路径(或路径列表)转换为与目标操作系统匹配的shell路径样式。在Windows shell中斜杠转换为反斜杠，在MSYS shell中驱动器号转换为POSIX路径。
 \end{itemize}
 
-Finally, we have a stray variable query expression:
+最后，有一个杂散变量查询表达式:
 
 \begin{itemize}
 \item 
@@ -645,30 +647,30 @@ Finally, we have a stray variable query expression:
 $<TARGET_OBJECTS:target> 
 \end{lstlisting}
 
-returns a list of object files from a target object library
+从目标对象库返回对象文件的列表
 \end{itemize}
 
-\subsubsubsection{4.4.3\hspace{0.2cm}Examples to try out}
+\subsubsubsection{4.4.3\hspace{0.2cm}可以尝试的例子}
 
-Everything is easier to grasp when there's a good practical example to support the theory. Here are some of the uses for generator expressions:
+当有一个很好的实际例子来支持理论时，一切都更容易理解。下面是生成器表达式的一些用法:
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Build configurations}
+\textbf{构建配置}
 
-In the first chapter, we discussed build type specifying which configuration we are building – Debug, Release, and so on. There may be cases where you'd like to act differently based on what kind of build you're making. A simple and easy way to do so is utilizing the \$<CONFIG> generator expression:
+第1章中，讨论了构建类型，以指定要构建的配置——Debug、Release等。在某些情况下，可能会根据你所创造的构建类型而采取不同的行动。一个简单易行的方法是使用\$<config>生成器表达式:
 
 \begin{lstlisting}[style=styleCMake]
 target_compile_options(tgt $<$<CONFIG:DEBUG>:-ginlinepoints>)
 \end{lstlisting}
 
-The preceding example checks whether the config equals DEBUG; if that's the case, the nested expression is evaluated to 1. The outer shorthand if expression then becomes true, and our -ginline-points debug flag gets added to the options.
+上面的例子检查config是否等于DEBUG;若是这种情况，嵌套表达式的值为1。外部的简写if表达式变成true，-ginline-points调试标志将添加到选项中。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{System-specific one-liners}
+\textbf{特定于系统的单行代码}
 
-Generator expressions can also be used to compact verbose if commands into neat one-liners. Let's suppose we have the following code:
+生成器表达式还可以将冗长的if命令压缩成简洁的一行程序。让我们假设我们有以下代码:
 
 \begin{lstlisting}[style=styleCMake]
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -676,20 +678,20 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 endif()
 \end{lstlisting}
 
-It tells the compiler to add -DLINUX=1 to the arguments if this is the target system. While this isn't terribly long, it could be easily replaced with an elegant expression:
+若这是目标系统，其告诉编译器在参数中添加-DLINUX=1。虽然这不是很长，但它可以很容易地替换为一个优雅的表达式:
 
 \begin{lstlisting}[style=styleCMake]
 target_compile_definitions(myProject PRIVATE
 	$<$<CMAKE_SYSTEM_NAME:LINUX>:LINUX=1>)
 \end{lstlisting}
 
-Such code works well, but there's a limit to how much you can pack into a generator expression until it becomes too hard to read. In that case, it's better to stick to the long conditional blocks.
+这样的代码工作得很好，但是在生成器表达式变得难以阅读之前，可以将多少内容放入生成器表达式中是有限制的。这种情况下，最好坚持使用长条件块。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Interface libraries with compiler-specific flags}
+\textbf{带有编译器特定标志的接口库}
 
-Interface libraries, as we discussed earlier in this chapter, can be used to provide flags to match the compiler:
+正如本章前面所讨论的，接口库可以用来提供与编译器匹配的标志:
 
 \begin{lstlisting}[style=styleCMake]
 add_library(enable_rtti INTERFACE)
@@ -698,28 +700,28 @@ target_compile_options(enable_rtti INTERFACE
 )
 \end{lstlisting}
 
-Even in such a simple example, we can already see what happens when we nest too many generator expressions. Unfortunately, sometimes this is the only way to achieve the desired effect. Here's what happens:
+即使在这样一个简单的例子中，我们已经可以看到嵌套过多生成器表达式时会发生什么，但有时这是达到预期效果的唯一方法。发生了什么:
 
 \begin{itemize}
 \item 
-We check whether COMPILER\_ID is GNU; if that's the case, we evaluate OR to 1.
+检查COMPILER\_ID是否为GNU;若是这样，求OR = 1。
 
 \item 
-If it's not, we check whether COMPILER\_ID is Clang, and evaluate OR to 1. Otherwise, evaluate OR to 0
+若不是，就检查COMPILER\_ID是否为Clang，并将OR计算为1。否则，将OR求值为0
 
 \item 
-If OR is evaluated to 1, add -rtti to the enable\_rtti compile options. Otherwise, do nothing.
+若OR赋值为1，在enable\_rtti编译选项中添加-rtti。否则，什么都不做。
 \end{itemize}
 
-Next, we can link our libraries and executables with the enable\_rtti interface library. CMake will add the -rtti flag if a compiler supports it.
+接下来，可以用enable\_rtti接口库链接库和可执行程序。若编译器支持，CMake将添加-rtti标志。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Nested generator expressions}
+\textbf{嵌套生成器表达式}
 
-Sometimes, it's not obvious what happens when we try to nest elements in a generator expression. We can debug the expressions by generating a test output to a debug file.
+有时，在试图在生成器表达式中嵌套元素时，会发生什么并不明显。可以通过向调试文件生成测试输出来调试表达式。
 
-Let's try out a few things and see what happens:
+下面的例子，看看会发生什么:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter04/04-genex/CMakeLists.txt (fragment)
@@ -736,7 +738,7 @@ file(GENERATE OUTPUT nesting CONTENT
 ")
 \end{lstlisting}
 
-The output is as follows:
+输出结果如下:
 
 \begin{tcblisting}{commandshell={}}
 # cat nesting
@@ -747,32 +749,32 @@ The output is as follows:
   5 SMALL text>
 \end{tcblisting}
 
-This is how each line works:
+每一行是如何工作的:
 
 \begin{enumerate}
 \item 
-The PLATFORM\_ID output value is regular case Linux.
+PLATFORM\_ID的输出值是普通情况下Linux。
 
 \item 
-The output from the nested value will get transformed correctly to uppercase LINUX.
+嵌套值的输出将转换为大写LINUX。
 
 \item 
-We can transform plain strings.
+可以转换普通字符串。
 
 \item 
-We can transform the content of configuration-stage variables.
+可以转换配置阶段变量的内容。
 
 \item 
-Variables will be interpolated first, and closing angle brackets (>) will be interpreted as part of the genex, in that only part of the string will get capitalized.
+变量首先进行插值，右尖括号(>)将解释为生成器表达式的一部分，因为只有字符串的一部分大写。
 \end{enumerate}
 
-In other words, be aware that the content of variables may affect the behavior of your genex expansions. If you need an angle bracket in a variable, use \$<ANGLE-R>.
+换句话说，要注意变量的内容可能会影响基因扩展的行为。若需要在变量中使用尖括号，请使用\$<ANGLE-R>。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{The difference between a conditional expression and the evaluation of BOOL operator}
+\textbf{条件表达式与BOOL运算符求值之间的区别}
 
-Generator expressions can be a little confusing when it comes to evaluating Boolean types to strings. It is important to understand how they differ from regular conditional expressions, starting with an explicit IF keyword:
+计算布尔类型到字符串的值时，生成器表达式可能有点令人困惑。重要的是要了解它们与常规条件表达式的区别，首先是显式的IF关键字:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter04/04-genex/CMakeLists.txt (fragment)
@@ -786,7 +788,7 @@ file(GENERATE OUTPUT boolean CONTENT
 ")
 \end{lstlisting}
 
-This produces a file like this:
+这会生成一个如下所示的文件:
 
 \begin{tcblisting}{commandshell={}}
 # cat boolean
@@ -797,26 +799,26 @@ This produces a file like this:
   5
 \end{tcblisting}
 
-Let's examine the output for each line:
+检查每一行的输出:
 
 \begin{enumerate}
 \item 
-This is a Boolean expansion, where BOOL is 0; therefore, the TRUE string isn't written.
+这是一个布尔展开，其中BOOL为0;因此，TRUE字符串不会被写入。
 
 \item 
-This is a typical mistake – the author intended to print TRUE or FALSE depending on the BOOL value, but since it is a Boolean false expansion as well, two arguments are treated as one and not printed.
+这是一个典型的错误——作者打算根据BOOL值打印TRUE或FALSE，但由于它也是一个布尔值的假展开，两个参数会视为一个，并且而不打印。
 
 \item 
-This is the same mistake for a reversed value – it is a Boolean true expansion that has both arguments written in a single line.
+对于反转值也是同样的错误——是一个布尔真展开，将两个参数都写在一行中。
 
 \item 
-This is a proper conditional expression starting with IF – it prints FALSE because the first argument is 0.
+以IF开头的适当条件表达式，输出FALSE，因为第一个参数是0。
 
 \item 
-This is the incorrect usage of a conditional expression – when we don't need to write values for Boolean false, we should use the first form.
+条件表达式的错误用法——当不需要为布尔值false赋值时，应该使用第一种形式。
 \end{enumerate}
 
-Generator expressions are known for their convoluted syntax. The differences mentioned in this example can confuse even experienced builders. If in doubt, copy such an expression to another file and break it apart with added indentation and whitespace to understand it better.
+生成器表达式以其复杂的语法而闻名。本例中提到的差异甚至会让有经验的开发者感到困惑。若有疑问，将这样的表达式复制到另一个文件中，并使用添加的缩进和空格将其拆分，以便更好地理解它。
 
 
 

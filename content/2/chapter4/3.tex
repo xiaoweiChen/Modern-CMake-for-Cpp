@@ -1,18 +1,18 @@
 
-Using custom targets has one drawback – as soon as you add them to the ALL target or start depending on them for other targets, they will be built every single time (you may still enable them in an if block to limit that). Sometimes, this is what you want, but there are cases when custom behavior is necessary to produce files that shouldn't be recreated without reason:
+使用自定义目标有一个缺点——它们添加到ALL目标或开始为其他目标依赖于它们，它们将每次都构建(可以在if块中启用它们以限制这一点)。有时，这是你想要的，但在有些情况下，定制行为是必要的，以产生不应该无故重新创建的文件:
 
 \begin{itemize}
 \item 
-Generating a source code file that another target depends on
+生成另一个目标所依赖的源代码文件
 
 \item 
-Translating another language into C++
+将另一种语言翻译成C++
 
 \item 
-Executing a custom action immediately before or after another target was built
+紧接在构建另一个目标之前或之后执行自定义操作
 \end{itemize}
 
-There are two signatures for a custom command. The first one is an extended version of add\_custom\_target():
+自定义命令有两个签名。第一个是add\_custom\_target()的扩展版本:
 
 \begin{lstlisting}[style=styleCMake]
 add_custom_command(OUTPUT output1 [output2 ...]
@@ -31,11 +31,11 @@ add_custom_command(OUTPUT output1 [output2 ...]
 					[COMMAND_EXPAND_LISTS])
 \end{lstlisting}
 
-As you might have guessed, a custom command doesn't create a logical target, but just like custom targets, it has to be added to a dependency graph. There are two ways of doing that – using its output artifact as a source for an executable (or library), or explicitly adding it to a DEPENDS list for a custom target.
+自定义命令并不创建逻辑目标，但与自定义目标一样，它必须添加到依赖关系图中。有两种方法可以做到这一点——使用其输出工件作为可执行文件(或库)的源，或者显式地将其添加到自定义目标的DEPENDS列表中。
 
-\subsubsubsection{4.3.1\hspace{0.2cm}Using a custom command as a generator}
+\subsubsubsection{4.3.1\hspace{0.2cm}使用自定义命令作为生成器}
 
-Admittedly, not every project needs to generate C++ code from other files. One such occasion might be a compilation of Google's Protocol Buffer's (Protobuf) .proto files. If you're not familiar with this library, protobuf is a platform-neutral binary serializer for structured data. To keep it cross-platform and fast at the same time, Google's engineers invented their own protobuf format that defines models in .proto files, such as this one:
+诚然，不是每个项目都需要从其他文件生成C++代码。一个这样的场合可能是谷歌的协议缓冲区(Protobuf) .proto文件的编译。protobuf是一个平台无关的结构化数据二进制序列化器。为了保持它的跨平台和快速，Google的工程师发明了他们自己的protobuf格式，在.proto文件中定义模型，例如:
 
 \begin{lstlisting}[style=styleCMake]
 message Person {
@@ -45,9 +45,9 @@ message Person {
 }
 \end{lstlisting}
 
-Such a file can be then shared across multiple languages – C++, Ruby, Go, Python, Java, and so on. Google provides compilers that read .proto files and output structure and serialization code valid for the chosen language. Smart engineers don't check those compiled files into a repository but will use the original protobuf format and add it to the build chain.
+这样的文件可以跨多种语言共享——C++、Ruby、Go、Python、Java等。Google提供了读取.proto文件并输出对所选语言有效的结构和序列化代码的编译器。聪明的工程师不会将这些编译好的文件检入存储库，而是会使用原始的protobuf格式，并将其添加到构建链中。
 
-We don't know yet how to detect whether (and where) a protobuf compiler is available on the target host (we'll learn that in Chapter 7, Managing Dependencies with CMake). So, for now, let's just assume that the compiler's protoc command is residing in a location known to the system. We have prepared a person.proto file and we know that the protobuf compiler will output person.pb.h and person.pb.cc files. Here's how we would define a custom command to compile them:
+我们还不知道如何检测一个protobuf编译器在目标主机上是否可用(以及在哪里可用)。因此，现在我们假设编译器的protoc命令位于系统已知的位置。我们知道protobuf编译器将输出person.pb.h和person.pb.cc文件。下面是我们如何定义一个自定义命令来编译它们:
 
 \begin{lstlisting}[style=styleCMake]
 add_custom_command(OUTPUT person.pb.h person.pb.cc
@@ -56,15 +56,15 @@ add_custom_command(OUTPUT person.pb.h person.pb.cc
 )
 \end{lstlisting}
 
-Then, to allow serialization in our executable, we can just add output files to the sources:
+然后，为了允许在可执行文件中序列化，只需向源文件添加输出文件:
 
 \begin{lstlisting}[style=styleCMake]
 add_executable(serializer serializer.cpp person.pb.cc)
 \end{lstlisting}
 
-Assuming we dealt correctly with the inclusion of header files and linking the protobuf library, everything will compile and update automatically when we introduce changes to the .proto file.
+假设正确地处理了头文件的包含和protobuf库的链接，当对.proto文件进行更改时，所有内容都将自动编译和更新。
 
-A simplified (and much less practical) example would be to create the necessary header by copying it from another location:
+一个简单的(而且不太实用的)例子是从另一个位置复制创建必要的头文件:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter04/03-command/CMakeLists.txt
@@ -77,11 +77,11 @@ add_custom_command(OUTPUT constants.h
 	ARGS "${CMAKE_SOURCE_DIR}/template.xyz" constants.h)
 \end{lstlisting}
 
-Our "compiler", in this case, is the cp command. It fulfills a dependency of the main target by creating a constants.h file in the build tree root, simply by copying it from the source tree.
+本例中，“编译器”是cp命令。它通过在构建树根中创建constants.h文件来实现对主目标的依赖，只需从源树中复制它即可。
 
-\subsubsubsection{4.3.2\hspace{0.2cm}Using a custom command as a target hook}
+\subsubsubsection{4.3.2\hspace{0.2cm}使用自定义命令作为目标钩子}
 
-The second version of the add\_custom\_command() command introduces a mechanism to execute commands before or after building a target:
+add\_custom\_command()命令的第二个版本引入了在构建目标之前或之后执行命令的机制:
 
 \begin{lstlisting}[style=styleCMake]
 add_custom_command(TARGET <target>
@@ -95,20 +95,20 @@ add_custom_command(TARGET <target>
 					[COMMAND_EXPAND_LISTS])
 \end{lstlisting}
 
-We specify what target we'd like to "enhance" with new behavior in the first argument and under the following conditions:
+在第一个参数中指定我们想用新行为“增强”的目标，并在以下条件下:
 
 \begin{itemize}
 \item 
-PRE\_BUILD will run before any other rules for this target (Visual Studio generators only; for others, it behaves like PRE\_LINK).
+PRE\_BUILD将在此目标的任何其他规则之前运行(仅Visual Studio生成器;对于其他的，其行为像PRE\_LINK)。
 
 \item 
-PRE\_LINK binds the command to be run just after all sources have been compiled but before the linking (or archiving) the target. It doesn't work for custom targets.
+PRE\_LINK绑定要在编译所有源之后但在链接(或存档)目标之前运行的命令。不适用于自定义目标。
 
 \item 
-POST\_BUILD will run after all other rules have been executed for this target.
+POST\_BUILD将在为该目标执行所有其他规则之后运行。
 \end{itemize}
 
-Using this version of add\_custom\_command(), we can replicate the generation of the checksum from the previous BankApp example:
+使用这个版本的add\_custom\_command()，可以从前面的BankApp例子中复制校验和的生成:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter04/04-command/CMakeLists.txt
@@ -122,6 +122,6 @@ add_custom_command(TARGET main POST_BUILD
 					ARGS "$<TARGET_FILE:main>" > "main.ck")
 \end{lstlisting}
 
-After the build of the main executable completes, CMake will execute cksum with provided arguments. But what is happening in the first argument? It's not a variable, as it would be wrapped in curly braces (\$\{\}), not in angle brackets (\$<>). It's a generator expression evaluating a full path to the target's binary file. This mechanism is useful in the context of many target properties.
+主可执行文件的构建完成后，CMake将使用提供的参数执行cksum。第一个参数中发生了什么?它不是一个变量，因为它不是包装在花括号(\$\{\})中，而是在尖括号(\$<>)中。它是一个生成器表达式，计算到目标二进制文件的完整路径。这种机制在许多目标属性的上下文中非常有用。
 
 

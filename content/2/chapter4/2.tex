@@ -159,7 +159,7 @@ cmake --graphviz=test.dot .
  
 \subsubsubsection{4.2.3\hspace{0.2cm}目标属性}
 
-Targets have properties that work in a similar way to fields of C++ objects. We can modify some of these properties and others are read-only. CMake defines a large list of "known properties" (see the Further reading section) that are available depending on the type of the target (executable, library, or custom). You can also add your own properties if you like. Use the following commands to manipulate the properties of a target:
+目标具有类似于C++对象字段的工作方式的属性。可以修改其中一些属性，而其他属性是只读的。CMake定义了一个很大的“已知属性”列表(参见扩展阅读部分)，这些属性取决于目标的类型(可执行、库或自定义)，还可以添加自己的属性。使用以下命令操作目标器的属性:
 
 \begin{lstlisting}[style=styleCMake]
 get_target_property(<var> <target> <property-name>)
@@ -168,60 +168,61 @@ set_target_properties(<target1> <target2> ...
 						<prop2-name> <value2> ...)
 \end{lstlisting}
 
-To print a target property on screen, we first need to store it in the <var> variable and then message() it to the user; we have to read them one by one. On the other hand, setting properties on a target allows us to specify multiple properties at the same time, on multiple targets.
+要在屏幕上打印目标属性，需要将其存储在<var>变量中，然后message()将其发送给用户，需要一个个地读取。另一方面，在目标上设置属性可以在多个目标上同时指定多个属性。
 
-The concept of properties isn't unique to targets; CMake supports setting properties of other scopes as well: GLOBAL, DIRECTORY, SOURCE, INSTALL, TEST, and CACHE.
+属性的概念并非目标所独有。CMake还支持设置其他作用域的属性:GLOBAL、DIRECTORY、SOURCE、INSTALL、TEST和CACHE。
 
-To manipulate all kinds of properties, there are general get\_property() and set\_property() commands. You can use these low-level commands to do exactly what the set\_target\_properties() command does, just with a bit more work:
+要操作所有类型的属性，有get\_property()和set\_property()指令。可以使用这些低层命令来做set\_target\_properties()指令所做的事情:
 
 \begin{lstlisting}[style=styleCMake]
 set_property(TARGET <target> PROPERTY <name> <value>)
 \end{lstlisting}
 
-Generally, it's better to use as many high-level commands as you can. CMake offers more of these, even narrower in their scope, such as setting specific properties on a target. For example, add\_dependencies(<target> <dep>) is appending dependencies to the MANUALLY\_ADDED\_DEPENDENCIES target property. In this case, we can query it with get\_target\_property() exactly as with any other property. However, we can't use set\_target\_property() to change it (it's read-only), as CMake insists on using the add\_dependencies() command to restrict operations to appending only.
+最好尽可能多地使用高级命令。CMake提供了更多这样的功能，范围甚至更窄，比如在目标上设置特定的属性。例如，add\_dependencies(<target> <dep>)将依赖项附加到MANUALLY\_ADDED\_DEPENDENCIES目标属性中。本例中，可以使用get\_target\_property()查询，就像使用其他属性一样。然而，不能使用set\_target\_property()来更改(是只读的)，CMake中使用add\_dependencies()指令只能进行追加操作。
 
-We'll introduce more property setting commands when we discuss compiling and linking in upcoming chapters. Meanwhile, let's focus on how the properties of one target can transition to another.
+接下来的章节中讨论编译和链接时，将介绍更多的属性设置命令。同时，我们会了解到一个目标的属性如何转换到另一个目标。
 
 \subsubsubsection{4.2.4\hspace{0.2cm}可传递需求}
 
-Let's just agree that naming is hard, and sometimes one ends up with a result that's hard to understand. "Transitive usage requirements" is, unfortunately, one of those cryptic titles that you will encounter in the online CMake documents. Let's untangle this strange name and perhaps propose a term easier to understand.
+命名真的很难，有时会得到一个很难理解的结果。不幸的是，“传递性使用需求”是在线CMake文档中遇到的神秘的主题之一。让我们来了解一下这个奇怪的名字，也许可以想出一个更容易理解的术语。
 
-I'll start by clarifying the middle bit of this puzzle. As we previously discussed, one target may depend on another. CMake documentation sometimes refers to such dependency as usage, as in one target uses another. This was straightforward, so on to the next one.
+我将从解释这个谜题的中间部分开始。正如我们前面讨论的，一个目标可能依赖于另一个目标。CMake文档有时将这种依赖关系称为“使用”，例如在一个目标中使用另一个目标。这个很简单，我们继续下一个。
 
-There will be cases when such a used target has specific requirements that a using target has to meet: link some libraries, include a directory, or require specific compile features. All of these are in fact requirements, so documentation is correct in a sense. The issue is that they aren't called requirements in any other context in the documentation. When you specify the same requirements for a single target, you set properties or dependencies. Therefore, the last part of the name should perhaps be simply "properties."
+某些情况下，这样的已用目标具有使用目标必须满足的特定需求:链接一些库，包含一个目录，或要求特定的编译特性。这些实际上都是需求，因此文档在某种意义上是正确的。问题是在文档的其他上下文中都不称其为需求。当为单个目标指定相同的需求时，可以设置属性或依赖项。因此，名称的最后一部分可能应该简单地称为“属性”。
 
-The last part is –transitive. This one I believe is correct (maybe a bit too smart). CMake appends some properties/requirements of used targets to properties of targets using them. You can say that some properties can transition (or simply propagate) across targets implicitly, so it's easier to express dependencies.
+最后一部分是传递，我相信这一点是正确的(也许有点太聪明了)。CMake将使用目标的一些属性/需求附加到使用它们的目标的属性中。可以说某些属性可以隐式地跨目标转换(或简单地传播)，因此更容易表示依赖关系。
 
-Simplifying this whole concept, I see it as propagated properties between the source target (targets that gets used) and destination targets (targets that use other targets).
+简化整个概念，将其视为源目标(使用的目标)和目标目标(使用其他目标的目标)之间的传播属性。
 
-Let's look at a concrete example to understand why it's there and how it works:
+来看一个具体的例子，来理解其为什么会存在，以及如何工作:
 
 \begin{lstlisting}[style=styleCMake]
 target_compile_definitions(<source> <INTERFACE|PUBLIC|PRIVATE> 
 	[items1...])
 \end{lstlisting}
 
-This target command will populate the COMPILE\_DEFINITIONS property of a <source> target. Compile definitions are simply -Dname=definition flags passed to the compiler that configure the C++ preprocessor definitions (we'll get to that in Chapter 5, Compiling C++ Sources with CMake). The interesting part here is the second argument. We need to specify one of three values, INTERFACE, PUBLIC, or PRIVATE, to control which targets the property should be passed to. Now, don't confuse these with C++ access specifiers – this is something else.
+这个目标命令将填充<source>目标的COMPILE\_DEFINITIONS属性。编译定义只是传递给配置C++预处理器定义的编译器的-Dname=定义标志(我们将在第5章中讨论)。有趣的是第二个论点，需要指定三个值INTERFACE、PUBLIC或PRIVATE中的一个，以控制应该将属性传递给哪个目标。现在，不要将这些与C++访问说明符混淆——这是另一回事。
 
-Propagation keywords work like this:
+传递关键字的工作原理如下:
 
 \begin{itemize}
 \item 
-PRIVATE sets the property of the source target.
+PRIVATE设置源目标的属性。
 
 \item 
-INTERFACE sets the property of the destination targets.
+INTERFACE设置相关目标的属性。
 
 \item 
-PUBLIC sets the property of the source and destination targets.
+PUBLIC设置源和相关目标的属性。
 \end{itemize}
 
-When a property is not to be transitioned to any destination targets, set it to PRIVATE.
-When such a transition is needed, go with PUBLIC. If you're in a situation where the source target doesn't use the property in its implementation (.cpp files) and only in headers, and these are passed to the consumer targets, INTERFACE is the answer.
+当不将属性传递到任何目标时，将其设置为PRIVATE。
 
-How does this work under the hood? To manage those properties, CMake provides a few commands such as the aforementioned target\_compile\_definitions(). When you specify a PRIVATE or PUBLIC keyword, CMake will store provided values in the property of the target matching the command – in this case, COMPILE\_DEFINITIONS. Additionally, if a keyword was INTERFACE or PUBLIC, it will store the value in property with an INTERFACE\_ prefix – INTERFACE\_COMPILE\_DEFINITIONS. During the configuration stage, CMake will read the interface properties of source targets and append their contents to destination targets. There you have it – propagated properties, or transitive usage requirements – as CMake calls them.
+当需要这样的传递时，使用PUBLIC。若源目标在其实现(.cpp文件)中不使用该属性，而只在头文件中使用该属性，这些属性会传递给消费者目标，那么就使用INTERFACE。
 
-In CMake 3.20, there are 12 such properties managed with appropriate commands such as target\_link\_options() or directly with the set\_target\_properties() command:
+这些是如何工作的?为了管理这些属性，CMake提供了一些指令，比如前面提到的target\_compile\_definitions()。当指定PRIVATE或PUBLIC关键字时，CMake将在与指令匹配的目标的属性中存储提供的值——本例中是COMPILE\_DEFINITIONS。此外，若关键字是INTERFACE或PUBLIC，它将用INTERFACE\_前缀——INTERFACE\_COMPILE\_DEFINITIONS将值存储在属性中。在配置阶段，CMake将读取源目标的接口属性，并将其内容附加到目标目标。就传播属性，或传递了使用需求。
+
+在CMake 3.20中，可以使用target\_link\_options()或直接使用set\_target\_properties()指令管理12个这样的属性:
 
 \begin{itemize}
 \item 
@@ -261,13 +262,13 @@ PRECOMPILE\_HEADERS
 SOURCES
 \end{itemize}
 
-We'll discuss most of these options in the following pages, but remember that all of these options are, of course, described in the CMake manual. Find them on their own page under a URL in this format (replace <PROPERTY> with a property that interests you): 
+我们将在下面的页面中讨论这些选项中，但所有这些选项当然都在CMake手册中进行了描述。可以在URL下找到它们的页面(可以用感兴趣的属性替换<PROPERTY>):
 
 \url{https://cmake.org/cmake/help/latest/prop_tgt/<PROPERTY>.html}
 
-The next question that comes to mind is how far this propagation goes. Are the properties set just on the first destination target, or are they sent to the very top of the dependency graph? Actually, you get to decide.
+下一个问题是这种传播能有多远。属性是在第一个目标上设置的，还是发送到依赖关系图的最顶端?实际上，由使用者来决定。
 
-To create a dependency between targets, we use the target\_link\_libraries() command. The full signature of this command requires a propagation keyword:
+要在目标之间创建依赖关系，可以使用target\_link\_libraries()指令。此指令的完整签名有一个propagation关键字:
 
 \begin{lstlisting}[style=styleCMake]
 target_link_libraries(<target>
@@ -275,35 +276,35 @@ target_link_libraries(<target>
 					[<PRIVATE|PUBLIC|INTERFACE> <item>...]...)
 \end{lstlisting}
 
-As you can see, this signature also specifies a propagation keyword, but this one controls where properties from the source target get stored in the destination target. Figure 4.3 shows what happens to a propagated property during the generation stage (after the configuration stage is completed):
+此签名还指定了传播关键字，但此签名控制源目标的属性存储在目标目标中的何处。图4.3显示了在生成阶段(配置阶段完成后)传播属性的变化:
 
 \begin{center}
 \includegraphics[width=0.8\textwidth]{content/2/chapter4/images/3.jpg}\\
-Figure 4.3 – How properties are propagated to destination targets
+图4.3 属性如何传播到目标
 \end{center}
 
-Propagation keywords work like this:
+propagation(传播)关键字的工作原理如下:
 
 \begin{itemize}
 \item 
-PRIVATE appends the source value to the private property of the destination.
+PRIVATE将源附加到目标的私有属性。
 
 \item 
-INTERFACE appends the source value to the interface property of the destination.
+INTERFACE将源附加到目标的接口属性。
 
 \item 
-PUBLIC appends to both properties of the destination.
+PUBLIC包括以上两种属性的特点。
 \end{itemize}
 
-As we discussed before, interface properties are only used to propagate the properties further down the chain, and the destination target won't use them in its build process.
+接口属性仅用于在链中进一步传播属性，而目标不会在其构建过程中使用它们。
 
-The basic target\_link\_libraries(<target> <item>...) command that we used before implicitly specifies the PUBLIC keyword.
+之前使用的基本target\_link\_libraries(<target> <item>…)指令隐式指定PUBLIC关键字。
 
-If you correctly set propagation keywords for your source targets, properties will be automatically placed on destination targets for you – unless there's a conflict…
+若正确地为源目标设置了propagation(传播)关键字，属性将自动传递到目的目标上——除非有冲突……
 
 \subsubsubsection{4.2.5\hspace{0.2cm}处理冲突的传播属性}
 
-When one target depends on multiple other targets, there may be a situation where propagated properties are in outright conflict with each other. Say that one used target specifies the POSITION\_INDEPENDENT\_CODE property as true and the other as false. CMake understands this as a conflict and will print an error similar to this:
+当目标依赖于多个其他目标时，可能会出现传播属性彼此完全冲突的情况。假设一个使用的目标指定POSITION\_INDEPENDENT\_CODE属性为True，另一个为False。CMake将此理解为冲突，并输出类似如下的错误:
 
 \begin{tcblisting}{commandshell={}}
 CMake Error: The INTERFACE_POSITION_INDEPENDENT_CODE property
@@ -311,13 +312,13 @@ of "source_target2" does not agree with the value of POSITION_
 INDEPENDENT_CODE already determined for "destination_target".
 \end{tcblisting}
 
-It is useful to receive such a message, as we explicitly know that we introduced this conflict and we need to resolve it. CMake has its own properties that have to "agree" between source and destination targets.
+接收这样的消息很有用，因为明确地知道我们引入了这个冲突，并且需要解决它。CMake有它自己的属性，这些属性必须在源目标和目标目标之间“一致”。
 
-On rare occasions, this may become important – for example, if you're building software using the same library in multiple targets that are then linked to a single executable. If these source targets are using different versions of the same library, you may run into problems.
+极少数情况下，这可能会变得很重要——例如，若在多个目标中使用相同的库构建软件，然后链接到单个可执行文件。若这些源目标使用同一个库的不同版本，可能会遇到问题。
 
-To make sure that we're only using the same specific version, we can create a custom interface property, INTERFACE\_LIB\_VERSION, and store the version there. This is not enough to solve the problem, as CMake won't propagate custom properties by default. We have to explicitly add a custom property to a list of "compatible" properties.
+为了确保我们只使用相同的特定版本，可以创建一个自定义接口属性INTERFACE\_LIB\_VERSION，并将版本存储在那里。这还不足以解决问题，因为CMake在默认情况下不会传播自定义属性，必须显式地将自定义属性添加到“兼容”属性列表中。
 
-Each target has four such lists:
+每个目标都有4个这样的列表:
 
 \begin{itemize}
 \item 
@@ -333,9 +334,9 @@ COMPATIBLE\_INTERFACE\_NUMBER\_MAX
 COMPATIBLE\_INTERFACE\_NUMBER\_MIN
 \end{itemize}
 
-Appending your property to one of them will trigger propagation and compatibility checks. The BOOL list will check whether all properties propagated to the destination target evaluate to the same Boolean value. Analogically, STRING will evaluate to a string. NUMBER\_MAX and NUMBER\_MIN are a bit different – propagated values don't have to match, but the destination target will just receive the highest or the lowest value instead.
+将属性附加到其中一个，将触发传播和兼容性检查。BOOL列表将检查传播到目标目标的所有属性是否计算为相同的布尔值。类似地，STRING将求值为字符串。NUMBER\_MAX和NUMBER\_MIN有点不同——传播的值不需要匹配，但目标只会接收最高或最低的值。
 
-This example will help us to understand how to apply this in practice:
+这个例子将帮助我们理解如何在实践中应用:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter04/02-propagated/CMakeLists.txt
@@ -357,50 +358,50 @@ add_library(destination empty.cpp)
 target_link_libraries(destination source1 source2)
 \end{lstlisting}
 
-We create three targets here; for simplicity, all are using the same empty source file. On both of the source targets, we specify our custom property with the INTERFACE\_ prefix. And we set them to the same matching library version. Both of the source targets are linked to the destination target. Finally, we specify a STRING compatibility requirement as a property for source1 (we don't add the INTERFACE\_ prefix here).
+这里创建了三个目标，所有文件都使用相同的空源文件。两个源目标上，用INTERFACE\_前缀指定自定义属性。将它们设置为相同的匹配库版本。两个源目标都链接到目标目标。最后，指定一个STRING兼容性要求作为source1的属性(没有在这里添加INTERFACE\_前缀)。
 
-CMake will propagate this custom property to the destination target and check whether the version of all the source targets is an exact match (the compatibility property can be set on just one target).
+CMake将这个自定义属性传播到目标目标，并检查所有源目标的版本是否完全匹配(compatibility属性可以只在一个目标上设置)。
 
-Now that we understand what targets are, let's take a look at other things that look like targets, smell like targets, and sometimes act like targets but, as it turns out, aren't the real deal.
+既然了解了目标是什么，就看看其他看起来像目标，闻起来像目标，有时也像目标(鸭子定律)。但事实证明，其并不是真正的目标。
 
 \subsubsubsection{4.2.6\hspace{0.2cm}实现伪目标}
 
-The concept of a target is so useful that it would be great if some of its behaviors could be borrowed for other things too. This is, specifically, things that do not represent outputs of the buildsystem but rather inputs – external dependencies, aliases, and so on. These are the pseudo targets, or targets that don't make it to the generated buildsystem.
+目标的概念非常有用，若其一些行为可以借鉴，那就太好了。具体来说，这是指不表示构建系统的输出而是表示输入的东西——外部依赖项、别名等。这些是伪目标，或者没有到达生成的构建系统的目标。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{导入目标}
 
-If you skimmed the table of contents, you know that we'll be talking about how CMake manages external dependencies – other projects, libraries, and so on. IMPORTED targets are essentially products of this process. CMake can define them as a result of the find\_ package() command.
+若浏览了目录，就会知道将讨论CMake如何管理外部依赖项——其他项目、库等。导入的目标基本上是这个过程的产物。CMake可以定义它们作为find\_ package()指令的结果。
 
-You can adjust the target properties of such a target: compile definitions, compile options, include directories, and so on – and they will even support transitive usage requirements. However, you should treat them as immutable; don't change their sources or dependencies.
+可以调整这样一个目标的目标属性:编译定义、编译选项、包含目录等——甚至将支持可传递的使用需求。但应该将它们视为不可变的，不要改变它们的来源或依赖关系。
 
-The scope of the definition of an IMPORTED target can be global or local to the directory where it was defined (visible in subdirectories but not in parent directories).
+导入目标的定义范围可以是全局的，也可以是定义它的目录的本地目录(在子目录中可见，但在父目录中不可见)。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{别名目标}
 
-Alias targets do exactly what you expect – they create another reference to a target under a different name. You can create alias targets for executables and libraries with the following commands:
+别名目标完全符合期望——在不同的名称下创建对目标的另一个引用。可以使用以下指令为可执行文件和库创建别名目标:
 
 \begin{lstlisting}[style=styleCMake]
 add_executable(<name> ALIAS <target>)
 add_library(<name> ALIAS <target>)
 \end{lstlisting}
 
-Properties of alias targets are read-only, and you cannot install or export aliases (they aren't visible in the generated buildsystem).
+别名目标的属性只读，并且不能安装或导出别名(在生成的构建系统中不可见)。
 
-So, what is the reason to have aliases at all? They come in handy in scenarios where some part of a project (such as a subdirectory) requires a target with a specific name, and the actual implementation may be available under different names depending on circumstances. For example, you may wish to build a library shipped with your solution or import it based on a user's choice.
+那么，使用别名的理由到底是什么呢?当项目的某些部分(如子目录)需要具有特定名称的目标时，就很方便了，而实际的实现可能根据情况在不同的名称下可用。例如，可能希望构建一个随解决方案一起提供的库，或者根据用户的选择导入。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{接口库}
 
-This is an interesting construct – a library that doesn't compile anything but instead serves as a utility target. Its whole concept is built around propagated properties (transitive usage requirements).
+这是一个有趣的构造——一个库不编译任何东西，而是作为一个实用工具目标。它的整个概念是围绕传播属性(传递使用需求)构建的。
 
-Interface libraries have two primary uses – to represent header-only libraries and to bundle a bunch of propagated properties into a single logical unit.
+接口库有两个主要用途——纯头文件库和将一堆传播的属性捆绑到一个逻辑单元中。
 
-Header-only libraries are fairly easy to create with add\_library(INTERFACE):
+使用add\_library(INTERFACE)创建纯头文件库相当容易:
 
 \begin{lstlisting}[style=styleCMake]
 add_library(Eigen INTERFACE
@@ -412,17 +413,17 @@ target_include_directories(Eigen INTERFACE
 )
 \end{lstlisting}
 
-In the preceding snippet, we created an Eigen interface library with three headers. Next, with generator expressions (explained in the last section of this chapter), we set its include directories to be \$\{CMAKE\_CURRENT\_SOURCE\_DIR\}/src when a target is exported and include/Eigen when it's installed (which will also be explained at the end of this chapter).
+前面的代码片段中，创建了一个具有三个头文件的特征接口库。接下来，使用生成器表达式，在导出目标时将其include目录设置为\$\{CMAKE\_CURRENT\_SOURCE\_DIR\}/src，在安装目标时设置为include/Eigen。
 
-To use such a library, we just have to link it:
+要使用这样的库，只需要链接即可:
 
 \begin{lstlisting}[style=styleCMake]
 target_link_libraries(executable Eigen)
 \end{lstlisting}
 
-No actual linking occurs here, but CMake will understand this command as a request to propagate all the INTERFACE properties to the executable target.
+这里没有实际的链接，但是CMake将此命令理解为将所有INTERFACE属性传播到可执行目标的请求。
 
-The second use case leverages exactly the same mechanism but for a different purpose – it creates a logical target that can be a placeholder for propagated properties. We can then use this target as a dependency for other targets and set properties in a clean, convenient way. Here's an example:
+第二个用例使用了完全相同的机制，但目的不同——其创建了一个逻辑目标，可以作为传播属性的占位符。然后，可以将这个目标用作其他目标的依赖项，并以一种简洁、方便的方式设置属性。这里有一个例子:
 
 \begin{lstlisting}[style=styleCMake]
 add_library(warning_props INTERFACE)
@@ -432,26 +433,26 @@ target_compile_options(warning_props INTERFACE
 target_link_libraries(executable warning_props)
 \end{lstlisting}
 
-The add\_library(INTERFACE) command creates a logical warning\_props target that is used to set compile options specified in the second command on the executable target. I recommend using these INTERFACE targets, as they improve the readability and reusability of your code. Think of it as refactoring a bunch of magic values to a wellnamed variable. I also suggest using the \_props suffix to easily differentiate interface libraries from the regular ones.
+add\_library(INTERFACE)指令创建一个逻辑warning\_props目标，用于在可执行目标上设置第二个命令中指定的编译选项。推荐使用这些INTERFACE目标，它们提高了代码的可读性和可重用性。可以把它看作是将一堆神奇的值重构为一个命名良好的变量，还建议使用\_props后缀将接口库与常规库区分开来。
 
-Are pseudo targets exhausting the concept of the target? Of course not! That would simply be too easy. We still need to understand how these targets translate to produced buildsystems.
+伪目标是否耗尽了目标的概念?当然不是!我们仍然需要理解，如何将这些目标转化为生成的构建系统。
 
 \subsubsubsection{4.2.7\hspace{0.2cm}构建目标}
 
-Target is a bit of a loaded word. It means different things in the context of a project and the context of generated buildsystems. When CMake generates a buildsystem, it "compiles" list files from CMake language to the language of a chosen build tool; perhaps it creates a Makefile for GNU Make. Such Makefiles have their own targets – some of them are direct conversions of list file targets, and others are created implicitly.
+目标这个词有点夸张，在项目的上下文中和生成的构建系统的上下文中意味着不同的东西。当CMake生成一个构建系统时，会将CMake语言中的列表文件“编译”为所选构建工具的语言;也许它为GNU Make创建了一个Makefile。这样的Makefile有它们自己的目标——其中一些是列表文件目标的直接转换，另一些是隐式创建的。
 
-One such buildsystem target is ALL, which CMake generates by default to contain all top-level list file targets, such as executables and libraries (not necessarily custom targets). ALL is built when we run cmake -{}-build <build tree> without choosing a concrete target. As you might remember from the first chapter, you can choose one by adding the -{}-target <name> parameter to the preceding command.
+这样的构建系统目标是ALL, CMake在默认情况下生成它来包含所有顶层列表文件目标，比如可执行文件和库(不一定是自定义目标)。ALL是在运行cmake -{}-build <build tree>而不选择具体目标时生成的，可以通过向前面的命令添加-{}-target <name>参数来选择一个。
 
-Some executables or libraries might not be needed in every build, but we'd like to keep them as part of the project for those rare occasions when they come in useful. To optimize our default build, we can exclude them from the ALL target like so:
+有些可执行程序或库可能不是在每个构建中都需要，但希望将它们作为项目的一部分，以便在有用的时候使用。为了优化默认构建，可以像这样从ALL目标中排除它们:
 
 \begin{lstlisting}[style=styleCMake]
 add_executable(<name> EXCLUDE_FROM_ALL [<source>...])
 add_library(<name> EXCLUDE_FROM_ALL [<source>...])
 \end{lstlisting}
 
-Custom targets work the other way around – by default, they're excluded from the ALL target unless you explicitly define them with an ALL keyword, as we did in the BankApp example.
+自定义目标则相反——默认情况下，排除在ALL目标之外，除非使用ALL关键字显式地定义它们，就像BankApp示例中那样。
 
-Another implicitly defined build target is clean, which simply removes produced artifacts from the build tree. We use it to get rid of all old files and build everything from scratch. It's important though to understand that it don't just simply delete everything in the build directory. This means that for clean to work correctly, you need to manually specify any files that your custom targets might create as BYPRODUCTS (see the BankApp example).
+另一个隐式定义的构建目标是干净的，它只是从构建树中删除所生成的工件。用它来清除所有旧文件，从头开始构建一切。重要的是要理解它并不是简单地删除构建目录中的所有内容。所以要使clean正确工作，需要手动指定自定义目标可能创建为副产品的文件(请参阅BankApp示例)。
 
-There's also an interesting non-target mechanism to create custom artifacts that can be used in all actual targets – custom commands.
+还有一种有趣的非目标机制可以创建可在所有实际目标中使用的自定义工件——自定义命令。
 
