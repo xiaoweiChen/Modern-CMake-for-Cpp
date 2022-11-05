@@ -664,13 +664,13 @@ $<TARGET_OBJECTS:target>
 target_compile_options(tgt $<$<CONFIG:DEBUG>:-ginlinepoints>)
 \end{lstlisting}
 
-上面的例子检查config是否等于DEBUG;若是这种情况，嵌套表达式的值为1。外部的简写if表达式变成true，-ginline-points调试标志将添加到选项中。
+上面的例子检查config是否等于DEBUG;若是这种情况，嵌套表达式的值为1。外部的简写IF表达式变成true，-ginline-points调试标志将添加到选项中。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{特定于系统的单行代码}
 
-生成器表达式还可以将冗长的if命令压缩成简洁的一行程序。让我们假设我们有以下代码:
+生成器表达式还可以将冗长的IF命令压缩成简洁的一行程序。假设有以下代码:
 
 \begin{lstlisting}[style=styleCMake]
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -774,7 +774,7 @@ PLATFORM\_ID的输出值是普通情况下Linux。
 \noindent
 \textbf{条件表达式与BOOL运算符求值之间的区别}
 
-计算布尔类型到字符串的值时，生成器表达式可能有点令人困惑。重要的是要了解它们与常规条件表达式的区别，首先是显式的IF关键字:
+计算布尔类型到字符串的值时，生成器表达式可能有点令人困惑。重要的是要了解它们与常规条件表达式的区别，首先是IF关键字:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter04/04-genex/CMakeLists.txt (fragment)
@@ -818,7 +818,7 @@ file(GENERATE OUTPUT boolean CONTENT
 条件表达式的错误用法——当不需要为布尔值false赋值时，应该使用第一种形式。
 \end{enumerate}
 
-生成器表达式以其复杂的语法而闻名。本例中提到的差异甚至会让有经验的开发者感到困惑。若有疑问，将这样的表达式复制到另一个文件中，并使用添加的缩进和空格将其拆分，以便更好地理解它。
+生成器表达式以其复杂的语法而闻名。本例中提到的差异甚至会让有经验的开发者感到困惑。若有疑问，将这样的表达式复制到另一个文件中，并使用添加的缩进和空格将其拆分，以便更好地进行理解。
 
 
 

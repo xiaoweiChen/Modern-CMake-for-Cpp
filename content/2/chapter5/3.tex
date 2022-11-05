@@ -1,25 +1,25 @@
 
-The preprocessor plays a huge role in the process of building. Maybe this is a little surprising, given how simple and limited its functionality is. In following sections, we'll cover providing paths to included files and using the preprocessor definitions. We'll also explain how we can use CMake to configure included headers.
+预处理器在构建过程中起着巨大的作用，但它的功能却又如此简单和有限。在接下来的小节中，将介绍如何提供包含文件的路径，以及如何使用预处理器定义。还将解释如何使用CMake配置包含的头文件。
 
-\subsubsubsection{5.3.1\hspace{0.2cm}Providing paths to included files}
+\subsubsubsection{5.3.1\hspace{0.2cm}提供包含文件的路径}
 
-The most basic feature of the preprocessor is the ability to include .h/.hpp header files with the \#include directive. It comes in two forms:
+预处理器最基本的特性是能够使用\#include指令包含.h/.hpp头文件。它有两种形式:
 
 \begin{itemize}
 \item 
-\#include <path-spec>: Angle-bracket form
+\#include <path-spec>: 尖括号式
 
 \item 
-\#include "path-spec": Quoted form
+\#include "path-spec": 引号式
 \end{itemize}
 
-As we know, the preprocessor will replace these directives with the contents of the file specified in path-spec. Finding these files may be an issue. Which directories do we search and in what order? Unfortunately, the C++ standard doesn't exactly specify that; we need to check the manual for the compiler we use.
+预处理器将用path-spec中指定的文件内容替换这些指令。找到这些文件可能是个问题。我们按什么顺序搜索哪些目录?但C++标准并没有明确规定这一点，这需要查看编译器的手册。
 
-Typically, the angle-bracket form will check standard include directories, including the directories where standard C++ library and standard C library headers are stored in the system.
+通常，尖括号形式将检查标准包含目录，包括标准C++库和标准C库头文件存储在系统中的目录。
 
-The quoted form will start searching for the included file in the directory of the current file and then check directories for the angle-bracket form.
+引号式将开始在当前文件的目录中搜索包含的文件，然后在目录中查找带尖括号的目录。
 
-CMake provides a command to manipulate paths being searched for the included files:
+CMake提供了一个指令来操作头文件的搜索路径，以找到需要包含的头文件:
 
 \begin{lstlisting}[style=styleCMake]
 target_include_directories(<target> [SYSTEM] [AFTER|BEFORE]
@@ -27,15 +27,15 @@ target_include_directories(<target> [SYSTEM] [AFTER|BEFORE]
 	[<INTERFACE|PUBLIC|PRIVATE> [item2...] ...])
 \end{lstlisting}
 
-We can add custom paths that we'd like the compiler to check. CMake will add them to compiler invocations in the generated buildsystem. They will be provided with a flag appropriate for the specific compiler (usually, it's -I).
+可以添加希望编译器检查的自定义路径，CMake会将它们添加到生成的构建系统中的编译器调用中。它们将提供一个特定于编译器的标志(通常是-I)。
 
-Using BEFORE or AFTER determines whether the path should be prepended or appended to the target INCLUDE\_DIRECTORIES property. It's still up to the compiler to decide whether directories provided here will be checked before or after the default ones (usually, it's before).
+使用BEFORE或AFTER确定路径是应该添加到目标INCLUDE\_DIRECTORIES属性的前面还是后面，这仍然由编译器决定是在默认目录之前还是之后检查这里提供的目录(通常是在之前)。
 
-The SYSTEM keyword informs the compiler that the provided directories are meant as standard system directories (to be used with the angle-bracket form). For many compilers, this value will be provided as a -isystem flag.
+SYSTEM关键字通知编译器所提供的目录是标准的系统目录(与尖括号形式一起使用)。对于许多编译器，这个值将作为-system标志提供。
 
-\subsubsubsection{5.3.2\hspace{0.2cm}Preprocessor definitions}
+\subsubsubsection{5.3.2\hspace{0.2cm}预处理宏定义}
 
-Remember how I mentioned the preprocessor's \#define and \#if, \#elif, and \#endif directives when describing the stages of compilation? Let's consider the following example:
+还记得在描述编译阶段时提到的预处理器的\#define和\#if、\#elif和\#endif指令吗?看看下面的例子:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter05/02-definitions/definitions.cpp
@@ -52,23 +52,23 @@ int main() {
 }
 \end{lstlisting}
 
-As it is, this example does nothing; neither ABC nor DEF is defined (DEF would default to 0 in this example). We can easily change that by adding two lines at the top of this code:
+实际上，这个例子什么也没有做;既没有定义ABC也没有定义DEF(在本例中DEF默认为0)。可以通过在这段代码的顶部添加两行代码来轻松地改变这一点:
 
 \begin{lstlisting}[style=styleCXX]
 #define ABC
 #define DEF 8
 \end{lstlisting}
 
-After compiling and executing this code, we can see both messages in the console:
+编译并执行这段代码后，可以在控制台中看到这两条信息:
 
 \begin{lstlisting}[style=styleCXX]
 ABC is defined!
 DEF is greater than 5!
 \end{lstlisting}
 
-This seems easy enough, but what happens if we want to condition these sections based on external factors, such as an operating system, architecture, or something else? Good news! You can pass values from CMake to a C++ compiler, and it's not complicated at all.
+这看起来很简单，但若我们想根据外部因素(如操作系统、体系结构或其他东西)来调整这些部分，会发生什么情况呢?好消息!可以将值从CMake传递到C++编译器，这一点也不复杂。
 
-The target\_compile\_definitions() command will do the trick:
+target\_compile\_definitions()指令就可以做到这一点:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter05/02-definitions/CMakeLists.txt
@@ -79,25 +79,29 @@ target_compile_definitions(defined PRIVATE ABC
 	"DEF=${VAR}")
 \end{lstlisting}
 
-The preceding code will behave exactly like the two \#define statements, but we have the freedom to use CMake's variables and generator expressions, and we can put the command in a conditional block.
+前面的代码将完全类似于两个\#define语句，可以自由使用CMake的变量和生成器表达式，并且可以将命令放在条件块中。
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Important Note]
-These definitions are traditionally passed to the compiler with the -D flag – -DFOO=1 – and some programmers still use that flag in this command:
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=重要的Note]
+这些定义通常以-D标志——-DFOO=1——传递给编译器，一些开发者仍然在这个命令中使用这个标志:
+
 \begin{lstlisting}[style=styleCMake]
 target_compile_definitions(hello PRIVATE -DFOO)
 \end{lstlisting}  
-CMake recognizes this and will remove any leading -D flags. It will also ignore empty strings, so it's even okay to write the following:
+
+CMake可以识别这一点，并将删除任何前导-D标志。也会忽略空字符串，所以可以这样写:
+
 \begin{lstlisting}[style=styleCMake]
 target_compile_definitions(hello PRIVATE -D FOO)
 \end{lstlisting}   
--D is a separate argument; it will become an empty string after removal, and then get ignored, correctly behaving as a result.
+
+-D是一个单独的参数，在删除后成为一个空字符串，然后被忽略。
 \end{tcolorbox}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Common gotchas in unit-testing private class fields}
+\textbf{单元测试私有类的常见问题}
 
-Some online resources recommend using a combination of specific -D definitions with \#ifdef/ifndef directives for the purposes of unit testing. The simplest possible approach is to wrap access specifiers in conditional inclusion and ignore them when UNIT\_TEST is defined:
+为了单元测试的目的，一些在线资源建议使用特定的-D定义和\#ifdef/ifndef指令的组合。最简单的方法是将访问说明符包装在条件包含中，并在定义UNIT\_TEST时忽略它们:
 
 \begin{lstlisting}[style=styleCXX]
 class X {
@@ -108,13 +112,13 @@ class X {
 }
 \end{lstlisting}
 
-While this use case is very convenient (it allows tests to directly access private members), it's not very clean code. Unit tests should only test whether methods in the public interface work as expected and treat underlying implementation as a black-box mechanism. I recommend that you only use this as a last resort.
+虽然这个用例非常方便(允许测试直接访问私有成员)，但代码不干净。单元测试应该只测试公共接口中的方法是否按预期工作，并将底层实现视为黑盒机制。这里建议只将此作为压箱底的手段。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Using git commit to track a compiled version}
+\textbf{使用Git进行编译版本跟踪}
 
-Let's think about use cases that benefit from knowing details about the environment or filesystem. One great example for professional settings might be passing the revision or commit SHA that was used to build the binary:
+从了解环境或文件系统的细节中受益的用例，一个很好的例子可能是传递用于构建二进制文件的修订或提交SHA:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter05/03-git/CMakeLists.txt
@@ -126,7 +130,7 @@ target_compile_definitions(print_commit PRIVATE
 	"SHA=${SHA}")
 \end{lstlisting}  
 
-We can then use it in our application, like so:
+然后可以在应用中使用，像这样:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter05/03-git/print_commit.cpp
@@ -143,15 +147,15 @@ int main()
 }
 \end{lstlisting}  
 
-Of course, the preceding code requires a user to have git installed and available in their PATH. This is useful when programs running on our production hosts come from a continuous integration/deployment pipeline. If there's an issue with our software, we can quickly check which exact Git commit was used to build the faulty product.
+当然，前面的代码要求用户在他们的PATH中安装了Git。当在生产主机上运行的程序来自持续集成/部署流水时，这很有用。若软件有问题，也可以快速检查到底是哪一个Git提交构建了有问题的产品。
 
-Keeping track of an exact commit is really useful for debugging purposes. For a single variable, it's not a lot of work, but what happens when we have dozens of variables we'd like to pass to our headers?
+跟踪准确的提交对于调试非常有用。对于单个变量来说，这不是很多工作，但是当有几十个变量要传递给头文件时会发生什么呢?
 
-\subsubsubsection{5.3.3\hspace{0.2cm}Configuring the headers}
+\subsubsubsection{5.3.3\hspace{0.2cm}配置头文件}
 
-Passing definitions through target\_compile\_definitions() can be a bit of overhead if we have multiple variables. Can't we just provide a header file with placeholders referencing various variables and get CMake to fill them in?
+若有多个变量，可以通过target\_compile\_definitions()传递定义可能会有一点开销。但不能只提供一个头文件，其中包含引用各种变量的占位符，然后让CMake填充它们吗?
 
-Sure we can! With the configure\_file(<input> <output>) command, we can generate new files from templates like this one:
+可以使用configure\_file(<input> <output>)指令，可以从这样的模板生成新的文件:
 
 \begin{lstlisting}[style=styleCXX]
 //chapter05/04-configure/configure.h.in
@@ -162,7 +166,7 @@ Sure we can! With the configure\_file(<input> <output>) command, we can generate
 #cmakedefine FOO_UNDEFINED "@FOO_UNDEFINED@"
 \end{lstlisting}  
 
-We can then use the command, like so:
+然后，可以像这样使用:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter05/04-configure/CMakeLists.txt
@@ -176,7 +180,7 @@ target_include_directories(configure PRIVATE
 							${CMAKE_CURRENT_BINARY_DIR})
 \end{lstlisting}  
 
-We can have CMake build an output file, like this:
+可以让CMake生成一个输出文件，像这样:
 
 \begin{lstlisting}[style=styleCXX]
 //chapter05/04-configure/<build_tree>/configure.h
@@ -187,11 +191,11 @@ We can have CMake build an output file, like this:
 /* #undef FOO_UNDEFINED "@FOO_UNDEFINED@" */
 \end{lstlisting}  
 
-As you can see, the @VAR@ and \$\{VAR\} variable placeholders were replaced with the values from the CMake list file. Additionally, \#cmakedefine was replaced with \#define for defined variables and /* \#undef VAR */ for undefined.
+@VAR@和\$\{VAR\}变量占位符被CMake列表文件中的值所替换。此外，对于已定义的变量，\#cmakedefine替换为\#define，而对于未定义的变量使用/* \#undef VAR */替换。
 
-If you need an explicit \#define 1 or \#define 0 for \#if blocks, use \#cmakedefine01 instead.
+若需要显式的\#define 1或\#define 0为\# If块，可以使用\#cmakedefine01代替。
 
-How do we use such a configured header in the application? We can simply include it in our implementation file:
+如何在应用中使用这样的配置头文件呢?可以将它包含在实现文件中:
 
 \begin{lstlisting}[style=styleCXX]
 //chapter05/04-configure/configure.cpp
@@ -214,7 +218,7 @@ int main()
 }
 \end{lstlisting}
 
-And because we have added the binary tree to our include paths with the target\_include\_directories() command, we can compile the example and receive output populated from CMake:
+并且这里已经用target\_include\_directories()指令将构建树目录添加到include路径中，所以可以编译这个例子并运行:
 
 \begin{tcblisting}{commandshell={}}
 FOO_ENABLE: ON
@@ -223,9 +227,9 @@ FOO_ENABLE2: FOO_ENABLE2
 FOO_UNDEFINED: FOO_UNDEFINED
 \end{tcblisting}
 
-The configure\_file() command also has a number of formatting and filepermission options. Describing them here would be a bit too lengthy. If you're interested, check out the online documentation for details (the link is in the Further reading section).
+configure\_file()指令还有许多格式化和文件权限选项。若感兴趣，请查看在线文档以获取详细信息(链接在扩展阅读部分)。
 
-After preparing a complete composite of our headers and source file, we can talk about how the output code is shaped during the next steps. As we can't influence the linguistic analysis or assembling directly (these steps follow strict standards), we definitely have access to the configuration of the optimizer. Let's learn how it can affect the end result.
+准备好头文件和源文件的完整组合之后，就可以讨论在接下来的步骤中如何形成输出代码。由于我们不能直接影响语言分析或汇编(这些步骤遵循严格的标准)，所以肯定可以访问优化器的配置。让我们来学习其是如何影响最终结果的吧。
 
 
 

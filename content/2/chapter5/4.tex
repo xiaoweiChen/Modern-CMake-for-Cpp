@@ -1,17 +1,15 @@
 
-The optimizer will analyze the output of previous stages and use a multitude of tricks, which programmers would consider dirty, as they don't adhere to clean-code principles.
-That's okay – the critical role of the optimizer is to make code performant (that is, use few CPU cycles, few registers, and less memory). As the optimizer goes through the source code, it will transform it heavily so that it almost becomes unrecognizable. It turns into a specially prepared version for the target CPU.
-The optimizer will not only decide which functions could be removed or compacted; it will also move code around or even significantly duplicate it! If it can determine with full certainty that some lines of code are meaningless, it will wipe them out from the middle of an important function (you won't even notice). It will reuse memory, so numerous variables can occupy the same slot in different periods of time. And it will transform your control structures into totally different ones if that means it can shave off a few cycles here and there.
+优化器将分析前一阶段的输出，并使用大量的技巧，开发者可能会认为这些技巧很脏，因为它们不遵守干净代码的原则。这没关系——优化器的关键作用是提高代码的性能(使用较少的CPU周期、较少的寄存器和较少的内存)。当优化器遍历源代码时，将对其进行大量转换，以至于几乎无法阅读，会变成为目标CPU专门准备的版本。优化器不仅将决定哪些函数可以删除或压缩，还会移动代码，甚至复制代码!若能够完全确定某些代码行没有意义，其将从一个重要函数的中间删除(开发者不太会注意)。它将重用内存，因此许多变量可以在不同的时间段占用相同的插槽。若可以在这里或那里减少一些指令周期，它将把相应的控制结构转变成完全不同的结构。
 
-The techniques described here, if applied manually to source code by a programmer, would turn it into a horrible, unreadable mess. It would be hard to write and reason about.
+这里描述的技术，若由程序员手动应用到源代码中，将会造成源代码变成可怕的、不可读的混乱符号集。很难阅读的同时，这些符号也很难写，也就更难于人为推演了。
 
-On the other hand, they are great if applied by compilers, which will follow the orders exactly as written. The optimizer is a ruthless beast that serves only one purpose: make the execution fast, no matter how mangled the output will be. Such output may contain some debugging information if we are running it in our test environment, or it may not, in order to make it difficult for unauthorized people to tamper with it.
+另一方面，若编译器应用这些代码，其将完全按照所写的顺序进行。优化器是一头无情的野兽，只服务于一个目的:使执行快速，无论输出将如何混乱。若在测试环境中运行这样的输出，那么可能包含一些调试信息，也可能不包含，使未经授权的人难以修改。
 
-Each compiler has its own tricks up its sleeve, aligned with the platform and philosophy it follows. We'll take a look at the most common ones, available in GNU GCC and LLVM Clang, so that we can understand what is useful and possible.
+每个编译器都有自己的技巧，与所遵循的平台和原理保持一致。我们将看一看最常见的，在GNU GCC和LLVM Clang中可用的优化器，从而了解什么是有用的，什么是可能的。
 
-Here's the thing – many compilers won't enable any optimization by default (GCC included). This is okay in some cases but not so much in others. Why go slow when you can go fast? To change things, we can use the target\_compile\_options() command and specify exactly what we want from the compiler.
+许多编译器默认情况下不会启用任何优化(包括GCC)。这在某些情况下是可以的，但在其他情况下就不是这样了。能快走为什么要慢走?要更改这些内容，可以使用target\_compile\_options()指令，并确切地指定想从编译器获得的内容。
 
-The syntax of this command is similar to others in this chapter:
+该指令的语法与本章其他指令类似:
 
 \begin{lstlisting}[style=styleCMake]
 target_compile_options(<target> [BEFORE]
@@ -19,35 +17,34 @@ target_compile_options(<target> [BEFORE]
 	[<INTERFACE|PUBLIC|PRIVATE> [items2...] ...])
 \end{lstlisting}  
 
-We provide the target command-line options to add and we specify the propagation keyword. When this command is executed, CMake will append the given options to the appropriate COMPILE\_OPTIONS variable of the target. The optional BEFORE keyword may be used to specify that we'd like to prepend them instead. Order matters in some cases, so it's good that we can choose.
+我们提供要添加的目标命令行选项，并指定传播关键字。这个命令执行时，CMake将把给定的选项附加到目标的适当的COMPILE\_OPTIONS变量中。可选的BEFORE关键字可以用来指定把相应的选项放在前面。某些情况下，顺序很重要，这里可以选择，是件好事。
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Important Note]
-target\_compile\_options() is a general command. It can also be used to provide other arguments to compiler-like -D definitions, for which CMake offers the target\_compile\_definition() command as well. It is always recommended to use the CMake commands wherever possible, as they work the same way across all supported compilers.
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=重要的Note]
+target\_compile\_options()是一个通用指令。还可以用来为类似编译器的-D定义提供其他参数，为此CMake还提供了target\_compile\_definition()指令。总是建议尽可能使用CMake指令，因为其在所有支持的编译器上以相同的方式工作。
 \end{tcolorbox}
 
-Time to discuss the details. The subsequent sections will introduce various kinds of optimizations you can enable in most compilers.
+是时候讨论细节了。后面的部分将介绍可以在大多数编译器中启用的各种优化。
 
-\subsubsubsection{5.4.1\hspace{0.2cm}General level}
+\subsubsubsection{5.4.1\hspace{0.2cm}优化级别}
 
-All the different behaviors of the optimizer can be configured in depth by specific flags that we can pass as compile options. Getting to know all of them is time-consuming and requires a lot of knowledge about the internal workings of compilers, processors, and memory. What can we do if we just want the best possible scenario that works well in most cases? We can reach for a general solution – an optimization-level specifier.
+优化器的所有不同行为，都可以通过编译选项传递的特定标志进行配置。要了解所有这些方法挺花时间的，并且需要了解大量关于编译器、处理器和内存内部工作原理的知识。若只想要在大多数情况下运行良好的最佳可能场景，能做什么呢?可以找到一个通用的解决方案——优化级说明符。
 
-Most compilers offer four basic levels of optimization, from 0 to 3. We specify them with the -O<level> option. -O0 means no optimization and, usually, it's the default level for compilers. On the other hand, -O2 is considered a full optimization, one that generates highly optimized code but at the cost of the slowest compilation time.
+大多数编译器提供了从0到3的四个基本优化级别，用-O<level>选项来指定它们。-O0表示不进行优化，通常这是编译器的默认级别。另一方面，-O2认为是完全优化，它生成高度优化的代码，但以最慢的编译时间为代价。
 
-There's an in-between -O1 level, which (depending on your needs) can be a good compromise – it enables a reasonable amount of optimization mechanisms without slowing the compilation too much.
+有一个介于两者之间的-O1级别，这(取决于需要)可能是一个很好的折衷方案——其支持合理数量的优化机制，而不会大幅降低编译速度。
 
-Finally, we can reach for -O3, which is full optimization, like -O2, but with a more aggressive approach to subprogram inlining and loop vectorization.
+最后，可以使用-O3，这是完全优化，就像-O2一样，但使用更积极的方法实现子程序内联和循环向量化。
 
-There are also some variants of the optimization that will optimize for the size (not necessarily the speed) of the produced file – -Os. There is a super-aggressive optimization, -Ofast, which is an -O3 optimization that doesn't comply strictly with C++ standards.
-The most obvious difference is the usage of -ffast-math and -ffinite-math flags, meaning that if your program is about precise calculations (as most are), you might want to avoid it.
+还有一些优化变量会优化生成文件的大小(不一定是速度)，-Os。有一个超级激进的优化，-Ofast，不严格遵守C++标准的-O3优化。最明显的区别是- fast-math和-ffinite-math标志的使用，若程序是关于精确计算的(大多数都是这样)，最好望不使用这个参数。
 
-CMake knows that not all compilers are made equal, and for that reason, it standardizes the experience for developers by providing some default flags for compilers. They are stored in system-wide (not target-specific) variables for used language (CXX for C++) and build configuration (DEBUG or RELEASE):
+CMake了解不是所有的编译器都是相同的。因此，其通过为编译器提供一些默认标志来标准化开发人员的体验。它们存储在所用语言(CXX用于C++)和构建配置(DEBUG或RELEASE)的系统范围(不是特定于目标的)变量中:
 
 \begin{itemize}
 \item 
-CMAKE\_CXX\_FLAGS\_DEBUG equals -g.
+CMAKE\_CXX\_FLAGS\_DEBUG 等于 -g
 
 \item 
-CMAKE\_CXX\_FLAGS\_RELEASE equals -O3 -DNDEBUG.
+CMAKE\_CXX\_FLAGS\_RELEASE 等于 -O3 -DNDEBUG
 \end{itemize}
 
 As you can see, the debug configuration doesn't enable any optimizations and the release configuration goes straight for O3. If you like, you can change them directly with the set() command or just add a target compilation option, which will override this default behavior. The other two flags (-g, -DNDEBUG) are related to debugging – we'll discuss them in the Providing information for the debugger section.
@@ -66,7 +63,7 @@ Disable them with an -fno option: -fno-inline-functions.
 
 Some of these flags are worth understanding better as they will often impact how your program works and how you can debug it. Let's take a look.
 
-\subsubsubsection{5.4.2\hspace{0.2cm}Function inlining}
+\subsubsubsection{5.4.2\hspace{0.2cm}函数内联}
 
 As you will recall, compilers can be encouraged to inline some functions, either by defining a function inside a class declaration block or by explicitly using the inline keyword:
 
@@ -131,7 +128,7 @@ We can do that by specifying the -O0 level for the target or going straight afte
 
 You can explicitly disable inlining with -fno-inline-.... In any case, for details, refer to the documentation of the specific version of your compiler.
 
-\subsubsubsection{5.4.3\hspace{0.2cm}Loop unrolling}
+\subsubsubsection{5.4.3\hspace{0.2cm}循环展开}
 
 Loop unrolling is an optimization technique that is also known as loop unwinding. The general approach is to transform loops into a set of statements that achieve the same effect. By doing so, we'll trade the size of the program for execution speed, as we'll reduce or eliminate the instruction that controls the loop – pointer arithmetic or end-ofloop tests.
 
@@ -170,7 +167,7 @@ Each compiler offers a slightly different version of this flag:
 
 If you're in doubt, test extensively whether this flag is affecting your particular program and explicitly enable or disable it. Do note that on GCC, it is implicitly enabled with -O3 as part of the implicitly enabled -floop-unroll-and-jam flag.
 
-\subsubsubsection{5.4.4\hspace{0.2cm}Loop vectorization}
+\subsubsubsection{5.4.4\hspace{0.2cm}循环向量化}
 
 Single Instruction Multiple Data (SIMD) is one of the mechanisms developed in the early 1960s to achieve parallelism. It works exactly as the name suggests; it can perform the same operation on multiple pieces of information at the same time. What does it mean in practice? Let's consider the following example:
 
