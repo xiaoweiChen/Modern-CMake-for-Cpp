@@ -1,31 +1,31 @@
-Alright, let's say that you have decided to up your game with network communication or storing data at rest. Plaintext files, JSON, or even good old XML won't do. You want to serialize your data straight to binary format, preferably with a library known very well in the industry – say, protocol buffers (Protobuf) from Google. You find the documentation, install the dependencies in the system, and now what? How do we actually tell CMake to find and use this external dependency you're introducing? Luckily, there's a find\_package() command. It works like a charm in most cases.
+好吧，假设已经决定通过网络通信或静态存储数据来提高你的游戏水平。纯文本文件、JSON，甚至是老式的XML都不行。所以希望将数据直接序列化为二进制格式，最好使用业界非常熟悉的库——例如，Google的协议缓冲区(Protobuf)。找到文档，在系统中安装依赖项，然后呢?如何让CMake找到并引入的这个外部依赖呢?幸运的是，有一个find\_package()指令。这在大多数情况下都很有效。
 
-Let's rewind and start by setting the scene – we have to install the dependencies we want to use because find\_package(), as the name suggests, is only about discovering packages in a system. We're assuming that dependencies are already installed or that users of our solution know how to install specific, necessary dependencies when prompted. To cover other scenarios, you'll need to provide a backup plan (more on which can be found in the Working with Git repositories section).
+让我们倒回去，从设置场景开始——必须安装要使用的依赖项，因为是find\_package()嘛，顾名思义，只是关于在系统中发现包。假设已经安装了依赖项，或者解决方案的用户知道如何在提示时安装特定的、必要的依赖项。为了涵盖其他场景，需要提供一个备份计划(在后面的章节中可以找到更多关于备份计划的信息)。
 
-In the case of Protobuf, the situation is fairly straightforward: you can either download, compile, and install the library yourself from the official repository (\url{https://github.com/protocolbuffers/protobuf}) or use the package manager in your operating system. If you're following these examples using the Docker image mentioned in Chapter 1, First Steps with CMake, you'll be using Debian Linux. The commands to install the Protobuf library and compiler are as follows:
+对于Protobuf，情况相当简单:可以从官方存储库(\url{https://github.com/protocolbuffers/protobuf})中下载、编译和安装库，或者在操作系统中使用包管理器。若正在使用第1章中提到的Docker映像来执行这些示例，那么可以使用Debian Linux。Protobuf库和编译器的安装命令如下:
 
 \begin{tcblisting}{commandshell={}}
 $ apt update
 $ apt install protobuf-compiler libprotobuf-dev
 \end{tcblisting}
 
-Every system has its own way of installing packages and managing them. Finding the path where a package is residing can be tricky and time-consuming, especially when you want to support most of the operating systems used today. Fortunately, find\_package() can often do it for you if the package in question provides an appropriate config-file that allows CMake to determine variables necessary to support the package.
+每个系统都有自己的安装和管理包的方法。寻找包所在的路径可能是棘手和耗时的，特别是希望支持当前使用的大多数操作系统时。幸运的是，find\_package()通常可以帮你做到这一点，若有关的包提供了一个适当的配置文件，允许CMake确定支持包所需的变量。
 
-Today, many projects are compatible with this requirement and provide this file for CMake during installation. If you plan to use some popular library that doesn't provide it, don't worry just yet. Chances are that CMake authors have bundled the file with CMake itself (these are called find-modules, to differentiate from config-files). If that's not the case, we still have some options:
+现在，许多项目都与此需求兼容，并在安装过程中为CMake提供此文件。若计划使用一些不提供此功能的流行库，请先不要担心。很有可能CMake作者已经将该文件与CMake本身捆绑在一起(这些称为查找模块，以区别于config-files)。若情况并非如此，我们仍然有一些其他选择:
 
 \begin{itemize}
 \item 
-Provide our own find-modules for a specific package and bundle it with our project.
+为特定的包提供我们自己的查找模块，并将其捆绑到我们的项目中。
 
 \item 
-Write a config-file and ask package maintainers to ship the package with it.
+编写一个配置文件，并要求包维护人员将包一起发布。
 \end{itemize}
 
-You might say that you're not quite ready to create such merge requests yourself, and that's fine because it's most likely you won't have to. CMake ships with over 150 find-modules that can find libraries such as Boost, bzip2, curl, curses, GIF, GTK, iconv, ImageMagick, JPEG, Lua, OpenGL, OpenSSL, PNG, PostgreSQL, Qt, SDL, Threads, XML-RPC, X11, and zlib, and luckily, also the Protobuf file that we're going to use in this example. A full list is available in the CMake documentation: \url{https://cmake.org/cmake/help/latest/manual/cmake-modules.7.html\#find_modules}.
+可能还没有完全准备好自己创建这样的合并请求，没关系，因为不需要这样做。CMake附带超过150个查找模块，可以找到诸如Boost、bzip2、curl、curses、GIF、GTK、iconv、ImageMagick、JPEG、Lua、OpenGL、OpenSSL、PNG、PostgreSQL、Qt、SDL、Threads、XML-RPC、X11和zlib等库，还可以找到我们将在本例中使用的Protobuf文件。完整的列表可以在CMake文档中找到:\url{https://cmake.org/cmake/help/latest/manual/cmake-modules.7.html\#find_modules}。
 
-Both find-modules and config-files can be used in CMake projects with a single find\_package() command. CMake looks for matching find-modules, and if it can't find any, it will turn to config-files. The search will start from the path stored in the CMAKE\_MODULE\_PATH variable (which is empty by default). This variable can be configured by a project when it wants to add and use external find-modules. Next, CMake will scan the list of built-in find-modules available in the installed version of CMake.
+find-modules和config-files都可以用一个find\_package()指令在CMake项目中使用。CMake查找匹配的查找模块，若找不到，就会查找配置文件。搜索将从存储在CMAKE\_MODULE\_PATH变量(默认为空)中的路径开始。当项目想要添加和使用外部find-modules时，可以配置此变量。接下来，CMake将扫描已安装版本中可用的内置查找模块列表。
 
-If no applicable module is found, it's time to search for corresponding package config-files. CMake has a long list of paths appropriate for a host operating system, which can be scanned for filenames matching the following pattern:
+若没有找到适用的模块，就应该搜索相应的包配置文件。CMake有一长串适合主机操作系统的路径，可以查找到符合以下模式的文件名:
 
 \begin{itemize}
 \item 
@@ -35,9 +35,9 @@ If no applicable module is found, it's time to search for corresponding package 
 <kebab-case-package-name>-config.cmake
 \end{itemize}
 
-Let's talk a little about the project files; in this example, I don't really intend to design a full network-based solution with remote procedure calls and all the bells and whistles. Instead, I just want to prove that I can build and run a project that depends on Protobuf. To accomplish this, I'm going to create a .proto file with as small a contract as possible. If you're not that familiar with Protobuf, just know that this library provides a mechanism to serialize structured data in a binary form. To do so, we need to provide a schema of such a structure, which will be used to write and read from binary form into C++ objects.
+让我们来聊聊项目文件。本例中，并不打算设计一个具有远程过程调用和基于网络的解决方案。相反，只是想证明我可以构建和运行一个依赖于Protobuf的项目。为此，将创建一个.proto文件，其中包含尽可能小的契约。若不是很熟悉Protobuf，只需要知道这个库提供了一种以二进制形式序列化结构化数据的机制。为此，我们需要提供这种结构的模式，它将用于从二进制形式向C++对象进行读写。
 
-This is what I came up with:
+这是我想到的:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter07/01-find-package-variables/message.proto
@@ -48,7 +48,7 @@ message Message {
 }
 \end{lstlisting}
 
-Don't worry if you're not familiar with Protobuf syntax (this isn't really what this example is about). This is just a simple message that contains just one 32-bit integer. Protobuf has a special compiler that will read these files and generate C++ sources and headers that can be then used by our application. This means we'll need to somehow add this compilation step to our process. We'll return to that. For now, let's see what our main.cpp file looks like:
+若不熟悉Protobuf语法也不用担心(这不是这个例子真正的内容)。这只是一个简单的Message，只包含一个32位整数。Protobuf有一个特殊的编译器，可以读取这些文件并生成C++源文件和头文件，然后应用就可以使用这些文件了。所以需要以某种方式将这个编译步骤添加到流程中。现在，让我们看看main.cpp:
 
 \begin{lstlisting}[style=styleCXX]
 //chapter07/01-find-package-variables/main.cpp
@@ -68,9 +68,9 @@ int main()
 }
 \end{lstlisting}
 
-As I've mentioned, Message contains a single id field. In the main.cpp file, I'm creating an object representing this message, setting the field to 123, and printing its debug information to the standard output. Next, I'm creating a file stream, writing a binary version of this object to it, and closing the stream – the simplest possible use for a serialization library.
+Message包含一个id字段。在main.cpp文件中，我创建了一个表示此消息的对象，将字段设置为123，并将其调试信息打印到标准输出。接下来，我将创建一个文件流，将该对象的二进制版本写入其中，然后关闭流——这是序列化库最简单的用法。
 
-Note that I've included a message.pb.h header. This file doesn't yet exist; it needs to be created by protoc, the Protobuf compiler, during compilation of message.proto. This scenario sounds pretty complex, implying that the list file of such a project must be incredibly long. Not at all! This is where the CMake magic happens:
+注意，这里包含了一个message.pb.h头。这个文件还不存在，需要在message.proto编译期间由protoc，即Protobuf编译器创建。听起来有些复杂，因为这样一个项目的列表文件一定非常长。其实一点也不!这就是CMake魔法发生的地方:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter07/01-find-package-variables/CMakeLists.txt
@@ -90,63 +90,63 @@ target_include_directories(main PRIVATE
 	${CMAKE_CURRENT_BINARY_DIR})
 \end{lstlisting}
 
-Let's break this down:
+让我们来分析一波:
 
 \begin{itemize}
 \item 
-The first two lines we know already; they create the project and declare its language
+前两行我们已经知道了，创建项目并声明其语言
 
 \item 
-find\_package(Protobuf REQUIRED) asks CMake to run the bundled FindProtobuf.cmake find-module and set up the Protobuf library for us. That find-module will scan commonly used paths and (because we provided the REQUIRED keyword) terminate if a library is not found. It will also specify useful variables and functions (such as the one on the next line)
+find\_package(Protobuf REQUIRED)要求CMake运行绑定的FindProtobuf.cmake为我们建立了Protobuf库。该查找模块将扫描常用路径，若没有找到库，则终止(因为提供了REQUIRED关键字)。其还将指定有用的变量和函数(例如下一行中的函数)
 
 \item 
-protobuf\_generate\_cpp is a custom function defined in the Protobuf findmodule. Under the hood, it calls add\_custom\_command(), which invokes the protoc compiler with appropriate arguments. We use this function by providing two variables that will be filled with paths to the generated source (GENERATED\_SRC) and header (GENERATED\_HEADER) files, and a list of files to compile (message.proto).
+protobuf\_generate\_cpp是在protobuf findmodule中定义的自定义函数。在底层调用add\_custom\_command()，后者使用适当的参数调用协议编译器。可以通过提供两个变量来使用这个函数，将生成的源文件(GENERATED\_SRC)和头文件(GENERATED\_HEADER)的路径，以及要编译的文件列表(message.proto)。
 
 \item 
-add\_executable, as we already know, will create our executable using main.cpp and Protobuf files configured in the previous command.
+add\_executable，将使用main.cpp和前面命令中配置的Protobuf文件创建可执行文件。
 
 \item 
-target\_link\_libraries adds libraries (static or shared) found by find\_package() to the linking command of our main target.
+target\_link\_libraries会将find\_package()找到的库(静态或动态)添加到主目标的链接命令中。
 
 \item 
-target\_include\_directories() adds to include paths the necessary INCLUDE\_DIRS provided by the package and CMAKE\_CURRENT\_BINARY\_DIR. The latter is needed so that the compiler can find the generated message.pb.h header.
+target\_include\_directories()添加包提供的必要的INCLUDE\_DIRS和CMAKE\_CURRENT\_BINARY\_DIR。这里需要后者，这样编译器才能找到生成的message.pb.h头文件。
 \end{itemize}
 
-In other words, it achieves the following:
+换句话说，其实现了以下目标:
 
 \begin{itemize}
 \item 
-Finds the location of the library and the compiler
+查找库和编译器的位置
 
 \item 
-Provides helper functions to teach CMake how to call a custom compiler for .proto files
+提供帮助函数来教CMake如何调用.proto文件的自定义编译器
 
 \item 
-Adds variables containing the necessary paths for inclusion and linking
+添加包含包含和链接所需路径的变量
 \end{itemize}
 
-In most cases, you can expect some variables to be set when you call find\_package(), whether you're using a built-in find-module or a config-file bundled with a package (assuming that the package was found):
+大多数情况下，当使用find\_package()时，可以预期会设置一些变量，无论使用的是内置的查找模块，还是与包绑定的包配置文件(假设找到了包):
 
 \begin{itemize}
 \item 
 <PKG\_NAME>\_FOUND
 
 \item 
-<PKG\_NAME>\_INCLUDE\_DIRS or <PKG\_NAME>\_INCLUDES
+<PKG\_NAME>\_INCLUDE\_DIRS 或 <PKG\_NAME>\_INCLUDES
 
 \item 
-<PKG\_NAME>\_LIBRARIES or <PKG\_NAME>\_LIBRARIES or <PKG\_NAME>\_LIBS
+<PKG\_NAME>\_LIBRARIES 或 <PKG\_NAME>\_LIBRARIES 或 <PKG\_NAME>\_LIBS
 
 \item 
 <PKG\_NAME>\_DEFINITIONS
 
 \item 
-IMPORTED targets specified by the find-module or config-file
+IMPORTED由查找模块或配置文件指定的目标
 \end{itemize}
 
-The last point is really interesting – if a package supports so-called "modern CMake" (built around targets), it will provide those IMPORTED targets instead (or alongside) of these variables, which allows for cleaner, simpler code. It is recommended to prioritize targets over variables.
+最后一点非常有趣——若包支持所谓的“现代CMake”(围绕目标构建)，其将提供那些导入的目标来代替(或伴随)这些变量，这允许更干净、更简单的代码。建议优先考虑目标而不是变量。
 
-Protobuf is a great example, as it offers both variables and IMPORTED targets (since CMake 3.10): protobuf::libprotobuf, protobuf::libprotobuf-lite, protobuf::libprotoc, and protobuf::protoc. This allows us to write even more concise code:
+Protobuf是一个很好的例子，因为提供了变量和导入的目标(自CMake 3.10以来):protobuf::libprotobuf，protobuf::libprotobuf-lite，protobuf::libprotoc和protobuf::protoc。就可以编写更简洁的代码:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter07/02-find-package-targets/CMakeLists.txt
@@ -166,39 +166,39 @@ target_include_directories(main PRIVATE
 ${CMAKE_CURRENT_BINARY_DIR})
 \end{lstlisting}
 
-The protobuf::libprotobuf imported target implicitly specifies include directories and, thanks to transitive dependencies (or propagated properties as I call them), they are shared with our main target. The same process happens with the linker and compiler flags.
+导入的目标protobuf::libprotobuf隐式指定包含目录，并且由于传递依赖项(我称之为传播属性)，它们与我们的主目标共享。同样的过程也发生在链接器和编译器标志上。
 
-If you need to know what exactly is provided from a specific find-module, it's best to visit its online documentation. One for Protobuf can be found here: \url{https://cmake.org/ cmake/help/latest/module/FindProtobuf.html}.
+若需要知道特定的查找模块具体提供了什么，最好访问它的在线文档。一个Protobuf可以在这里找到: \url{https://cmake.org/ cmake/help/latest/module/FindProtobuf.html}。
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Important Note]
-To keep things simple, examples in this section will simply fail if the protobuf library (or its compiler) was not found in the user's system. But a really robust solution should verify that by checking the Protobuf\_FOUND variable and acting accordingly, either by printing a clear diagnostic message for the user (so they can install it) or performing the installation automatically.
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=重要的Note]
+简单起见，若在用户系统中找不到protobuf库(或其编译器)，本节中的示例将会失败。但是一个真正健壮的解决方案应该通过检查Protobuf\_FOUND变量并进行相应的操作来验证这一点，或者为用户打印一个明确的诊断消息(这样用户就可以安装它)，或者自动执行安装。
 \end{tcolorbox}
 
-The last thing to mention about the find\_package() command is its options. A full list is a bit extensive, so we'll just focus on the basic signature. It looks like this:
+find\_package()指令最后要提到的是其选项。完整的列表有点冗长，所以这里只关注基本签名。它看起来像这样:
 
 \begin{lstlisting}[style=styleCMake]
 find_package(<Name> [version] [EXACT] [QUIET] [REQUIRED])
 \end{lstlisting}
 
-The most important options are as follows:
+最重要的选项如下:
 
 \begin{itemize}
 \item 
-[version], which allows us to optionally request a specific version. Use the major.minor.patch.tweak format (such as 1.22) or provide a range – 1.22...1.40.1 (use three dots as a separator).
+{}[version]，可以有选择地请求特定的版本。使用major.minor.patch.tweak格式(例如1.22)或提供一个范围- 1.22…1.40.1(使用三个圆点作为分隔符)。
 
 \item 
-The EXACT keyword means that we want an exact version (a range is not supported here).
+EXACT关键字需要精确的版本(这里不支持范围)。
 
 \item 
-The QUIET keyword silences all messages about a found/not found package.
+QUIET关键字使所有关于已找到/未找到包的消息静默。
 
 \item 
-The REQUIRED keyword will stop execution if a package is not found and print a diagnostic message (even if QUIET is enabled).
+若没有找到包，REQUIRED关键字将停止执行并打印诊断消息(即使启用了QUIET)。
 \end{itemize}
 
-More information on the command can be found on the documentation page here: \url{https://cmake.org/cmake/help/latest/command/find_package.html}.
+关于该指令的更多信息可以在文档页面中找到:\url{https://cmake.org/cmake/help/latest/command/find_package.html}。
 
-The concept of providing config-files for a package that could be automatically consumed by buildsystems isn't that new. And it certainly wasn't invented by CMake. There are other tools and formats for this very purpose. PkgConfig is one of them. CMake provides a useful wrapper module to support it as well.
+为构建系统自动使用的包提供配置文件的概念并不新鲜。当然这也不是CMake的发明，还有其他工具和格式可用于此目的。PkgConfig就是其中之一，CMake也提供了一个包装器模块来支持它。
 
 
 

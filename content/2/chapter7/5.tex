@@ -1,7 +1,7 @@
 
 Many projects rely on Git as a version control system. Assuming that our project and external library are both using it, is there some kind of Git magic that would allow us to link these repositories together? Can we build a specific (or latest) version of the library as a step toward building our project? If so, how?
 
-\subsubsubsection{7.5.1\hspace{0.2cm}Providing external libraries through Git submodules}
+\subsubsubsection{7.5.1\hspace{0.2cm}通过Git子模块提供外部库}
 
 One possible solution is to use a mechanism built into Git called Git submodules. Submodules allow a project repository to use other Git repositories without actually adding the referenced files to the project repository. They work similarly to soft links – they point to a specific branch or commit in an external repository (but you need to update them explicitly). To add a submodule to your repository (and clone its repository), execute the following command:
 
@@ -120,7 +120,7 @@ As you can see, this isn't a very complex process, but it isn't ideal – the us
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Automatic Git submodule initialization}
+\textbf{自动初始化Git子模块}
 
 Providing a neat experience to the users doesn't always have to be painful for developers. If a library provides a package config-file, we can just ask find\_package() to search for it in the installed libraries. As promised, CMake will start by checking whether there's an appropriate find-module, and if there's not, it will look for config-files.
 
@@ -166,7 +166,7 @@ This is short and sweet. This also works for libraries that aren't built with CM
 
 Sadly, this method falls apart if your company works with Concurrent Versions System (CVS), Subversion (SVN), Mercurial, or anything else to ship code to your users. If you cannot rely on Git submodules, what's the alternative?
 
-\subsubsubsection{7.5.2\hspace{0.2cm}Git-cloning dependencies for projects that don't use Git}
+\subsubsubsection{7.5.2\hspace{0.2cm}不使用Git的项目克隆依赖项}
 
 If you're using another VCS or offer your source in an archive, you might have a hard time relying on Git submodules bringing in external dependencies to your repository. Chances are that the environment that will build your code has Git installed and could execute the git clone command.
 

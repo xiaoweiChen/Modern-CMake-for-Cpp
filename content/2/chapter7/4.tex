@@ -1,6 +1,6 @@
-On a rare occasion, the library that you really want to use in your project doesn't provide a config-file or a PkgConfig file, and there's no find-module readily available in CMake already. You can then write a custom find-module for that library and ship it with your project. This situation is not ideal, but in the interest of taking care of the users of your project, it has to be done.
+极少数情况下，在项目中会使用的库不提供config文件或PkgConfig文件，而且CMake中也没有现成的查找模块。可以为该库编写一个自定义查找模块，并将其与项目一起发布。这种情况并不理想，但为了照顾项目的用户，有时必须这样做。
 
-Since we have already become familiar with libpqxx in the previous section, let's write a nice find-module for it. We start by writing in a new FindPQXX.cmake file, which we'll store in the cmake/module directory of our project source tree. We need to make sure that the find-module gets discovered by the CMake when find\_package() is called, so we'll add this path to the CMAKE\_MODULE\_PATH variable in our CMakeLists.txt with list(APPEND). The whole list file should look like this:
+上一节中已经熟悉了libpqxx，所以让我们编写一个漂亮的查找模块。首先编写一个新的FindPQXX.cmake文件，将它存储在项目源代码树的cmake/module目录中。我们需要确保当使用find\_package()时，CMake可以找到这个查找模块，所以我们将在CMakeLists.txt中将该目录追加到CMAKE\_MODULE\_PATH变量中。整个文件应该是这样的:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter07/04-find-package-custom/CMakeLists.txt
@@ -14,47 +14,47 @@ add_executable(main main.cpp)
 target_link_libraries(main PRIVATE PQXX::PQXX)
 \end{lstlisting}
 
-Now that's done, we need to write the actual find-module. Technically speaking, nothing will happen if the FindPQXX.cmake file is empty: CMake won't complain if some specific variables aren't set (including PQXX\_FOUND), even if a user calls find\_package() with REQUIRED. It's up to the author of the find-module to respect conventions outlined in CMake's documentation:
+现在，我们需要编写查找模块。若FindPQXX.cmake文件为空:若某些特定的变量没有设置(包括PQXX\_FOUND)， CMake不会报错，即使用户使用REQUIRED调用find\_package()。这取决于查找模块的作者是否遵守CMake文档中列出的约定:
 
 \begin{itemize}
 \item 
-CMake will provide a <PKG\_NAME>\_FIND\_REQUIRED variable set to 1 when find\_package(<PKG\_NAME> REQUIRED) is called. A find-module should call message(FATAL\_ERROR) when a library is not found.
+使用find\_package(<PKG\_NAME> REQUIRED)时，CMake将提供一个<PKG\_NAME>\_FIND\_REQUIRED变量，并设置为1。当没有找到库时，查找模块应该使用message(FATAL\_ERROR)。
 
 \item 
-CMake will provide a <PKG\_NAME>\_FIND\_QUIETLY variable set to 1 when find\_package(<PKG\_NAME> QUIET) is called. A find-module should avoid printing diagnostic messages (other than the one mentioned previously).
+使用find\_package(<PKG\_NAME> QUIET)时，CMake将提供一个<PKG\_NAME>\_FIND\_QUIETLY变量，并设置为1。查找模块应该跳过打印诊断消息(前面提到的除外)。
 
 \item 
-CMake will provide a <PKG\_NAME>\_FIND\_VERSION variable set to the version required by calling the list file. A find-module should find the appropriate version or issue FATAL\_ERROR.
+CMake将提供<PKG\_NAME>\_FIND\_VERSION变量，设置为调用列表文件所需的版本。查找模块应该找到适当的版本或发出FATAL\_ERROR信息。
 \end{itemize}
 
-Of course, it's best to follow the preceding rules for consistency with other find-modules. Let's discuss the steps needed to create an elegant find-module for PQXX:
+当然，为了与其他查找模块保持一致，最好遵循前面的规则。为PQXX创建一个优雅的查找模块所需的步骤:
 
 \begin{enumerate}
 \item 
-If paths to library and headers are known (either provided by a user or coming from the cache of a previous run), use these paths and create an IMPORTED target. End here.
+若库和头文件的路径已知(由用户提供，或来自前一次运行的缓存)，则使用这些路径并创建导入的目标。结束。
 
 \item 
-Otherwise, find the library and headers of the nested dependency – PostgreSQL.
+否则，找到嵌套依赖的库和头文件 —— PostgreSQL。
 
 \item 
-Search the known paths for the binary version of the PostgreSQL client library.
+在已知的路径中搜索二进制版本的PostgreSQL客户端库。
 
 \item 
-Search the known paths for the PostgreSQL client include headers.
+搜索PostgreSQL客户端包含头文件的已知路径。
 
 \item 
-Check whether the library and include headers were found; if so, create an IMPORTED target.
+检查是否找到库和include头文件;是的话，创建一个IMPORTED目标。
 \end{enumerate}
 
-The creation of an IMPORTED target happens twice – if the user provides the library's paths from the command line or if they're found automatically. We'll start by writing a function to handle the result of our search process and keep our code DRY.
+IMPORTED目标的创建会发生两次——若用户从命令行提供库的路径，或者若是自动找到的。首先编写一个函数来处理搜索过程的结果并保持代码DRY。
 
-To create an IMPORTED target, we'll simply need a library with an IMPORTED keyword (to use it in the target\_link\_libraries() command in CMakeLists.txt). The library has to provide a type – we mark it as UNKNOWN to say that we don't want to detect whether a found library was static or dynamic; we just want to provide an argument to a linker.
+要创建IMPORTED目标，只需要一个IMPORTED关键字的库(在CMakeLists.txt中的target\_link\_libraries()指令中使用它)。库必须提供一个类型——将其标记为UNKNOWN表示我们不想检测所找到的库是静态的，还是动态的;我们只是想为链接器提供一个参数。
 
-Next, we set the required properties of the IMPORTED\_LOCATION and INTERFACE\_INCLUDE\_DIRECTORIES IMPORTED targets to arguments the function was called with. We can specify other properties too (such as COMPILE\_DEFINITIONS); they just aren't necessary for PQXX.
+接下来，IMPORTED\_LOCATION和INTERFACE\_INCLUDE\_DIRECTORIES导入目标的必需属性设置为调用函数时使用的参数。还可以指定其他属性(如COMPILE\_DEFINITIONS)，这些对PQXX来说不是必要的。
 
-After that, we'll store the paths in cache variables so that we don't need to perform the search again. It's worth mentioning that PQXX\_FOUND is set explicitly in the cache, and therefore it's visible in the global variable scope (so it can be accessed by the user's CMakeLists.txt).
+之后，将把路径存储在缓存变量中，这样就不需要再次执行搜索了。PQXX\_FOUND是在缓存中显式设置的，因此在全局变量作用域中是可见的(因此可以由用户的CMakeLists.txt访问)。
 
-Finally, we mark cache variables as advanced, which means they won't be visible in the CMake GUI unless the "advanced" option is enabled. This is a common practice for these variables and we should follow the convention too:
+最后，将缓存变量标记为高级，这意味着除非启用了“高级”选项，否则它们在CMake GUI中是不可见的。这是这些变量的常见做法，我们也应该遵循这个惯例:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter07/04-find-package-custom/cmake/module/FindPQXX.cmake
@@ -75,9 +75,9 @@ function(add_imported_library library headers)
 endfunction()
 \end{lstlisting}
 
-Next, we cover the first case – a user who has their PQXX installed in a non-standard location can provide necessary paths through the command line, with -D arguments. If that's the case, we just call the function we just defined and abandon the search by escaping with return(). We trust that the user knows best and provides us with correct paths to the library and its dependencies (PostgreSQL).
+接下来，我们介绍第一种情况——将PQXX安装在非标准位置的用户可以使用-D参数通过命令行提供必要的路径。若是这种情况，只需调用刚刚定义的函数，并通过使用return()进行转义来放弃搜索。我们相信用户最清楚，并提供库及其依赖项(PostgreSQL)的正确路径。
 
-This condition will also be true if the configuration stage was performed in the past, as the PQXX\_LIBRARIES and PQXX\_INCLUDES variables are cached.
+若配置阶段在过去执行过，这个条件也为true，因为PQXX\_LIBRARIES和PQXX\_INCLUDES变量缓存了。
 
 \begin{lstlisting}[style=styleCMake]
 if (PQXX_LIBRARIES AND PQXX_INCLUDES)
@@ -86,9 +86,9 @@ if (PQXX_LIBRARIES AND PQXX_INCLUDES)
 endif()
 \end{lstlisting}
 
-It's time to find some nested dependencies. To use PQXX, the host machine also needs PostgreSQL. It's completely legal to use another find-module in our find-module, but we should forward the REQUIRED and QUIET flags to it (so that the nested search behaves consistently with the outer one). It's not complex logic, but we should try to avoid unnecessary code.
+现在是时候找到一些嵌套依赖项了。要使用PQXX，主机还需要PostgreSQL。查找模块中使用另一个查找模块没问题，但应该将REQUIRED和QUIET标志进行转发给(这样嵌套的搜索行为与外部的搜索行为一致)。这不是复杂的逻辑，但应该尽量避免不必要的代码。
 
-CMake has a built-in helper macro that does just that – find\_dependency(). Interestingly, the documentation states that it's not a right fit for find-modules, as it calls the return() command if the dependency is not found. Because this is a macro (and not a function), return() will exit the scope of the caller, the FindPQXX.cmake file, stopping the execution of the outer find-module. There may be cases when that's undesirable, but in this one, this is exactly what we want to do – prevent CMake from going down the rabbit hole and looking for the components of PQXX when we already know that PostgreSQL isn't available:
+CMake有一个内置的帮助宏，可以做这件事——find\_dependency()。有趣的是，文档指出它并不适合查找模块，因为若没有找到依赖项，它会调用return()。因为这是一个宏(而不是函数)，所以return()将退出调用者的作用域FindPQXX.cmake文件，停止外部查找模块的执行。可能在某些情况下，这是不可取的，但在这个例子中，这正是我们想要做的——防止CMake掉进兔子洞，在我们已经知道PostgreSQL不可用时寻找PQXX的组件:
 
 \begin{lstlisting}[style=styleCMake]
 # deliberately used in mind-module against the
@@ -97,9 +97,9 @@ include(CMakeFindDependencyMacro)
 find_dependency(PostgreSQL)
 \end{lstlisting}
 
-To find the PQXX library, we'll set up a \_PQXX\_DIR helper variable (transformed to a CMake-style path) and use the find\_library() command to scan a list of paths we'll provide after the PATHS keyword. The command will check for the presence of library binaries that match names provided after another keyword, NAMES. If a matching file is found, its path will be stored in the PQXX\_LIBRARY\_PATH variable. Otherwise, the variable will be set to <VAR>-NOTFOUND, or PQXX\_HEADER\_PATH-NOTFOUND in this case.
+要查找PQXX库，将设置一个\_PQXX\_DIR帮助变量(转换为cmake样式的路径)，并使用find\_library()扫描路径列表，在PATHS关键字后面提供路径。该指令将检查是否存在与另一个关键字NAMES后面提供的名称相匹配的库二进制文件。若找到匹配的文件，路径将存储在PQXX\_LIBRARY\_PATH变量中。否则，该变量将设置为<var>-NOTFOUND，或是本例中的PQXX\_HEADER\_PATH-NOTFOUND。
 
-The NO\_DEFAULT\_PATH keyword disables the default behavior, which will scan a long list of default paths provided by CMake for this host environment:
+NO\_DEFAULT\_PATH关键字禁用默认行为，该行为将扫描CMake为该主机环境提供的一长串默认路径:
 
 \begin{lstlisting}[style=styleCMake]
 file(TO_CMAKE_PATH "$ENV{PQXX_DIR}" _PQXX_DIR)
@@ -112,9 +112,9 @@ find_library(PQXX_LIBRARY_PATH NAMES libpqxx pqxx
 )
 \end{lstlisting}
 
-Next, we'll search for all known header files with the find\_path() command, which works very similarly to find\_library(). The main difference is that find\_library() knows the system-specific extensions for the libraries and will implicitly append those as needed, and for find\_path(), we'll need to provide exact names.
+接下来，将使用find\_path()指令搜索所有已知的头文件，该命令的工作原理与find\_library()非常相似。主要的区别是find\_library()知道库的特定于系统的扩展名，并将根据需要隐式附加这些扩展名，而对于find\_path()，我们需要提供确切的名称。
 
-Also, don't get confused here with pqxx/pqxx. It's an actual header file, but the extension was deliberately omitted by library authors to comply with \#include directives in C++ style (rather than following the C-style .h extension):
+另外，不要在这里与pqxx/pqxx混淆。它是一个实际的头文件，但是库作者故意省略了扩展名，以遵循C++风格的\#include指令(而不是遵循C风格的.h扩展名):
 
 \begin{lstlisting}[style=styleCXX]
 #include <pqxx/pqxx>
@@ -130,9 +130,9 @@ find_path(PQXX_HEADER_PATH NAMES pqxx/pqxx
 )
 \end{lstlisting}
 
-Now it's time to check whether the PQXX\_LIBRARY\_PATH and PQXX\_HEADER\_PATH variables contain any -NOTFOUND value. Again, we can do this manually and then print diagnostic messages or terminate the build execution, according to the convention, or we could use the find\_package\_handle\_standard\_args() helper function available in the FindPackageHandleStandardArgs list file provided by CMake. It's a helper command that sets the <PKG\_NAME>\_FOUND variable to 1 if path variables are filled and provides the correct diagnostic message about success and failure (it will respect the QUIET keyword). It will also terminate execution with FATAL\_ERROR if one of the provided path variables is empty when the REQUIRED keyword was passed to the find-module.
+现在是时候检查PQXX\_LIBRARY\_PATH和PQXX\_HEADER\_PATH变量是否包含-NOTFOUND值了。同样，可以手动完成此操作，然后根据约定打印诊断消息或终止构建执行，或者可以使用CMake提供的FindPackageHandleStandardArgs列表文件中的find\_package\_handle\_standard\_args()助手函数。它是一个辅助命令，若填充路径变量，会将<PKG\_NAME>\_FOUND变量设置为1，并提供关于成功和失败的正确诊断消息(考虑QUIET关键字)。当REQUIRED关键字传递给查找模块时，若提供的路径变量中的一个为空，其还将使用FATAL\_ERROR终止执行。
 
-If a library was found, we'll call the function to define the IMPORTED targets and store the paths in the cache:
+若找到了库，将调用函数来定义导入的目标并将路径存储在缓存中:
 
 \begin{lstlisting}[style=styleCMake]
 include(FindPackageHandleStandardArgs)
@@ -147,9 +147,9 @@ if (PQXX_FOUND)
 endif()
 \end{lstlisting}
 
-That's it. This find-module will find PQXX and create the appropriate PQXX::PQXX targets. You can find the whole file in the book examples repository: chapter07/04find-package-custom/cmake/module/FindPQXX.cmake.
+这个查找模块将查找PQXX并创建适当的PQXX::PQXX目标。可以在本书示例库中找到整个文件: chapter07/04find-package-custom/cmake/module/FindPQXX.cmake.
 
-This method works great if a library is popular and most likely already installed in the system. However, not all libraries will be available all the time. Can we make this easy for our users and fetch and build these dependencies with CMake?
+若一个库很流行并且很可能已经安装在系统中，那么这个方法就非常有效。然而，并不是所有的库都是随时可用的。我们能用CMake让用户更容易获取和构建这些依赖关系吗?
 
 
 

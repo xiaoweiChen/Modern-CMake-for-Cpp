@@ -1,24 +1,24 @@
-The problem of managing dependencies and discovering all the compile flags that they require is as old as C++ libraries themselves. There are many tools to deal with it, ranging from very small and minimal mechanisms to very versatile solutions offered as parts of buildsystems and IDEs. One of the (once very popular) tools is called PkgConfig (\url{freedesktop.org/wiki/Software/pkg-config/}). It is often available on Unixlike systems (although it works on macOS and Windows too).
+管理依赖关系和发现所需的所有编译标志的问题和C++库本身一样古老，有许多工具可以处理它。其中一个(曾经非常流行)工具叫做PkgConfig(\url{freedesktop.org/wiki/Software/pkg-config/})。通常在类Unix系统上可用(也可以在macOS和Windows上工作)。
 
-pkg-config is slowly being phased out by other more modern solutions. A question arises here – should you invest your time in supporting it? The answer is as usual – it depends:
+pkg-config正慢慢被其他更现代的解决方案淘汰。这里出现了一个问题——是否应该投入时间来支持它?答案——视情况而定:
 
 \begin{itemize}
 \item 
-If a library is really popular, it might already have its find-module in CMake; in that case, you probably won't need it.
+若一个库非常流行，可能已经在CMake中有它的查找模块。这种情况下，就不需要它。
 
 \item 
-If there's no find-module (or it doesn't work for your library) and a PkgConfig .pc file is all that library provides, just use what's readily available.
+若没有查找模块(或者它对库不起作用)，并且该库只提供PkgConfig.pc，那么使用现成的即可。
 \end{itemize}
 
-Many (if not most) libraries have embraced CMake and provide a package config-file in current versions. If you're not publishing your solution and you control the environment, use find\_package() and don't worry about legacy versions.
+许多(若不是大多数的话)库都采用了CMake，并在当前版本中提供了一个包配置文件。若不需要发布解决方案，并且可以控制环境，请使用find\_package()，不要担心遗留版本的问题。
 
-Sadly, not all environments can be quickly updated to the latest versions of a library. A lot of companies are still using legacy systems in production, which are no longer getting the latest packages. In that case, users might be stuck with an older (but hopefully compatible) version. And very often, it will provide a .pc file.
+遗憾的是，并不是所有的环境都可以快速更新到库的最新版本。许多公司仍然在生产中使用遗留系统，这些系统不再获得最新的软件包。这种情况下，用户可能只能使用旧版本(但希望兼容)。通常，它会提供一个.pc文件。
 
-Additionally, efforts to support the older PkgConfig format might be worthwhile if it means that your project will work out of the box for most users.
+此外，若项目能够为大多数用户提供开箱即用的服务，支持较老的PkgConfig格式可能是值得的。
 
-In any case, start by using find\_package(), as described in the previous section, and if <PKG\_NAME>\_FOUND is false, fall back on PkgConfig. This way, we cover a scenario where an environment gets upgraded and we can just use the main method without changing the code.
+开始使用find\_package()，若\_FOUND为false，退回到PkgConfig。通过这种方式，我们将介绍一个环境升级的场景，可以只使用主方法，而不更改代码。
 
-The concept of this helper tool is quite simple – the author of the library provides a small .pc file containing details necessary for compilation and linking, such as this one:
+这个助手工具的概念非常简单——库的作者提供了一个包含编译和链接所需细节的小的.pc文件，比如下面这个:
 
 \begin{lstlisting}[style=styleCMake]
 prefix=/usr/local
@@ -33,36 +33,35 @@ Cflags: -I${includedir}/foobar
 Libs: -L${libdir} -lfoobar
 \end{lstlisting}
 
-The format is pretty straightforward, lightweight, and it even supports a basic variable expansion. This is why many developers prefer it over complex, robust solutions such as CMake. While PkgConfig is extremely easy to use, its features are quite limited:
+该格式非常简单、轻量级，甚至支持基本的变量展开。这就是为什么许多开发人员更喜欢它，而不是像CMake这样复杂、健壮的解决方案。虽然PkgConfig非常容易使用，但它的功能非常有限:
 
 \begin{itemize}
 \item 
-Checks to see whether a library exists in the system and if a .pc file is provided with it
+检查系统中是否存在库，以及是否提供了.pc文件
 
 \item 
-Checks whether a sufficient version of a library is available
+检查是否有足够的库版本可用
 
 \item 
- Gets linker flags for a library by running pkg-config -{}-libs libfoo
+通过运行pkg-config -{}-libs libfoo获取库的链接器标志
 
 \item 
-Gets the include directories for a library (this field can technically contain other
-compiler flags) – pkg-config -{}-cflags libfoo
+获取库的包含目录(该字段在技术上可以包含其他编译器标志) ——  pkg-config -{}-cflags libfoo
 \end{itemize}
 
-To properly use PkgConfig in a build scenario, your buildsystem has to find the pkg-config executable in the OS, run it a few times and provide appropriate arguments, and store the responses in variables so they can be passed later to the compiler. We already know how to do that in CMake – scan paths known for storing helper tools to check whether PkgConfig is installed and then use a few exec\_program() commands to discover how to link dependencies. Even though the steps are limited, it seems excessive to do it every time when we'd like to use PkgConfig.
+要在构建场景中正确使用PkgConfig，构建系统必须在操作系统中找到pkg-config可执行文件，运行几次并提供适当的参数，并将响应存储在变量中，以便稍后将它们传递给编译器。我们已经知道如何在CMake中做到这一点——扫描已知的用于存储帮助工具的路径来检查PkgConfig是否已安装，然后使用一些exec\_program()指令来发现如何链接依赖项。尽管这些步骤是有限的，但当我们想要使用PkgConfig时，每次都这样做似乎有点不妥。
 
-Fortunately, CMake provides a handy built-in find-module just for that purpose – FindPkgConfig. It follows most of the rules for regular find modules, but instead of providing PKG\_CONFIG\_INCLUDE\_DIRS or PKG\_CONFIG\_LIBS variables, it sets a variable with a direct path to the binary – PKG\_CONFIG\_EXECUTABLE. Unsurprisingly, the PKG\_CONFIG\_FOUND variable is set too – we'll use it to confirm that the tool is available in the system and then scan for a package with a pkg\_check\_modules() helper command defined in the module.
+CMake提供了一个方便的内置查找模块——FindPkgConfig。它遵循了常规查找模块的大多数规则，但没有提供PKG\_CONFIG\_INCLUDE\_DIRS或PKG\_CONFIG\_LIBS变量，而是设置了一个直接指向二进制文件的变量——PKG\_CONFIG\_EXECUTABLE。意料之中的是，PKG\_CONFIG\_FOUND变量也设置了——我们将使用它来确认该工具在系统中是可用的，然后用模块中定义的pkg\_check\_modules()帮助命令扫描包。
 
-Let's see that in practice. One example of a somewhat popular library that offers a .pc file is a client for the PostgreSQL database – libpqxx.
+让我们在实践中看看。一个提供.pc文件的流行库的例子是PostgreSQL数据库的客户端——libpqxx。
 
-To install it on Debian, you can use the libpqxx-dev package (your OS might need a different package):
+要在Debian上安装它，可以使用libpqxx-dev包(不同的操作系统可能需要不同的包):
 
 \begin{tcblisting}{commandshell={}}
 apt-get install libpqxx-dev
 \end{tcblisting}
 
-We'll create the shortest possible main.cpp file, which utilizes a dummy connection class:
+我们将创建main.cpp文件，它利用了一个虚拟连接类:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter07/02-find-pkg-config/main.cpp
@@ -76,7 +75,7 @@ int main()
 }
 \end{lstlisting} 
 
-And we can now provide the necessary dependencies for the previous code by using the PkgConfig find-module:
+现在可以使用PkgConfig查找模块为前面的代码提供必要的依赖项:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter07/03-find-pkg-config/CMakeLists.txt
@@ -92,29 +91,29 @@ add_executable(main main.cpp)
 target_link_libraries(main PRIVATE PkgConfig::PQXX)
 \end{lstlisting}
 
-Let's break down what happens
+让我们分析一波
 
 \begin{itemize}
 \item 
-We ask CMake to find the PkgConfig executable with the find\_package() command. It will fail if pkg-config is not present because of the REQUIRED keyword.
+我们要求CMake使用find\_package()指令查找PkgConfig可执行文件。若由于REQUIRED关键字而不存在pkg-config，则会失败。
 
 \item 
-A pkg\_check\_modules() custom macro defined in the FindPkgConfig find-module is called to create a new IMPORTED target with PQXX as the chosen name. The find-module will search for a dependency called libpxx, and again, it will fail if the library isn't available because of the REQUIRED keyword. Note the IMPORTED\_TARGET keyword – without it, no target would be automatically created, and we would have to define it manually with variables created by the macro.
+调用FindPkgConfig查找模块中定义的pkg\_check\_modules()自定义宏，以PQXX作为所选名称创建一个新的导入目标。查找模块将搜索名为libpxx的依赖项，若库因为REQUIRED关键字而不可用，将再次失败。注意IMPORTED\_TARGET关键字——若没有它，就不会自动创建目标，必须用宏创建的变量手动定义它。
 
 
 \item 
-We confirm that everything is correct with a diagnostic message by printing PQXX\_FOUND. If we didn't specify REQUIRED in the previous command, we can check here whether this variable was set (perhaps to allow other fallback mechanisms to kick in).
+通过打印PQXX\_FOUND确认诊断消息中的一切都是正确的。若没有在前面的命令中指定REQUIRED，可以在这里检查这个变量是否设置(可能是为了允许其他回退机制启动)。
 
 \item 
-We create the main executable.
+创建main可执行文件。
 
 \item 
-We link the PkgConfig::PQXX IMPORTED target created by pkg\_check\_modules(). Note that PkgConfig:: is a constant prefix, and PQXX comes from the first argument passed to that command.
+链接由pkg\_check\_modules()创建的PkgConfig::PQXX导入目标。注意，PkgConfig::是一个常量前缀，PQXX来自传递给该命令的第一个参数。
 \end{itemize}
 
-This was a fairly convenient method to bring in dependencies that don't support CMake yet. This find-module has a few other methods and options; if you're interested in learning more, I recommend referring to the official documentation: \url{https://cmake.org/ cmake/help/latest/module/FindPkgConfig.html}.
+这是引入尚不支持CMake的依赖项的一种相当方便的方法。这个查找模块有一些其他的方法和选项;若有兴趣了解更多，建议参考官方文档:\url{https://cmake.org/ cmake/help/latest/module/FindPkgConfig.html}。
 
-Find-modules are meant as a very convenient way of providing CMake with information on installed dependencies. Most popular libraries are widely supported by CMake on all major platforms. What can we do though when we want to use a third-party library that doesn't have a dedicated find-module yet?
+查找模块是为CMake提供关于已安装依赖项的一种方式。CMake在所有主要平台上都广泛支持大多数流行的库，但当我们想要使用一个还没有专门的查找模块的第三方库时，该怎么办呢?
 
 
 
