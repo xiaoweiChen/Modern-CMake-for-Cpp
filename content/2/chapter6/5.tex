@@ -1,12 +1,12 @@
-A linker can often seem whimsical and start complaining about things for no apparent reason. This is an especially difficult ordeal for programmers starting out who don't know their way around this tool. It's no wonder, since they usually try to avoid touching build configuration for as long as they possibly can. Eventually, they're forced to change something (perhaps add a library they worked on) in the executable, and all hell breaks loose.
+链接器经常会异想天开，毫无理由地抱怨事情。对于刚开始使用这个工具的开发者来说，这是一项考验。这并不奇怪，因为他们通常尽可能地避免接触构建配置。最终，他们会在可执行文件中更改某些内容(可能添加他们正在处理的库)，然后一切就失控了。
 
-Let's consider a fairly simple dependency chain – the main executable depends on the outer library, which depends on the nested library (containing the necessary int b variable). Suddenly, an inconspicuous message appears on the programmer's screen:
+让我们考虑一个相当简单的依赖链——主可执行程序依赖于外部库，而外部库依赖于嵌套库(包含必要的int b变量)。突然，开发者的屏幕上出现了一条不显眼的消息:
 
 \begin{tcblisting}{commandshell={}}
 outer.cpp:(.text+0x1f): undefined reference to 'b'
 \end{tcblisting}
 
-This isn't such a rare diagnostic – usually, it means that we forgot to add a necessary library to the linker. But in this case, the library is actually added correctly to the target\_link\_libraries() command:
+这并不是一个罕见的问题——通常，这是忘记向链接器添加必要的库。但在本例中，库实际上已经正确地添加到target\_link\_libraries()中:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter06/06-order/CMakeLists.txt
@@ -21,7 +21,7 @@ add_executable(main main.cpp)
 target_link_libraries(main nested outer)
 \end{lstlisting}
 
-What then!? Very few errors can be as infuriating to debug and understand. What we're seeing here is an incorrect order of linking. Let's dive into the source code to figure out the reason:
+那么! ?很少有错误会像调试和理解那样令人恼火，在这里看到的是一个错误的连接顺序。让我们深入源代码来找出原因:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter06/06-order/main.cpp
@@ -33,7 +33,7 @@ int main() {
 }
 \end{lstlisting}
 
-The preceding code seems easy enough – we'll print an a external variable, which can be found in the outer library. We're declaring it ahead of time with the extern keyword. Here is the source for that library:
+前面的代码看起来很简单——我们将打印一个外部变量，可以在外部库中找到。我们提前用extern关键字声明了它。下面是该库的源代码:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter06/06-order/outer.cpp
@@ -42,7 +42,7 @@ extern int b;
 int a = b;
 \end{lstlisting}
 
-This is quite simple too – outer is depending on the nested library to provide the b external variable, which gets assigned to the a exported variable. Let's see the source of nested to confirm that we're not missing the definition:
+这也非常简单——outer依赖于嵌套库提供外部变量b，该变量赋值给导出变量a。让我们看看嵌套的源代码，以确认没有遗漏定义:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter06/06-order/nested.cpp
@@ -50,57 +50,57 @@ This is quite simple too – outer is depending on the nested library to provide
 int b = 123;
 \end{lstlisting}
 
-So indeed, we have provided the definition for b, and since it's not marked as local with the static keyword, it's correctly exported from the nested target. As we saw previously, this target is linked with the main executable in CMakeLists.txt:
+实际上，我们已经为b提供了定义，由于它没有使用static关键字标记为本地，因此它从嵌套目标正确导出。正如之前看到的，这个目标与CMakeLists.txt中的主要可执行文件相链接:
 
 \begin{lstlisting}[style=styleCMake]
 target_link_libraries(main nested outer)
 \end{lstlisting}
 
-So where does the undefined reference to 'b' error come from?
+那么，对'b'错误的未定义引用是从哪里来的呢?
 
-Resolving undefined symbols works like this – a linker processes the binaries from left to right. As the linker iterates through the binaries, it will do the following:
-
-\begin{enumerate}
-\item 
-Collect all undefined symbols exported from this binary and store them for later
-
-\item 
-Try to resolve undefined symbols (collected from all binaries processed so far) with symbols defined in this binary
-
-\item 
-Repeat this process for the next binary
-\end{enumerate}
-
-If any symbols remain undefined after the whole operation is completed, the linking fails.
-
-This is the case in our example (CMake puts the object files of the executable target before the libraries):
+解析未定义符号的工作方式是这样的——链接器从左向右处理二进制文件。当链接器遍历二进制文件时，将执行以下操作:
 
 \begin{enumerate}
 \item 
-We processed main.o, got an undefined reference to a, and collected it for future resolution.
+收集从此二进制文件导出的所有未定义符号，并存储起来以备以后使用
 
 \item 
-We processed libnested.a, no undefined references were found, so there was nothing to resolve.
+尝试用此二进制文件中定义的符号解析未定义的符号(从处理的二进制文件中收集)
 
 \item 
-We processed libouter.a, got an undefined reference to b, and resolved a reference to a.
+对下一个二进制文件重复此过程
 \end{enumerate}
 
-We did correctly resolve the reference to the a variable, but not for b. All we need to do is reverse the order of linking so that nested comes after outer:
+若在整个操作完成后，任何符号仍未定义，则链接失败。
+
+我们的例子中就是这样(CMake把可执行目标的目标文件放在库之前):
+
+\begin{enumerate}
+\item 
+主要处理main.o，获得对a的未定义引用，并收集它以用于将来的解析。
+
+\item 
+处理libnested.a，没有发现未定义的引用，因此没有什么需要解析的。
+
+\item 
+处理libouter.a，得到了对b的未定义引用，并解析了对A的引用。
+\end{enumerate}
+
+我们确实正确地解析了对a变量的引用，但对b没有。我们需要做的是颠倒链接的顺序，使nested排在outer之后:
 
 \begin{lstlisting}[style=styleCMake]
 target_link_libraries(main outer nested)
 \end{lstlisting}
 
-Another less elegant option is to repeat the library (which is useful for cyclic references):
+另一个不那么优雅的选项是重复库(这对循环引用很有用):
 
 \begin{lstlisting}[style=styleCMake]
 target_link_libraries(main nested outer nested)
 \end{lstlisting}
 
-Finally, we can try using linker-specific flags such as -{}-start-group or -{}-end-group. Go to the documentation of your linker for details, as these specifics are outside of the scope of this book.
+最后，可以尝试使用特定于链接器的标志，如-{}-start-group或-{}-end-group。详细信息请参阅链接器的文档，这些细节超出了本书的范围。
 
-Now that we know how to solve common problems, let's talk about how we could use the linker to our advantage.
+现在我们知道了如何解决常见的问题后，再来看看如何利用链接器。
 
 
 

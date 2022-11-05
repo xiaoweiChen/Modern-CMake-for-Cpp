@@ -1,28 +1,28 @@
-It doesn't really matter whether your solution is big or small; as it matures, you'll eventually decide to bring in external dependencies. It's important to avoid the costs of creating and maintaining code using prevailing business logic. This way, you can devote your time to things that matter to you and your customers.
+解决方案是大是小并不重要。随着它的成熟，将最终决定引入外部依赖项。避免使用主流业务逻辑创建和维护代码的成本是很重要的。这样，就可以把时间花在对你和客户都重要的事情上。
 
-External dependencies are used not only to provide frameworks and features and solve quirky problems. They can also play an important part in the process of building and controlling the quality of your code – whether it is in the form of special compilers such as Protobuf or testing frameworks such as GTest.
+外部依赖不仅用于提供框架和特性，还用于解决古怪的问题。还可以在构建和控制代码质量的过程中发挥重要作用——无论是以特殊编译器(如Protobuf)的形式，还是以测试框架(如GTest)的形式。
 
-Whether you're working with open source projects or using projects written by other developers in your company, you still need a good, clean process to manage external dependencies. Solving this on your own would take countless hours of setup and a lot of additional support work later. Fortunately, CMake does an excellent job in accommodating different styles and historical approaches to dependency management while keeping up with the constant evolution of industry-approved standards.
+无论使用的是开源项目，还是使用公司中其他开发人员编写的项目，仍然需要一个良好的、干净的过程来管理外部依赖关系。自己解决这个问题将需要无数小时的设置和大量额外的支持工作。幸运的是，CMake在适应依赖管理的不同风格和历史方法方面做得很好，同时跟上行业批准的标准的不断发展。
 
-To supply an external dependency, we should first check whether the host system already has the dependency available, since it's best to avoid unnecessary downloads and lengthy compilations. We'll explore how to find and turn such dependencies into CMake targets to use in our project. This can be done in many ways, specifically when packages support CMake out of the box or at least provide files for a slightly older PkgConfig tool. If that's not the case, we can still write our own file to detect and include such a dependency.
+要提供一个外部依赖项，应该首先检查主机系统是否已经有这个依赖项可用，因为最好避免不必要的下载和冗长的编译。我们将探索如何找到并将这些依赖项转换为CMake目标，以便在我们的项目中使用。这可以通过多种方式实现，特别是当包支持开箱即用CMake或至少为稍老的PkgConfig工具提供文件时。不过，我们仍然可以编写自己的文件来检测并包含这样的依赖项。
 
-We'll discuss what to do when a dependency isn't present on a system. As you can imagine, we can take alternative steps to automatically provide the necessary files. We'll consider tackling this problem using different Git methods and bringing in entire CMake projects as part of our build.
+我们将讨论当系统上没有依赖项时该怎么办？可以采取其他步骤来自动提供必要的文件。我们将考虑使用不同的Git方法来解决这个问题，并将整个CMake项目作为构建的一部分。
 
 本章中，我们将讨论以下主题:
 
 \begin{itemize}
 \item 
-How to find installed packages
+如何查找已安装的软件包
 
 \item 
-Discovering legacy packages with FindPkgConfig0
+使用FindPkgConfig0发现遗留包
 
 \item 
-Writing your own find-modules
+编写自己的查找模块
 
 \item 
-Working with Git repositories
+使用Git库
 
 \item 
-Using ExternalProject and FetchContent modules
+使用ExternalProject和FetchContent模块
 \end{itemize}

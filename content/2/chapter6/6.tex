@@ -1,10 +1,10 @@
-As we established so far, a linker enforces the ODR and makes sure that all external symbols provide their definitions in the process of linking. One interesting problem that we might encounter is the correct testing of the build.
+链接器会执行ODR，并确保所有外部符号在链接过程中提供的定义。我们可能会遇到的问题是，构建的正确测试。
 
-Ideally, we should test exactly the same source code that is being run in production. An exhaustive testing pipeline should build the source code, run its tests on produced binary, and only then package and distribute the executable (without the tests themselves).
+理想情况下，应该测试在生产环境中运行的完全相同的源代码。详尽的测试管道应该构建源代码，生成的二进制文件上运行测试，然后打包并分发可执行文件(不包含测试本身)。
 
-But how do we actually make this happen? Executables have a very specific flow of execution, which often requires reading command-line arguments. C++'s compiled nature doesn't really support pluggable units that can be temporarily injected into the binary for test purposes only. It seems like we'll need a very complex approach to solve this.
+但要如何做到这一点呢?可执行程序有一个非常特定的执行流，这通常需要读取命令行参数。C++的编译特性并不真正支持可插入单元，这些可插入单元可以临时注入到二进制文件中，仅用于测试目的。看来我们需要一个非常复杂的方法来解决这个问题。
 
-Luckily, we can use a linker to help us deal with this in an elegant manner. Consider extracting all logic from your program's main() to an external function, start\_program(), like so:
+幸运的是，可以使用链接器来帮助我们以一种优雅的方式处理这个问题。考虑从程序的main()提取所有逻辑到一个外部函数，start\_program():
 
 \begin{lstlisting}[style=styleCXX]
 // chapter06/07-testing/main.cpp
@@ -15,7 +15,7 @@ int main(int argc, const char** argv) {
 }
 \end{lstlisting}
 
-It's reasonable to skip testing this new main() function now; it is only forwarding arguments to a function defined elsewhere (in another file). We can then create a library containing the original source from main() wrapped in a new function – start\_program(). In this example, I'm going to use a simple program to check whether the command-line argument count is higher than 1:
+现在跳过测试这个新的main()函数是合理的，只是将参数转发到别处定义的函数(在另一个文件中)。然后，可以创建一个库，其中包含包装在新函数start\_program()中的main()原始源代码。这个例子中，将使用一个简单的程序来检查命令行参数count是否大于1:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter06/07-testing/program.cpp
@@ -30,7 +30,7 @@ int start_program(int argc, const char** argv) {
 }
 \end{lstlisting}
 
-We can now prepare a project that builds this application and links together those two translation units:
+现在可以准备一个项目来构建这个应用程序，并将这两个翻译单元链接在一起:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter06/07-testing/CMakeLists.txt
@@ -44,9 +44,9 @@ add_executable(main main.cpp)
 target_link_libraries(main program)
 \end{lstlisting}
 
-The main target is just providing the required main() function. It's the program target that contains all the logic. We can now test it by creating another executable with its own main() containing the test logic.
+主要目标只是提供所需的main()函数，包含所有逻辑的程序目标。现在，可以通过创建另一个可执行文件以及包含测试逻辑的main()来测试它。
 
-In a real-world scenario, frameworks such as GoogleTest or Catch2 will provide their own main() method that can be used to replace your program's entry point and run all the defined tests. We'll dive deep into the subject of actual testing in Chapter 8, Testing Frameworks. For now, let's focus on the general principle and write our own tests in another main() function:
+现实场景中，GoogleTest或Catch2等框架会提供main()，可用于替换程序的入口点并运行所有已定义的测试。我们将在第8章中深入研究实际测试。现在，让我们专注于原理，并在另一个main()函数中编写自己的测试:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter06/07-testing/test.cpp
@@ -66,24 +66,24 @@ int main() {
 }
 \end{lstlisting}
 
-The preceding code will call start\_program twice, with and without arguments, and check whether the returned exit codes are correct. This unit test leaves much to be desired in terms of clean code and elegant testing practices, but at least it's a start. The important thing is that we have now defined main() twice:
+前面的代码将调用start\_program两次，带参数和不带参数，并检查返回的退出代码是否正确。干净的代码和优雅的测试实践方面，这个单元测试还有很多需要改进的地方，但至少这是一个开始。重要的是我们已经两次定义了main():
 
 \begin{enumerate}
 \item 
-In main.cpp for production use
+在main.cpp中用于生产使用
 
 \item 
-In test.cpp for test purposes
+在test.cpp中进行测试
 \end{enumerate}
 
-We'll add the second executable to the bottom of our CMakeLists.txt now:
+现在将把第二个可执行文件添加到CMakeLists.txt的底部:
 
 \begin{lstlisting}[style=styleCMake]
 add_executable(test test.cpp)
 target_link_libraries(test program)
 \end{lstlisting}
 
-This creates another target, which is linked against the exact same binary code as the production, but it grants us the freedom to call all exported functions however we like. Thanks to this, we can run all code paths automatically and check whether they work as expected. Great!
+这将创建另一个目标，该目标与生产对象完全相同的二进制代码相链接，可以自由地调用所有导出函数。得益于此，我们可以自动运行所有代码路径，并检查它们是否按预期工作。太棒了!
 
 
 

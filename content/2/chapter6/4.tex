@@ -1,13 +1,13 @@
 
-Phil Karlton was right on point when he said the following:
+Phil Karlton说得很对:
 
-"There are two hard things in computer science: cache invalidation and naming things."
+\texttt{在计算机科学中有两件难事:缓存失效和命名。}
 
-Names are difficult for a few reasons – they have to be precise, simple, short, and expressive at the same time. That makes them meaningful and allows programmers to understand the concepts behind the raw implementation. C++ and many other languages impose one more requirement – many names have to be unique. This is manifested in a few different ways. A programmer is required to follow the ODR.
+起名字很难有几个原因——必须精确、简单、简短，同时还要有表现力。这使它们变得有意义，并允许程序员理解原始实现背后的概念。C++和许多其他语言强加了另外一个要求——许多名称必须是唯一的。这体现在几个不同的方面。程序员需要遵循ODR。
 
-This says that in the scope of a single translation unit (a single .cpp file), you are required to define it exactly once, even if you declare the same name (of a variable, function, class type, enumeration, concept, or template) multiple times.
+在单个翻译单元(单个.cpp文件)的范围内，即使多次声明相同的名称(变量、函数、类类型、枚举、概念或模板)，也需要只定义一次。
 
-This rule is extended to the scope of an entire program for all variables you effectively use in your code and non-inlined functions. Consider the following example:
+对于在代码和非内联函数中有效使用的所有变量，该规则扩展到整个程序的作用域。考虑下面的例子:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter06/02-odr-fail/shared.h
@@ -40,17 +40,17 @@ set(CMAKE_CXX_STANDARD 20)
 add_executable(odr one.cpp two.cpp)
 \end{lstlisting}
 
-As you can see, it's very straightforward – we created a shared.h header file used in two separate translation units:
+如你所见，非常简单——我们创建了一个shared.h头文件，用于两个独立的翻译单元:
 
 \begin{itemize}
 \item 
-one.cpp, which simply prints i to the screen
+one.cpp，只是把i打印到屏幕上
 
 \item 
-two.cpp, which does nothing except include the header
+two.cpp，除了包含头文件外什么都不做
 \end{itemize}
 
-We then link the two into a single executable and receive the following error:
+然后我们将两者链接到一个可执行文件中，会看到以下错误:
 
 \begin{tcblisting}{commandshell={}}
 [100%] Linking CXX executable odr
@@ -60,7 +60,7 @@ definition of 'i'
 collect2: error: ld returned 1 exit status
 \end{tcblisting}
 
-You can't define these things twice. However, there's a notable exception – types, templates, and extern inline functions can repeat their definitions in multiple translation units if they are exactly the same (that is, they have the same sequence of tokens). We can prove that by replacing a simple definition, int i;, with a definition of a class:
+这些东西不能定义两次。但有一个明显的例外——若类型、模板和extern内联函数完全相同(也就是说，它们具有相同的标记序列)，则可以在多个翻译单元中重复它们的定义。可以通过用类的定义替换简单的定义int i;来证明这一点:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter06/03-odr-success/shared.h
@@ -70,7 +70,7 @@ struct shared {
 };
 \end{lstlisting}
 
-Then, we use it like so:
+然后，可以这样使用:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter06/03-odr-success/one.cpp
@@ -82,7 +82,7 @@ int main() {
 }
 \end{lstlisting}
 
-The other two files, two.cpp and CMakeLists.txt, remain the same, as in the 02odrfail example. Such a change will allow the linking to succeed:
+其他两个文件two.cpp和CMakeLists.txt与02odrfail示例中一样。这样的更改将链接成功:
 
 \begin{tcblisting}{commandshell={}}
 -- Build files have been written to: /root/examples/
@@ -93,7 +93,7 @@ chapter06/03-odr-success/b
 [100%] Built target odr
 \end{tcblisting}
 
-Alternatively, we can mark the variable as local to a translation unit (it won't be exported outside of the object file). To do so, we'll use the static keyword, like so:
+或者，我们可以将变量标记为翻译单元的局部变量(不会被导出到目标文件之外)。为此，可以使用static关键字，如下所示:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter06/04-odr-success/shared.h
@@ -101,11 +101,11 @@ Alternatively, we can mark the variable as local to a translation unit (it won't
 static int i;
 \end{lstlisting}
 
-All other files will remain the same, as in the original example, and linking will still succeed. This, of course, means that the variable in the preceding code is stored in separate memory for each translation unit, and changes to one won't affect the other.
+所有其他文件将保持相同，就像在原始示例中一样，并且链接仍然会成功。当然，前面代码中的变量存储在每个翻译单元的单独内存中，对其中一个的更改不会影响另一个。
 
-\subsubsubsection{6.4.1\hspace{0.2cm}Dynamically linked duplicated symbols}
+\subsubsubsection{6.4.1\hspace{0.2cm}动态链接的重复符号}
 
-The ODR rule works exactly the same for static libraries as it does for object files, but things aren't so clear when we build our code with SHARED libraries. A linker will allow duplicated symbols here. In the following example, we'll create two shared libraries, A and B, with one duplicated() function and two unique a() and b() functions:
+ODR规则对静态库的作用和对目标文件的作用完全相同，但是当我们用动态库构建代码时，事情就不同了。链接器允许在这里复制符号。在下面的示例中，将创建两个动态库A和B，其中有一个duplicated()函数和两个A()和B()函数:
 
 \begin{lstlisting}[style=styleCXX]
 //chapter06/05-dynamic/a.cpp
@@ -119,7 +119,7 @@ void duplicated() {
 }
 \end{lstlisting}
 
-The second implementation file is almost an exact copy of the first:
+第二个实现文件几乎完全复制了第一个:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter06/05-dynamic/b.cpp
@@ -133,7 +133,7 @@ void duplicated() {
 }
 \end{lstlisting}
 
-Now, let's use each function to see what happens (we'll declare them locally with extern for simplicity):
+现在，让我们使用每个函数来看看发生了什么(为了简单起见，将使用extern在本地声明它们):
 
 \begin{lstlisting}[style=styleCXX]
 // chapter06/05-dynamic/main.cpp
@@ -149,17 +149,17 @@ int main() {
 }
 \end{lstlisting}
 
-The preceding code will run unique functions from each library and then call a function defined with the same signature in both dynamic libraries. What do you think will happen? Would the linking order matter in this case? Let's test it for two cases:
+前面的代码将运行来自每个库的函数，然后调用在两个动态库中使用相同签名定义的函数。你认为会发生什么?在这种情况下，连接顺序重要吗?让我们针对两种情况进行测试:
 
 \begin{itemize}
 \item 
-main\_1 linked with the a library first
+main\_1与a库链接
 
 \item 
-main\_2 linked with the b library first
+main\_2与b库链接
 \end{itemize}
 
-Here's the code for such a project:
+下面是代码:
 
 \begin{lstlisting}[style=styleCMake]
 // chapter06/05-dynamic/CMakeLists.txt
@@ -177,7 +177,7 @@ add_executable(main_2 main.cpp)
 target_link_libraries(main_2 b a)
 \end{lstlisting}
 
-After building and running both executables, we'll see the following output:
+构建并运行这两个可执行程序之后，将看到以下输出:
 
 \begin{tcblisting}{commandshell={}}
 root@ce492a7cd64b:/root/examples/chapter06/05-dynamic# b/main_1
@@ -189,9 +189,9 @@ B
 duplicated B
 \end{tcblisting}
 
-Aha! So, a linker does care about the order of the linked libraries. This may create some confusion if we aren't careful. In practice, naming collisions aren't as rare as they seem.
+啊哈!因此，链接器确实关心链接库的顺序。如果不小心的话，这可能会造成一些混乱。实际上，命名冲突并不像看上去那么罕见。
 
-There are some exceptions to this behavior; if we define locally visible symbols, they will take precedence over those available from dynamically linked libraries. Adding the following function to main.cpp will change the last line of output of both binaries to duplicated MAIN, as shown here:
+这种行为也有一些例外。若定义本地可见的符号，将优先于从动态链接库中可用的符号。向main.cpp中添加以下函数会将两个二进制文件的最后一行输出更改为“duplicated MAIN”，如下所示:
 
 \begin{lstlisting}[style=styleCXX]
 #include <iostream>
@@ -200,15 +200,15 @@ void duplicated() {
 }
 \end{lstlisting}
 
-Always take great care when exporting names from libraries, as you're bound to encounter name collisions sooner or later.
+从库导出名称时一定要非常小心，可能会遇到名称冲突。
 
-\subsubsubsection{6.4.2\hspace{0.2cm}Use namespaces – don't count on a linker}
+\subsubsubsection{6.4.2\hspace{0.2cm}使用命名空间——不要依赖链接器}
 
-The concept of namespaces was invented to avoid such weird problems and deal with the ODR in a manageable way. It comes as no surprise that it is recommended to wrap your library code in a namespace named after the library. This way, we can escape all the problems of duplicated symbols.
+命名空间的概念是为了避免这些奇怪的问题，并以可管理的方式处理ODR。建议将库代码包装在以库命名的命名空间中，这一点并不奇怪。这样，我们就可以避免所有符号重复的问题。
 
-In our projects, we might experience situations where one shared library is linking another and then another in a lengthy chain. These aren't that rare, especially in more complex setups. It is important to remember that simply linking one library to another doesn't imply any kind of namespace inheritance. Symbols in each link of this chain remain unprotected, kept in the namespaces in which they were originally compiled.
+项目中，可能会遇到这样的情况:一个动态库连接另一个动态库，然后连接另一个动态库，形成一个长长的依赖链。这并不罕见，特别是在更复杂的设置中。重要的是要记住，简单地将一个库链接到另一个库并不意味着任何类型的命名空间继承。这个链的每个链接中的符号仍然不受保护，保存在最初编译它们的命名空间中。
 
-The quirks of a linker are interesting and useful to know on a couple of occasions, but let's talk about a not-so-uncommon problem – what to do when correctly defined symbols go missing without an explanation.
+某些情况下，链接器的怪癖是有趣和有用的。接下来，让我们讨论一个不常见的问题——当正确定义的符号丢失而没有解释时，该怎么办？
 
 
 

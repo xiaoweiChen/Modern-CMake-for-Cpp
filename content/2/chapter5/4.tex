@@ -47,25 +47,25 @@ CMAKE\_CXX\_FLAGS\_DEBUG 等于 -g
 CMAKE\_CXX\_FLAGS\_RELEASE 等于 -O3 -DNDEBUG
 \end{itemize}
 
-As you can see, the debug configuration doesn't enable any optimizations and the release configuration goes straight for O3. If you like, you can change them directly with the set() command or just add a target compilation option, which will override this default behavior. The other two flags (-g, -DNDEBUG) are related to debugging – we'll discuss them in the Providing information for the debugger section.
+Debug配置不支持任何优化，发布配置直接针对O3。可以使用set()指令直接修改，或者添加一个目标编译选项，覆盖默认行为。另外两个标志(-g, -DNDEBUG)与调试相关——将在为调试器提供信息一节中讨论它们。
 
-Variables such as CMAKE\_<LANG>\_FLAGS\_<CONFIG> are global – they apply to all targets. It is recommended to configure your targets through properties and commands such as target\_compile\_options() rather than relying on global variables. This way, you can control your targets at higher granularity.
+诸如CMAKE\_<LANG>\_FLAGS\_<CONFIG>这样的变量是全局变量——适用于所有目标。建议通过属性和target\_compile\_options()等指令配置目标，而不是依赖全局变量。通过这种方式，可以更细粒度的控制目标。
 
-By choosing an optimization level with -O<level>, we indirectly set a long list of flags, each controlling a specific optimization behavior. We can then fine-tune the optimization by appending more flags, like so:
+通过使用-O<level>选择优化级别，间接地设置了一长串标志，每个标志控制特定的优化行为。然后，可以通过添加更多标志来微调优化，就像这样:
 
 \begin{itemize}
 \item 
-Enable them with an -f option: -finline-functions.
+使用-f选项启用它们: -finline-functions.
 	
 \item 
-Disable them with an -fno option: -fno-inline-functions.
+使用-fno选项禁用它们: -fno-inline-functions.
 \end{itemize}
 
-Some of these flags are worth understanding better as they will often impact how your program works and how you can debug it. Let's take a look.
+其中一些标志需要花点时间了解，因为它们会影响程序的工作方式和调试方式。
 
 \subsubsubsection{5.4.2\hspace{0.2cm}函数内联}
 
-As you will recall, compilers can be encouraged to inline some functions, either by defining a function inside a class declaration block or by explicitly using the inline keyword:
+代码中，可以通过在类声明块中定义函数或显式使用inline关键字来提示编译器内联一些函数:
 
 \begin{lstlisting}[style=styleCXX]
 struct X {
@@ -75,11 +75,11 @@ struct X {
 inline void X::me_too() { cout << "bye\n"; };
 \end{lstlisting} 
 
-It's up to the compiler to decide whether a function will be inlined. If inlining is enabled and the function is used in a single place (or is a relatively small function used in a few places), then inlining will most likely happen.
+由编译器决定函数是否内联。若启用了内联，并且函数只在一个地方使用(或者是在几个地方使用的相对较小的函数)，那么很可能会触发内联。
 
-It's a really curious optimization technique. It works by extracting the code from the function in question and putting it in all the places the function was called, replacing the original call and saving precious CPU cycles.
+这是一种非常有趣的优化技术。其工作原理是，从有问题的函数中提取代码，并将其放在调用函数的所有位置，替换原始调用并节省宝贵的CPU周期。
 
-Let's consider the following example using the class we just defined:
+考虑以下定义的类:
 
 \begin{lstlisting}[style=styleCXX]
 int main() {
@@ -90,9 +90,9 @@ int main() {
 }
 \end{lstlisting} 
 
-Without inlining, the code would execute in the main() frame until a method call. Then, it would create a new frame for im\_inlined(), execute in a separate scope, and go back to the main() frame. The same would happen for the me\_too() method.
+若没有内联，代码将在main()中执行，直到方法调用。然后，为im\_inline()创建一个新函数，在单独的作用域中执行，并返回main()。me\_too()也是同样的情况。
 
-However, when inlining takes place, the compiler will replace the calls, like so:
+当内联时，编译器将替换调用，如下所示:
 
 \begin{lstlisting}[style=styleCXX]
 int main() {
@@ -103,36 +103,35 @@ int main() {
 }
 \end{lstlisting} 
 
-This isn't an exact representation because inlining happens at the level of assembly or machine code (and not the source code), but it conveys a general picture.
-The compiler does it to save time; it won't have to go through the creation and teardown of a new call frame, it doesn't have to look up the address of the next instruction to execute (and return to), and it can cache the instructions better as they are nearby.
+这不是一种精确的表示，因为内联发生在汇编或机器码级别(而不是源码级别)。编译器这样做是为了节省时间，不需要创建和删除一个新的调用作用域，也不需要查找要执行(和返回)的下一条指令的地址，而且它可以更好地缓存附近的指令。
 
-Of course, inlining has some important side effects; if the function is used more than once, it has to be copied to all places (meaning a bigger file size and more memory being used). Nowadays, this may not be so critical as it was in the past, but it's still relevant, as we constantly develop software that has to run on low-end devices without much RAM to spare.
+当然，内联有一些重要的副作用;若函数多次使用，则必须将其复制到所有位置(意味着更大的文件大小和更多的内存使用)。现在，这可能不像过去那么重要了，但仍然是相关的，因为不断开发的软件需要运行在没有太多RAM的低端设备上。
 
-Other than that, it affects us critically when we're debugging the code we wrote. Inlined code is no longer at the line number it was originally written, so it's not as easy (or sometimes even possible) to track. This is the exact reason why a debugger breakpoint placed in a function that was inlined never gets hit (although the code is still somehow executed). To avoid this issue, we simply have to disable inlining for debug builds (at the cost of not testing the exact same version as the release build).
+除此之外，当调试代码时，会对我们产生严重影响。内联代码不再是它最初编写的行号，因此不容易(有时甚至不可能)跟踪。这正是，放置在内联函数中的断点从未命中的原因(尽管代码仍然以某种方式执行)。为了避免这个问题，我们需要为调试版本禁用内联(代价是不能测试与发布版本完全相同)。
 
-We can do that by specifying the -O0 level for the target or going straight after the flags responsible:
+可以通过为目标指定-O0级别，或者直接在负责的标志后面执行:
 
 \begin{itemize}
 \item 
--finline-functions-called-once: GCC only
+-finline-functions-called-once: 只有GCC可用
 
 \item 
--finline-functions: Clang and GCC
+-finline-functions: Clang和GCC都可用
 
 \item 
--finline-hint-functions: Clang only
+-finline-hint-functions: 只有Clang可用
 
 \item 
--finline-functions-called-once: GCC only
+-finline-functions-called-once: 只有GCC可用
 \end{itemize}
 
-You can explicitly disable inlining with -fno-inline-.... In any case, for details, refer to the documentation of the specific version of your compiler.
+可以使用-fno-inline-...，显式禁用内联。有关详细信息，请参阅编译器的特定版本的文档。
 
 \subsubsubsection{5.4.3\hspace{0.2cm}循环展开}
 
-Loop unrolling is an optimization technique that is also known as loop unwinding. The general approach is to transform loops into a set of statements that achieve the same effect. By doing so, we'll trade the size of the program for execution speed, as we'll reduce or eliminate the instruction that controls the loop – pointer arithmetic or end-ofloop tests.
+循环展开是一种优化技术，方法是将循环转换为一组语句，以达到相同的效果。通过这样做，我们将用程序的大小来换取执行速度，将减少或消除控制循环指针算术或循环结束测试的指令。
 
-Consider the following example:
+考虑下面的例子:
 
 \begin{lstlisting}[style=styleCXX]
 void func() {
@@ -141,7 +140,7 @@ void func() {
 }
 \end{lstlisting}
 
-The previous code will be transformed into something like this:
+前面的代码将转换成这样:
 
 \begin{lstlisting}[style=styleCXX]
 void func() {
@@ -151,11 +150,11 @@ void func() {
 }
 \end{lstlisting}
 
-The outcome will be the same, but we no longer have to allocate the i variable, increment it, or compare it three times with a value of 3. If we call func() enough times in the lifetime of the program, unrolling even such a short and small function will make a significant difference.
+结果是相同的，但是不再需要分配i变量，增加它的值，或者将它与值3进行三次比较。若在程序的生命周期中调用func()的次数足够多，那么展开即使是这样一个短小的函数也会产生显著的差异。
 
-However, it is important to understand two limiting factors. Loop unrolling will only work if the compiler knows or can effectively estimate the amount of iterations. Secondly, loop unrolling can produce undesirable effects on modern CPUs, as increased code size might prevent effective caching.
+然而，重要的是要了解两个限制因素。循环展开只有在编译器知道或能够有效估计迭代量的情况下才会有用。其次，循环展开可能会对现代CPU产生不良影响，因为增加的代码大小可能会消耗有效的缓存。
 
-Each compiler offers a slightly different version of this flag:
+每个编译器提供的该标志版本略有不同:
 
 \begin{itemize}
 \item 
@@ -165,11 +164,11 @@ Each compiler offers a slightly different version of this flag:
 -funroll-loops: Clang
 \end{itemize}
 
-If you're in doubt, test extensively whether this flag is affecting your particular program and explicitly enable or disable it. Do note that on GCC, it is implicitly enabled with -O3 as part of the implicitly enabled -floop-unroll-and-jam flag.
+若有疑问，请测试此标志是否影响您的特定程序，并显式启用或禁用它。注意，在GCC上是用-O3会隐式使用-floop-unroll-and-jam标志。
 
 \subsubsubsection{5.4.4\hspace{0.2cm}循环向量化}
 
-Single Instruction Multiple Data (SIMD) is one of the mechanisms developed in the early 1960s to achieve parallelism. It works exactly as the name suggests; it can perform the same operation on multiple pieces of information at the same time. What does it mean in practice? Let's consider the following example:
+单指令多数据(SIMD)是20世纪60年代早期为实现并行而发展起来的机制之一。就像它的名字一样，可以同时对多条信息执行相同的操作。实践中意味着什么?考虑下面的例子:
 
 \begin{lstlisting}[style=styleCXX]
 int a[128];
@@ -179,7 +178,7 @@ for (i = 0; i<128; i++)
 	a[i] = b[i] + 5;
 \end{lstlisting}
 
-Normally, the preceding code would loop 128 times, but with a capable CPU, we can execute the code much faster by calculating two or more elements of the array at the same time. This works because there's no dependency between consecutive elements and no overlap of data between arrays. Smart compilers can transform the preceding loop into something similar to this (which happens on the assembly level):
+前面的代码将循环128次，但若有一个功能强大的CPU，可以通过同时计算数组中的两个或多个元素来更快地执行代码。这是可行的，因为连续的元素之间没有依赖关系，数组之间的数据也没有重叠。智能编译器可以将前面的循环转换为类似的东西(发生在汇编级别):
 
 \begin{lstlisting}[style=styleCXX]
 for (i = 0; i<32; i+=4) {
@@ -190,19 +189,19 @@ for (i = 0; i<32; i+=4) {
 }
 \end{lstlisting}
 
-GCC will enable such automatic vectorization of loops at -O3. Clang enables it by default. Both compilers offer different flags to enable/disable vectorization in particular:
+GCC将在-O3处启用这种循环的自动向量化，Clang默认启用它。这两个编译器提供了不同的标志来启用/禁用向量化:
 
 \begin{itemize}
 \item 
--ftree-vectorize -ftree-slp-vectorize to enable in GCC
+-ftree-vectorize -ftree-slp-vectorize在GCC中启用向量化
 
 \item 
--fno-vectorize -fno-slp-vectorize to disable in Clang (if things break)
+-fno-vectorize -fno-slp-vectorize在Clang中禁用向量化
 \end{itemize}
 
-The performance of vectorization comes from utilizing special instructions that CPU manufacturers provide, rather than just simply replacing the original form of the loop with the unrolled version. Therefore, it's not possible to achieve the same level of performance by doing it manually (also, it's not very clean code).
+向量化的性能来自于利用CPU供应商提供的特殊指令，而不是简单地用展开版本替换原来的循环形式。因此，通过手动操作不可能达到相同的性能水平(而且，这不是非常干净的代码)。
 
-The role of the optimizer is important in enhancing the performance of the program during runtime. By employing its strategies effectively, we'll get more bang for our buck. Efficiency is important not only after the coding is completed but also as we work on the software. If the compilation times are lengthy, we can improve them by managing the process better.
+优化器的作用对于在运行时增强程序的性能非常重要。通过有效地运用它的策略，将得到更大的回报。效率不仅在编码完成后很重要，而且在软件开发过程中也很重要。若编译时间很长，可以通过更好地管理过程来进行改进。
 
 
 

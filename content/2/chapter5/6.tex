@@ -1,31 +1,30 @@
 
-We have completed yet another chapter! There is no doubt that compilation is a complex process. With all its edge cases and specific requirements, it can be difficult to manage without a good tool. Thankfully, CMake is doing a great job in supporting us here.
+毫无疑问，编译是一个复杂的过程。对于所有的边缘案例和特定的需求，若没有一个好的工具，管理起来会很困难。值得庆幸的是，CMake在支持我们方面做得很好。
 
-What have we learned so far? We started by discussing what compilation is and where it fits in the larger story of building and running applications in the operating system. We then examined what the stages of compilation are and the internal tools that manage them. This is very useful in resolving all the issues in more advanced cases that we might encounter down the line.
+到目前为止我们学到了什么?首先讨论了什么是编译，以及在构建和运行操作系统中的应用程序方面的位置。然后，研究了编译的各个阶段以及管理它们的内部工具。这对于解决在更高级的情况下可能遇到的所有问题非常有用。
 
-Then, we looked at how to ask CMake to verify whether the compiler available on the host is meeting all the necessary requirements for our code to build. As we have already established, it's a much better experience for users of our solution to see a friendly message asking them to upgrade, rather than some arcane error printed by an old compiler that is confused by the new features of the language.
+然后，研究了如何要求CMake验证主机上可用的编译器是否满足要构建的代码的所有必要要求。对于我们的用户来说，看到要求他们升级的友好消息要好得多，而不是看到老编译器抱怨神秘错误(很容易被语言的新特性弄懵)。
 
-We shortly discussed how to add sources to already defined targets, and moved on to the configuration of the preprocessor. This was quite a big subject, as this stage brings all bits of the code together and decides which of them will be ignored. We talked about providing paths to files and adding custom definitions as single arguments and in bulk (along with some use cases).
+我们简要地讨论了如何向已经定义的目标添加源，然后继续讨论预处理器的配置。这是一个相当大的主题，因为这个阶段将所有的代码集中在一起，并决定将忽略哪些代码。我们讨论了提供文件的路径，并将自定义定义作为单个参数和批量添加(以及一些用例)。
 
-Then, we discussed the optimizer; we explored all the general levels of optimization and what kind of flags they imply, but we also went into details about a few of them – finline, floop-unroll, and ftree-vectorize.
+然后，讨论了优化器，探讨了优化的所有一般级别以及它们所暗示的标志类型，也详细讨论了其中的一些级别——finline、flop -unroll和ftree vectorize。
 
-Finally, it was time to research the bigger picture again and study how to manage the viability of compilation. We tackled two main aspects here – reducing the time of compilation (and, by extension, strengthening the focus of the programmer) and finding mistakes. The latter is extremely important for discovering what is broken and how.
+最后，是时候重新掌控大局，研究如何管理编译的可行性了。在这里讨论了两个主题——减少编译时间(通过扩展，加强开发者的注意力)和查找错误。后者对于发现什么是坏的以及如何坏的是极其重要的。
 
-Setting the tools correctly and understanding why things happen goes a long way in ensuring the quality of the code (and our mental health).
+正确设置工具，并理解事情发生的原因对于确保代码的质量(以及我们的心理健康)非常重要。
 
-In the next chapter, we'll learn about linking, and all the things we need to consider to build libraries and use them in our projects
+下一章中，将学习链接，以及在构建库并在项目中使用它们时需要考虑的事情
 
-\subsubsubsection{5.6.1\hspace{0.2cm}Further reading}
-
+\subsubsubsection{5.6.1\hspace{0.2cm}扩展阅读}
 
 \begin{itemize}
 \item 
-For more information on the topics covered in this chapter, you can refer to the following: CMake-supported compile features and compilers:
+有关本章所涵盖主题的更多信息，可以参考以下内容:
 
 \url{https:// cmake.org/cmake/help/latest/manual/cmake-compilefeatures.7.html\#supported-compilers}
 
 \item 
-CMake target properties:
+CMake目标属性:
 
 \begin{itemize}
 \item 
@@ -36,7 +35,7 @@ CMake target properties:
 \end{itemize}
 
 \item 
-Providing paths to included files:
+提供包含文件的路径:
 
 \begin{itemize}
 \item 
@@ -47,13 +46,13 @@ Providing paths to included files:
 \end{itemize}
 
 \item 
-Configuring headers: \url{https://cmake.org/cmake/help/latest/command/configure_file.html}
+配置头文件: \url{https://cmake.org/cmake/help/latest/command/configure_file.html}
 
 \item 
-Pre-compilation of headers: \url{https://cmake.org/cmake/help/latest/command/target_precompile_headers.html}
+预编译头文件: \url{https://cmake.org/cmake/help/latest/command/target_precompile_headers.html}
 
 \item 
-Unity builds:
+统一构建：
 
 \begin{itemize}
 \item 
@@ -64,13 +63,13 @@ Unity builds:
 \end{itemize}
 
 \item 
-Finding mistakes – compiler flags: \url{https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags}
+查找错误-编译器标志: \url{https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags}
 
 \item 
-Why use libraries and not object files: \url{https://stackoverflow.com/questions/23615282/object-files-vs-library-files-and-why}
+为什么使用库，而不是目标文件: \url{https://stackoverflow.com/questions/23615282/object-files-vs-library-files-and-why}
 
 \item 
-Separation of concerns: \url{https://nalexn.github.io/separation-ofconcerns/}
+关注点分离: \url{https://nalexn.github.io/separation-ofconcerns/}
 \end{itemize}
 
 

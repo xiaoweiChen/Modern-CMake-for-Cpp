@@ -1,77 +1,77 @@
-We discussed the life cycle of a C++ program in Chapter 5, Compiling C++ Sources with CMake. It consists of five main stages – writing, compiling, linking, loading, and execution. After correctly compiling all the sources, we need to put them together into an executable. Object files produced in a compilation can't be executed by a processor directly. But why?
+我们在第5章中讨论了C++程序的生命周期，由五个主要阶段组成——编写、编译、链接、加载和执行。在正确编译所有源代码之后，需要将它们放到一个可执行文件中。编译过程中产生的目标文件不能由处理器直接执行，这是为什么呢?
 
-To answer this, let's take a look at how a compiler structures an object file in the popular ELF format (used by Unix-like systems and many others):
+为了回答这个问题，就来看看编译器如何用ELF格式(类Unix系统和许多其他系统使用)构造对象文件的:
 
 \begin{center}
 \includegraphics[width=0.8\textwidth]{content/2/chapter6/images/1.jpg}\\
-Figure 6.1 – The structure of an object file
+图6.1 目标文件的结构
 \end{center}
 
-The compiler will prepare an object file for every unit of translation (for every .cpp file). These files will be used to build an in-memory image of our program. Object files contain the following elements:
+编译器将为每个翻译单元(为每个.cpp文件)准备一个目标文件。这些文件将用于构建程序的内存映像。Object文件包含以下元素:
 
 \begin{itemize}
 \item 
-An ELF header identifying the target operating system, ELF file type, target instruction set architecture, and information on the position and size of two header tables found in ELF files – the program headers table (not present in object files) and the section headers table.
+ELF头标识目标操作系统、ELF文件类型、目标指令集体系结构，以及ELF文件中两个头表的位置和大小信息——程序头表(不存在于目标文件中)和节头表。
 
 \item 
-Sections containing information grouped by type (described next).
+包含按类型分组的信息的部分(下面将介绍)。
 
 \item 
-A section headers table, containing information about the name, the type, flags, the destination address in memory, the offset in the file, and other miscellaneous information. It is used to understand what sections are in this file and where they are, just like a table of contents.
+节头表，包含关于名称、类型、标志、内存中的目标地址、文件中的偏移量和其他杂项信息，用于了解文件中的哪些部分，以及它们在哪里，就像目录一样。
 \end{itemize}
 
-As the compiler processes your source code, it groups the collected information into a few separate bins, which will be put in their own separate section. Some of them are as follows:
+当编译器处理源代码时，将收集到的信息分组到几个单独的格中，这些格将放在属于它们自己的区段中。其中一些如下:
 
 \begin{itemize}
 \item 
-.text section: Machine code, with all the instructions to be executed by the processor
+.text区段:机器代码，包含处理器要执行的所有指令
 
 \item 
-.data section: All values of the initialized global and static objects (variables)
+.data区段:初始化的全局对象和静态对象(变量)的所有值
 
 \item 
-.bss section: All values of the uninitialized global and static objects (variables), which will be initialized to zero on program start
+.bss区段:未初始化的全局对象和静态对象(变量)的所有值，这些值将在程序启动时初始化为零
 
 \item 
-.rodata section: All values of the constants (read-only data)
+.rodata区段:常量的所有值(只读数据)
 
 \item 
-.strtab section: A string table containing all constant strings such as Hello World that we put in our basic hello.cpp example
+.strtab区段: 一个字符串表，包含所有常量字符串，例如hello.cpp示例中的Hello World
 
 \item 
-.shstrtab section: A string table containing the names of all the sections
+.shstrtab区段: 包含所有部分名称的字符串表
 \end{itemize}
 
-These groups very closely resemble the final version of the executable, which will be put in the RAM to run our application. However, we can't just load this file to memory as it is. This is because every object file has its own set of sections. If we were to just concatenate them together, we'd run into all sorts of issues. We'd be wasting a lot of space and time, as we'd need many more pages of RAM. Instructions and data would be much harder to copy to a CPU cache. An entire system would have to be much more complex and would waste precious cycles jumping around many (possibly tens of thousands) of .text, .data, and other sections during runtime.
+这些区段非常类似于可执行文件的最终版本，其将放入RAM中以运行我们的应用程序，但不能直接将这个文件加载到内存中。因为每个目标文件都有自己的一组区段。若只是把它们连在一起，就会遇到各种各样的问题。将浪费大量的空间和时间，因为需要更多的RAM页，指令和数据将很难复制到CPU缓存中。整个系统必须要复杂得多，并且会浪费宝贵的CPU周期，在运行时跳过许多(可能是数万个).text、.data和其他部分。
 
-So, what we'll do instead is take each section of the object file and put it together with the same type of section from all other object files. This process is called relocation (that's why the ELF file type is Relocatable for object files). Apart from just bringing appropriate sections together, it has to update internal associations in the file – that is, addresses of variables, functions, symbol table indexes, or string table indexes. All of these values are local to the object file, and their numbering starts from zero. When we bundle files together, we need to offset these values so that they are pointing at the correct addresses in the combined file.
+我们要做的是把对象文件的每个部分，和所有其他对象文件中相同类型的部分放在一起。这个过程称为重定位(这就是ELF文件类型为目标文件重定位的原因)。除了将适当的部分组合在一起之外，还必须更新文件中的内部关联——即变量、函数、符号表索引或字符串表索引的地址。所有这些值都是对象文件的本地值，其编号从0开始。将文件捆绑在一起时，需要偏移这些值，使它们指向组合文件中的正确地址。
 
-Figure 6.2 shows relocation in action – the .text section is relocated, .data is being built from all linked files, and .rodata and .strtab will follow (for simplicity, the figure doesn't contain headers):
+图6.2显示了重新定位的过程——重新定位.text，从所有链接的文件构建.data，然后是.rodata和.strtab(为了简单起见，图中不包含头文件):
 
 \begin{center}
 \includegraphics[width=0.8\textwidth]{content/2/chapter6/images/2.jpg}\\
-Figure 6.2 – The relocation of the .data section
+图6.2 .data区段的重定位
 \end{center}
 
-Secondly, a linker needs to resolve references. Whenever a piece of code from one translation unit references a symbol defined in another (such as through including its header or by using the extern keyword), the compiler reads the declaration and trusts that the definition is somewhere out there and will be provided at a later time. A linker is responsible for collecting such unresolved references to external symbols, finding and filling the addresses at which they reside after merging into the executable. Figure 6.3 shows a simple example of reference resolution:
+其次，链接器需要解析引用。每当来自一个翻译单元的一段代码引用另一个翻译单元中定义的符号时(例如：通过包含其头或使用extern关键字)，编译器读取该声明并相信定义就在某个地方，稍后将提供该定义。链接器负责收集这些对外部符号的未解析引用，查找并填充它们在合并到可执行文件后驻留的地址。图6.3显示了一个简单的引用示例:
 
 \begin{center}
 \includegraphics[width=0.8\textwidth]{content/2/chapter6/images/3.jpg}\\
-Figure 6.3 – A reference resolution
+图6.3 一个引用解析
 \end{center}
 
-This part of the linking can be a source of problems if a programmer is unaware of how it works. We may end up with unresolved references that won't find their external symbols, or the opposite – we provided too many definitions and the linker doesn't know which one to pick.
+若开发者不知道它是如何工作的，这部分链接可能是问题的来源。我们最终可能会得到无法解析的引用，这些引用找不到外部符号，或者恰恰相反——提供了太多的定义，链接器不知道选择哪一个。
 
-The final executable file looks very similar to the object file; it contains relocated sections with resolved references, a section headers table, and of course, the ELF Header describing the whole file. The main difference is the presence of the Program Header (as pictured in Figure 6.4).
+最终的可执行文件看起来非常类似于目标文件，包含带有解析引用的重定位区段、区段头表，当然还有描述整个文件的ELF头。主要的区别是程序头的存在(如图6.4所示)。
 
 \begin{center}
 \includegraphics[width=0.8\textwidth]{content/2/chapter6/images/4.jpg}\\
-Figure 6.4 – The structure of the executable file in ELF
+图6.4  ELF中可执行文件的结构
 \end{center}
 
-The Program Header is placed right after the ELF Header. A system loader will read this header to create a process image. The header contains some general information and a description of the memory layout. Each entry in the layout represents one fragment of memory called a segment. Entries specify which sections will be read, in what order, to which addresses in the virtual memory, what their flags are (read, write, or execute), and a few other useful details.
+程序头放置在ELF头的右边，系统加载器将读取此头文件以创建进程映像。其头部会包含一些通用信息和内存布局的描述。布局中的每个条目代表一个称为段的内存片段。条目指定将读取哪些节、以什么顺序、虚拟内存中的哪个地址、标志是什么(读、写或执行)，以及其他一些有用的细节。
 
-Object files may also be bundled in a library, which is an intermediate product that can be used in a final executable or another library. In the next section, we'll discuss three types of libraries.
+目标文件也可以捆绑在库中，库是一个中间产品，可以在最终的可执行文件或另一个库中使用。下一节中，我们将讨论三种类型的库。
 
 
 

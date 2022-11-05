@@ -1,15 +1,15 @@
 
-After source code is compiled, we might want to avoid compiling it again for the same platform or even share it with external projects wherever possible. Of course, you could just simply provide all of your object files as they were originally created, but that has a few downsides. It is harder to distribute multiple files and add them individually to a buildsystem. It can be a hassle, especially if they are numerous. Instead, we could simply bring all object files into a single object and share that. CMake helps greatly with this process. We can create these libraries with a simple add\_library() command (which is consumed with the target\_link\_libraries() command). By convention, all libraries have a common prefix, lib, and use system-specific extensions that denote what kind of library they are:
+编译源代码之后，可能希望避免在同一个平台上再次编译，甚至尽可能地与外部项目共享。当然，可以简单地按照最初创建的方式提供所有的目标文件，但这有一些缺点。分发多个文件并将它们单独添加到构建系统比较困难。这可能是一件麻烦的事，尤其是当他们数量众多的时候。相反，可以简单地将所有对象文件放到一个对象中并共享。可以用一个简单的add\_library()指令创建这些库(与target\_link\_libraries()一起使用)。按照惯例，所有库都有一个共同的前缀lib，并使用特定于系统的扩展来表示它们是哪种类型的库:
 
 \begin{itemize}
 \item 
-A static library has a .a extension on Unix-like systems and .lib on Windows.
+静态库在类Unix系统上的后缀为.a，在Windows上的后缀为.lib。
 
 \item 
-Shared libraries have a .so extension on Unix-like systems and .dll on Windows.
+动态库在类Unix系统上的后缀为.so，在Windows上的后缀为.dll。
 \end{itemize}
 
-When building libraries (static, shared, or shared modules), you'll often encounter the name linking for this process. Even CMake calls it that in the build output of the chapter06/01-libraries project:
+在构建库(静态、动态或模块)时，经常会遇到此过程的名称链接。甚至CMake在chapter06/01-libraries项目的构建输出中也这样称呼它:
 
 \begin{tcblisting}{commandshell={}}
 [ 33%] Linking CXX static library libmy_static.a
@@ -18,70 +18,69 @@ When building libraries (static, shared, or shared modules), you'll often encoun
 [100%] Built target module_gui
 \end{tcblisting}
 
-Contrary to how it may seem, a linker isn't used to create all of the preceding libraries. There are exceptions to performing relocation and reference resolution. Let's take a look at each library type to understand how each works.
+与看起来不同的是，链接器并不是用来创建前面所有的库的。执行重定位和引用解析也有例外。让我们看看每种库类型，了解它们的工作原理。
 
-\subsubsubsection{6.3.1\hspace{0.2cm}Static libraries}
+\subsubsubsection{6.3.1\hspace{0.2cm}静态库}
 
-To build a static library, we can simply use the command we already saw in previous chapters:
+要构建一个静态库，可以简单地使用我们在前几章中看到的指令:
 
 \begin{lstlisting}[style=styleCMake]
 add_library(<name> [<source>...])
 \end{lstlisting}
 
-The preceding code will produce a static library if the BUILD\_SHARED\_LIBS variable isn't set to ON. If we want to build a static library regardless, we can provide an explicit keyword:
+若BUILD\_SHARED\_LIBS变量没有设置为ON，前面的代码将生成一个静态库。若想要构建一个静态库，可以提供一个关键字:
 
 \begin{lstlisting}[style=styleCMake]
 add_library(<name> STATIC [<source>...])
 \end{lstlisting}
 
-What are static libraries? They are essentially a collection of raw object files stored in an archive. On Unix-like systems, such archives can be created by the ar tool. Static libraries are the oldest and most basic mechanism to provide a compiled version of code. Use them if you want to avoid separating your dependencies from the executable, at the price of the executable increasing in size and used memory.
+什么是静态库?本质上是存储在存档中的原始对象文件的集合。类Unix系统上，可以通过ar工具创建此类库。静态库是提供代码编译版本的最古老和最基本的机制。若想避免将依赖关系与可执行文件分离，那么就使用它们，因为可执行文件的大小和使用的内存会增加。
 
-The archive may contain some additional indexes to speed up the final linking process. Each platform uses its own methods to generate those. Unix-like systems use a tool called ranlib for this purpose.
+静态库可能包含一些额外的索引，以加快最终的链接过程。每个平台都使用自己的方法来生成这些内容。类Unix系统使用一个名为ranlib的工具来实现此目的。
 
-\subsubsubsection{6.3.2\hspace{0.2cm}Shared libraries}
+\subsubsubsection{6.3.2\hspace{0.2cm}动态库}
 
-It's not surprising to learn that we can build shared libraries with the SHARED keyword:
+可以用SHARED关键字构建动态库:
 
 \begin{lstlisting}[style=styleCMake]
 add_library(<name> SHARED [<source>...])
 \end{lstlisting}
 
-We can also do it by setting the BUILD\_SHARED\_LIBS variable to ON and using the
-short version:
+也可以通过设置BUILD\_SHARED\_LIBS变量为ON并使用短版本来实现:
 
 \begin{lstlisting}[style=styleCMake]
 add_library(<name> [<source>...])
 \end{lstlisting}
 
-The difference from static libraries is significant. Shared libraries are built using a linker, and they will perform both stages of linking. This means that we'll receive a file with proper section headers, sections, and a section header table (Figure 6.1).
+与静态库的区别是显著的。动态库是使用链接器构建的，将执行链接的两个阶段。所以将收到一个具有适当的区段头、区段和区段头表的文件(图6.1)。
 
-Shared libraries (also known as shared objects) can be shared between multiple different applications. An operating system will load a single instance of such a library into memory with the first program that uses it, and all subsequently started programs will be provided with the same address (thanks to the complex mechanisms of virtual memory). Only the .data and .bss segments will be created separately for every process consuming the library (so that each process can modify its own variables without affecting other consumers).
+动态库(也称为共享对象)可以在多个不同的应用程序之间共享。一个操作系统会将这样一个库的单个实例与第一个使用它的程序一起加载到内存中，所有随后启动的程序都将提供相同的地址(这要感谢虚拟内存的复杂机制)。只有.data和.bss段将分别为使用库的每个进程创建(以便每个进程可以修改自己的变量而不影响其他使用者)。
 
-Thanks to this approach, the overall memory usage in the system is better. And if we're using a very popular library, we might not need to ship it with our program. Chances are that it's already available on the target machine. However, if that's not the case, a user is expected to explicitly install it before running the application. This opens up the possibility of some issues when an installed version of a library is different from expected (this type of problem is called dependency hell; more information can be found in the Further reading section).
+由于采用了这种方法，系统中的整体内存使用更好了。若正在使用一个非常流行的库，可能不需要将它与程序一起发布。它很可能已经在目标机器上可用。但若不是这样，则希望用户在运行应用程序之前显式地安装它。当库的安装版本与预期版本不同时，这就有可能出现一些问题(这种类型的问题称为依赖地狱，更多信息可以在扩展阅读部分找到)。
 
-\subsubsubsection{6.3.3\hspace{0.2cm}Shared modules}
+\subsubsubsection{6.3.3\hspace{0.2cm}模块库}
 
-To build shared modules, we need to use the MODULE keyword:
+要构建模块库，需要使用MODULE关键字:
 
 \begin{lstlisting}[style=styleCMake]
 add_library(<name> MODULE [<source>...])
 \end{lstlisting}
 
-This is a version of a shared library that is intended to be used as a plugin loaded during runtime, rather than something that is linked with an executable during compilation. A shared module isn't loaded automatically with the start of the program (like regular shared libraries). This only happens when a program explicitly requests it by making a system call such as LoadLibrary (Windows) or dlopen()/dlsym() (Linux/macOS).
+这是动态库的一种，目的是作为运行时加载的插件使用，而不是在编译过程中链接到可执行文件。共享模块不会在程序启动时自动加载(像普通的共享库一样)。只有程序通过LoadLibrary(Windows)或dlopen()/dlsym() (Linux/macOS)等系统调用显式地请求它时，才会使用的到。
 
-You shouldn't try to link your executable with a module, as this isn't guaranteed to work on all platforms. If you need to do that, use regular shared libraries.
+不应该尝试将可执行文件与模块链接起来，因为这并不能保证在所有平台上都能工作。若需要这样做，请使用动态库。
 
-\subsubsubsection{6.3.4\hspace{0.2cm}Position-independent code}
+\subsubsubsection{6.3.4\hspace{0.2cm}位置无关的代码}
 
-All sources for shared libraries and modules should be compiled with a positionindependent code flag enabled. CMake checks the POSITION\_INDEPENDENT\_CODE property of targets and appropriately adds compiler-specific compilation flags such as -fPIC for gcc or clang.
+所有共享库和模块的源代码都应该在编译时启用位置无关代码标志。CMake检查目标的POSITION\_INDEPENDENT\_CODE属性，并适当添加特定于编译器的编译标志，如gcc或clang的-fPIC。
 
-PIC is a bit of a confusing term. Nowadays, programs are already position-independent in a sense, in that they use virtual memory to abstract away actual physical addresses. When calling a function, a CPU uses a memory management unit (MMU) to translate a virtual address (starting from 0 for every process) to a physical address that was available at the time of allocation. These mappings don't have to point to consecutive physical addresses or follow any other specific order.
+PIC是一个有点令人困惑的术语。现在，程序在某种意义上已经是位置无关的，因为使用虚拟内存抽象出实际的物理地址。当调用函数时，CPU使用内存管理单元(MMU)将虚拟地址(每个进程从0开始)转换为分配时可用的物理地址。这些映射不必指向连续的物理地址或遵循任何其他特定的顺序。
 
-PIC is about mapping symbols (references to functions and global variables) to their runtime addresses. During compilation of a library, it is not known which processes might use it. It's not possible to predetermine where in the virtual memory the library will be loaded or in what order. This, in turn, means that the addresses of the symbols are unknown, as is their relative position to the library's machine code.
+PIC是关于将符号(对函数和全局变量的引用)映射到它们的运行时地址。编译库期间，不知道哪些进程可能会使用。不可能预先确定库将在虚拟内存中的什么位置或以什么顺序加载。所以符号的地址是未知的，与库机器码的相对位置也是未知的。
 
-To deal with that, we need another level of indirection. PIC will add a new section to our output – the Global Offset Table (GOT). Eventually, this section will become a segment containing runtime addresses for all the symbols needed by shared libraries. The position of the GOT relative to the .text section is known during linking; therefore, all symbol references can be pointed (through an offset) to a placeholder GOT at that time. The actual values pointing to symbols in memory will only be filled when an instruction accessing a referenced symbol is first executed. At that time, a loader will set up that particular entry in the GOT (this is where the term lazy loading comes from).
+为了解决这个问题，需要另一种间接方式。PIC将向我们的输出添加一个新部分——全局偏移表(GOT)。最终，这个部分将成为包含共享库所需的所有符号的运行时地址的段。GOT相对于.text段的位置在链接过程中是已知的;因此，所有符号引用都可以(通过偏移量)指向当时的占位符get。只有在第一次执行访问被引用符号的指令时，内存中指向符号的实际值才会填充。这时，加载器将在GOT中设置该特定条目(这就是术语延迟加载的来源)。
 
-Shared libraries and modules will have the POSITION\_INDEPENDENT\_CODE property automatically set to ON by CMake. However, it is important to remember that if your shared library is linked against another target, such as a static or object library, you need to set this property on that target too. Here's how:
+动态库和模块的POSITION\_INDEPENDENT\_CODE属性会自动设置为ON。然而，重要的是要记住，若动态库链接到另一个目标，例如静态库或对象库，那么也需要在该目标上设置此属性。方法如下:
 
 \begin{lstlisting}[style=styleCMake]
 set_target_properties(dependency_target
@@ -89,9 +88,9 @@ set_target_properties(dependency_target
 					ON)
 \end{lstlisting}
 
-Failing to do so will get you into trouble with CMake, as this property is by default checked for conflicts in a manner described in the Dealing with conflicting propagated properties section of Chapter 4, Working With Targets.
+若不这样做，就会在使用CMake时遇到麻烦，因为默认情况下，这个属性会按照第4章中描述的方式检查冲突。
 
-Speaking of symbols, there's another problem to discuss. The next section is about name collisions leading to ambiguity and inconsistency in definitions.
+说到符号，还有一个问题要讨论。下一节将讨论导致定义歧义和名称冲突。
 
 
 
