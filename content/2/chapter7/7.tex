@@ -1,14 +1,14 @@
-Managing dependencies isn't complicated when we use modern, well-supported projects. In most cases, we'd simply rely on the library being available in the system and fall back to FetchContent if it's not. This would be appropriate if dependencies are relatively small and quick to build.
+当使用现代的、支持良好的项目时，管理依赖关系并不复杂。大多数情况下，我们会简单地依赖于系统中可用的库，如果不可用则返回到FetchContent。若依赖关系相对较小且易于构建，那么这将是合适的。
 
-For some really big libraries out there (such as Qt), it would take a significant amount of time to build from the source. To provide automatic dependency resolution in these cases, we'd have to resort to package managers offering compiled versions of libraries matching the user's environment. External tools such as Apt or Conan aren't within the scope of this book, as they are either too system-dependent or too complex.
+对于一些非常大的库(比如Qt)，从源代码构建需要花费大量的时间。要在这些情况下提供自动依赖项解析，我们必须求助于提供与用户环境相匹配的编译版本库的包管理器。Apt或Conan等外部工具不在本书的范围内，因为它们要么太依赖于系统，要么太复杂。
 
-The good news is that most users know how to install dependencies that your project might require, as long as you provide them with clear instructions to do so. From this chapter, you already know how to detect packages installed in the system with CMake's find-modules and config files bundled with the library.
+好消息是，大多数用户知道如何安装项目可能需要的依赖项，只要为他们提供了这样做的明确指示。在本章中，已经知道了如何使用CMake的find-modules和绑定在库中的配置文件检测安装在系统中的包。
 
-We also learned what to do if a library is a bit older and doesn't support CMake but is distributed with the .pc files instead – we'll rely on the PkgConfig tool and the FindPkgConfig find-module bundled with CMake. We can expect that CMake will automatically create build targets when a library is found with one of the aforementioned methods, which is convenient and elegant. We also discussed relying on Git, and its submodules and cloning entire repositories. This method comes in useful when others won't do or are impractical to implement.
+还学习了若一个库不支持CMake，而是与.pc文件一起发布，我们将依赖于PkgConfig工具和与CMake绑定的FindPkgConfig查找模块。当使用上述方法之一找到库时，CMake将自动创建构建目标，这是方便和优雅的。还讨论了依赖Git及其子模块和克隆整个存储库。当其他方法不可行或难以实现时，这种方法就会很有用。
 
-Finally, we explored the ExternalProject module and its functionalities and limitations. We studied how FetchContent extends the ExternalProject module, which things it has in common with the module, where it differs from the module, and why FetchContent is preferable.
+最后，探讨了ExternalProject模块及其功能和限制。研究了FetchContent如何扩展ExternalProject模块，两个模块间的异同，以及为什么FetchContent更好用。
 
-You're now ready to use regular libraries in your projects; however, there's another kind of dependency that we should cover – testing frameworks. Every serious project needs to be tested for correctness, and CMake is a great tool to automate this process. We'll learn how to do it in the next chapter.
+现在，可以在项目中使用常规库了。但还有另一种类型的依赖我们应该涵盖——测试框架。每个严肃的项目都需要进行正确性测试，CMake是一个很好的工具，可以使这个过程自动化。我们将在下一部分学习如何进行自动化。
 
 
 
