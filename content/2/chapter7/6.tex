@@ -1,5 +1,5 @@
 
-Online reference books on CMake will suggest ExternalProject and FetchContent modules to deal with the management of dependencies in more complex projects. That's actually good advice, but it's often given without appropriate context. Suddenly, we're facing a lot of questions. What are these modules for? When to choose one over the other? How exactly do they work, and how do they interact with each other? Some answers are harder to find than others, and surprisingly, CMake's documentation doesn't provide a smooth introduction to the subject. Not to worry – we'll take care of it here.
+关于CMake的在线参考将建议使用ExternalProject和FetchContent模块来处理更复杂项目中的依赖性管理。这实际上是一个很好的建议，但通常是在没有给出相应的使用背景。突然间，我们面临了很多问题。这些模块是干什么用的?什么时候选择这一个，而不是另一个?它们究竟是如何工作的，它们之间又是如何相互作用的?有些答案比其他的更难找到，并且CMake的文档并没有对这个主题提供一个清晰的介绍，但这里会给出。
 
 \subsubsubsection{7.6.1\hspace{0.2cm}ExternalProject}
 
@@ -70,7 +70,7 @@ The steps follow the preceding exact order, with the exception of the test step,
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Downloading the step options}
+\textbf{下载步骤选项}
 
 We're mostly interested in options controlling the download step or how the dependency will get fetched by CMake. Firstly, we may choose to not use the CMake built-in method for that but rather provide a custom command (generator expressions are supported here):
 
@@ -82,7 +82,7 @@ By doing so, we tell CMake to ignore all other options for this step and just ex
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Downloading dependencies from a URL}
+\textbf{使用URL下载依赖项}
 
 We can provide a list of URLs to be scanned in sequence until a download succeeds. CMake will recognize whether the downloaded file is an archive and will unpack it by default:
 
@@ -120,7 +120,7 @@ TLS\_CAINFO <file> – this is useful if your company is issuing self-signed SSL
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Downloading dependencies from Git}
+\textbf{使用Git下载依赖项}
 
 To download dependencies from Git, you'll need to make sure that the host has Git 1.6.5 or later installed. The following options are required to clone from Git:
 
@@ -152,7 +152,7 @@ TLS\_VERIFY <bool> – this option was explained in the Downloading dependencies
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Downloading dependencies from Subversion}
+\textbf{使用Subversion下载依赖项}
 
 To download from Subversion, we should specify the following options:
 
@@ -173,7 +173,7 @@ SVN\_TRUST\_CERT <bool> – skips the verification of the Subversion server site
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Downloading dependencies from Mercurial}
+\textbf{使用Mercurial下载依赖项}
 
 This mode is very straightforward. We need to provide two options and we're done:
 
@@ -184,7 +184,7 @@ HG_TAG <tag>
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Downloading dependencies from CVS}
+\textbf{使用CVS下载依赖项}
 
 To check out modules from CVS, we need to provide these three options:
 
@@ -196,7 +196,7 @@ CVS_TAG <tag>
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Update step options}
+\textbf{更新步骤选项}
 
 By default, the update step will re-download the external project's files if the download method supports updates. We can override this behavior in two ways:
 
@@ -210,7 +210,7 @@ Completely disable the update step (to allow building with a disconnected networ
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Patch step options}
+\textbf{补丁步骤选项}
 
 Patch is an optional step that will execute after the source is fetched. To enable it, we need to specify the exact command we want to execute with:
 
@@ -220,13 +220,13 @@ PATCH_COMMAND <cmd>...
 
 CMake documentation warns that some patches may be more "sticky" than others. For example, in Git, changed files don't get restored to the original state during the update, and we need to be careful to avoid incorrectly patching the file twice. Ideally, the patch command should be really robust and idempotent.
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Important Note]
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=重要的Note]
 The previously mentioned lists of options contain only the most useful entries. Be sure to reference the official documentation for more details and a description of options for other steps: \url{https://cmake.org/cmake/ help/latest/module/ExternalProject.html}.
 \end{tcolorbox}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Using ExternalProject in practice}
+\textbf{使用ExternalProject}
 
 The fact that dependency is populated at the build stage is very important, and it has two effects – the namespaces of projects are completely separate, and targets defined by any external project are not visible in the main project. The latter is especially painful, as we can't use target\_link\_libraries() in the same fashion as we would after using the find\_package() command. This is because of a disjoint of two configuration stages. The main project has to finish the configuration stage and start the build stage before the dependency is downloaded and configured. This is an issue, but we'll learn how to deal with that in a second. For now, let's see how ExternalProject\_Add() would work with the yaml-cpp library that we used in the previous examples:
 
@@ -295,7 +295,7 @@ You may ask yourself why the Declare and MakeAvailable commands were separated. 
 
 \begin{center}
 \includegraphics[width=0.5\textwidth]{content/2/chapter7/images/1.jpg}\\
-Figure 7.1 – The hierarchical project
+图7.1 分层项目
 \end{center}
 
 What's more, the dependency on the B library is optional, depending on the configuration (let's say it's OS-specific). MakeAvailable can't both configure and populate the dependency because to override the version in the A library, the parent project would be forced to populate the dependency regardless of its final necessity in the A library.
@@ -346,8 +346,8 @@ Finally, add\_subdirectory() is called with source and build trees as arguments 
 By calling add\_subdirectory(), CMake effectively performs the configuration stage of the fetched project and retrieves any targets defined there in the current scope. How convenient!
 
 \begin{center}
-\includegraphics[width=0.8\textwidth]{content/2/chapter7/images/2.jpg}\\
-Figure 7.2 – How FetchContent\_MakeAvailable() wraps calls to ExternalProject
+\includegraphics[width=0.6\textwidth]{content/2/chapter7/images/2.jpg}\\
+图7.2  FetchContent\_MakeAvailable()如何包装对ExternalProject的调用
 \end{center}
 
 Obviously, we may have a situation where two unrelated projects declare a target with the same name. This is a problem that can only be solved by falling back to ExternalProject or other methods. Luckily, it doesn't happen too often.

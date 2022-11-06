@@ -1,26 +1,25 @@
 
-Many projects rely on Git as a version control system. Assuming that our project and external library are both using it, is there some kind of Git magic that would allow us to link these repositories together? Can we build a specific (or latest) version of the library as a step toward building our project? If so, how?
+许多项目依赖Git作为版本控制系统。假设我们的项目和外部库都在使用它，是否有某种Git魔法允许我们将这些存储库链接在一起?能否构建库的特定(或最新)版本作为构建项目的一步?如果是这样，如何操作?
 
 \subsubsubsection{7.5.1\hspace{0.2cm}通过Git子模块提供外部库}
 
-One possible solution is to use a mechanism built into Git called Git submodules. Submodules allow a project repository to use other Git repositories without actually adding the referenced files to the project repository. They work similarly to soft links – they point to a specific branch or commit in an external repository (but you need to update them explicitly). To add a submodule to your repository (and clone its repository), execute the following command:
+可能的解决方案是使用Git内置的机制，称为Git子模块。子模块允许项目存储库使用其他Git存储库，而无需将引用的文件添加到项目存储库中。工作原理类似于软链接——指向特定的分支或在外部存储库中提交(需要显式地更新)。要向存储库中添加一个子模块(并克隆它的存储库)，执行以下命令:
 
 \begin{tcblisting}{commandshell={}}
 git submodule add <repository-url>
 \end{tcblisting}
 
-If you pulled a repository that already has submodules, you'll need to initialize them:
+若提取的存储库已经有子模块，需要初始化它们:
 
 \begin{tcblisting}{commandshell={}}
 git submodule update --init -- <local-path-to-submodule>
 \end{tcblisting}
 
-As you can tell, this is a versatile mechanism to leverage third-party code in our solution.
-The small drawback is that submodules don't get automatically pulled when a user clones the repository with the root project. An explicit init/pull command is required. Hold that thought – we'll solve it with CMake too. First, let's see how we can use a freshly created submodule in our code.
+这是在解决方案中利用第三方代码的一种通用机制。它的一个小缺点是，当用户用根项目克隆存储库时，不会自动提取子模块。需要显式的init/pull命令，我们也会用CMake解决它。首先，看看如何在代码中使用新创建的子模块。
 
-For this example, I've decided to write a tiny program that reads a name from a YAML file and prints it out in a welcome message. YAML is a great, simple format to store humanreadable configuration, but it's quite complex to parse by machines. I've found a neat, small project that solves this problem by Jesse Beder (and 92 other contributors at the time) called yaml-cpp (\url{https://github.com/jbeder/yaml-cpp}).
+对于本例，我决定编写一个小程序，从YAML文件读取一个名称并在欢迎消息中打印出来。YAML是一种很棒的、简单的格式，用于存储人类可读的配置，但机器解析相当复杂。我找到了一个由Jesse Beder(和当时92个其他贡献者)编写的整洁的小项目，解决了这个问题，名为yaml-cpp\url{https://github.com/jbeder/yaml-cpp})。
 
-The example is fairly straightforward. It's a greeting program that prints a Welcome <name> message. The default value of name will be Guest, but we can specify a different name in a YAML configuration file. Here's the code:
+这个例子相当简单。这是一个打印Welcome  <name>消息的欢迎程序。name的默认值是Guest，可以在YAML配置文件中指定不同的名称:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter07/05-git-submodule-manual/main.cpp
@@ -41,27 +40,7 @@ int main() {
 }
 \end{lstlisting}
 
-The configuration file for this example is just a single line:
-
-\begin{lstlisting}[style=styleCMake]
-# chapter07/05-git-submodule-manual/main.cpp
-
-#include <string>
-#include <iostream>
-#include "yaml-cpp/yaml.h"
-
-using namespace std;
-int main() {
-	string name = "Guest";
-	YAML::Node config = YAML::LoadFile("config.yaml");
-	if (config["name"])
-		name = config["name"].as<string>();
-	cout << "Welcome " << name << endl;
-	return 0;
-}
-\end{lstlisting}
-
-The configuration file for this example is just a single line:
+本例的配置文件只有一行:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter07/05-git-submodule-manual/config.yaml
@@ -69,7 +48,7 @@ The configuration file for this example is just a single line:
 name: Rafal
 \end{lstlisting}
 
-Let's get back to main.cpp for a second – it includes the "yaml-cpp/yaml.h" header. To make it available, we need to clone the yaml-cpp project and build it. Let's make an extern directory to store all third-party dependencies (as suggested in the Thinking about the project structure section in Chapter 3, Setting Up Your First CMake Project) and add a Git submodule, referencing the library's repository:
+让我们先回到main.cpp——它包含“yaml-cpp/yaml.h”头文件。为了让它可用，需要克隆yaml-cpp项目并构建。创建一个extern目录来存储所有第三方依赖项(参见3.2.2节的建议)，并添加一个子模块Git，引用这个库的仓库:
 
 \begin{tcblisting}{commandshell={}}
 $ mkdir extern
@@ -83,7 +62,7 @@ Receiving objects: 100% (8134/8134), 3.86 MiB | 3.24 MiB/s, done.
 Resolving deltas: 100% (5307/5307), done.
 \end{tcblisting}
 
-Git has cloned the repository; we can now add it as a dependency to our project and have CMake take care of building:
+Git已经克隆了存储库，现在可以将它作为一个依赖项添加到我们的项目中，并让CMake负责构建:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter07/05-git-submodule-manual/CMakeLists.txt
@@ -98,35 +77,35 @@ add_subdirectory(extern/yaml-cpp)
 target_link_libraries(welcome PRIVATE yaml-cpp)
 \end{lstlisting}
 
-Let's break down what instructions we are giving to CMake here:
+这里分解一下给CMake的指令:
 
 \begin{itemize}
 \item 
-Set up the project and add our welcome executable.
+设置项目并添加welcome可执行文件。
 
 \item 
-Next, call configure\_file but don't actually configure anything. By providing the COPYONLY keyword, we just copy our config.yaml to the build tree so that the executable can find it in runtime.
+接下来，使用configure\_file，但实际上不进行配置。通过COPYONLY关键字，只需复制config.yaml到构建树中，以便可执行程序可以在运行时中找到它。
 
 \item 
-Add the subdirectory of the yaml-cpp repository. CMake will treat it as part of the project and recursively execute any nested CMakeLists.txt files.
+添加yaml-cpp存储库的子目录。CMake将它作为项目的一部分，递归地执行任何嵌套的CMakeLists.txt文件。
 
 \item 
-Link the yaml-cpp target provided by the library with the welcome target.
+将库提供的yaml-cpp目标与welcome目标链接起来。
 \end{itemize}
 
-Authors of yaml-cpp follow the practices outlined in Chapter 3, Setting Up Your First CMake Project and store public headers in a separate directory – <project-name>/ include/<project-name>. This allows clients of the library (such as main.cpp) to address the files with paths containing the "yaml-cpp/yaml.h" library name. Such naming practices are great for discovery – we know immediately which library is providing this header.
+yaml-cpp的作者遵循了第3章中的实践，并将公共头文件存储在一个单独的目录中——<project-name>/include/<project-name>。这允许库的客户端(如main.cpp)包含“yaml-cpp/yaml.h”，这样的命名实践对于查找头文件非常有用——可以立即知道是哪个库提供了这个头文件。
 
-As you can see, this isn't a very complex process, but it isn't ideal – the user has to manually initialize the submodule we have added after cloning the repository. What's worse is that it doesn't take into account the fact that the user might already have this library installed in their system. That means a wasteful download and build of this dependency. There has to be a better way.
+这不是一个非常复杂的过程，但并不理想——用户必须在克隆存储库之后手动初始化添加的子模块。更糟糕的是，没有考虑到用户可能已经在其系统中安装了这个库，所以这个依赖的下载和构建可能是多余的。一定有更好的办法。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{自动初始化Git子模块}
 
-Providing a neat experience to the users doesn't always have to be painful for developers. If a library provides a package config-file, we can just ask find\_package() to search for it in the installed libraries. As promised, CMake will start by checking whether there's an appropriate find-module, and if there's not, it will look for config-files.
+对开发人员来说，为用户提供简洁的体验并不总是件痛苦的事。若一个库提供了一个包配置文件，可以只要求find\_package()在已安装的库中搜索。如前所述，CMake将首先检查是否有合适的查找模块，若没有，将查找配置文件。
 
-We already know that if the <LIB\_NAME>\_FOUND variable is set to 1, the library was found and we can just use it. We can also act when library wasn't found and provide convenient workaround to silently improve the user's experience: fall back to fetching submodules and building the library from source. Suddenly, the fact that a freshly cloned repository doesn't automatically download and initialize nested submodules doesn't look so bad, does it?
+我们已经知道，若<lib\_name>\_FOUND变量设置为1，代表库找到了，可以直接使用它。还可以在没有找到库时采取行动，并提供方便的解决方案，改善用户体验:回到获取子模块并从源代码构建库。新克隆的存储库不会自动下载和初始化嵌套子模块的事实看起来并不是那么糟糕，不是吗?
 
-Let's take the code from the previous example and extend it:
+让对前面的例子进行扩展:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter07/06-git-submodule-auto/CMakeLists.txt
@@ -136,7 +115,7 @@ project(GitSubmoduleAuto CXX)
 
 add_executable(welcome main.cpp)
 configure_file(config.yaml config.yaml COPYONLY)
-
+################################################
 find_package(yaml-cpp QUIET)
 if (NOT yaml-cpp_FOUND)
 	message("yaml-cpp not found, initializing git submodule")
@@ -146,31 +125,32 @@ if (NOT yaml-cpp_FOUND)
 	)
 	add_subdirectory(extern/yaml-cpp)
 endif()
+################################################
 target_link_libraries(welcome PRIVATE yaml-cpp)
 \end{lstlisting}
 
-We added the highlighted lines:
+我们添加了\#中显示的行:
 
 \begin{itemize}
 \item 
-We'll try to quietly find yaml-cpp and use it.
+尝试找到yaml-cpp并使用它。
 
 \item 
-If it's not present, we'll print a short diagnostic message and use the execute\_process() command to initialize the submodule. This effectively clones the files from the referenced repository.
+如果不存在，将打印一个简短的诊断消息并使用execute\_process()指令初始化子模块。这可以有效地从引用的存储库中克隆文件。
 
 \item 
-Finally, we'll add\_subdirectory() to build the dependency from the source.
+最后，使用add\_subdirectory()使用源代码构建依赖项。
 \end{itemize}
 
-This is short and sweet. This also works for libraries that aren't built with CMake – we can follow the example of git submodule and call execute\_process() again to kick off any external build tools in the same fashion.
+简单明了！这也适用于不是用CMake构建的库——可以遵循git子模块的例子，再次调用execute\_process()，以同样的方式启动任何外部构建工具。
 
-Sadly, this method falls apart if your company works with Concurrent Versions System (CVS), Subversion (SVN), Mercurial, or anything else to ship code to your users. If you cannot rely on Git submodules, what's the alternative?
+不幸的是，若使用并发版本系统(CVS)、Subversion (SVN)、Mercurial或其他任何将代码交付给用户的工具，这种方法就会失效。若不能依赖Git子模块，还有什么替代方法?
 
 \subsubsubsection{7.5.2\hspace{0.2cm}不使用Git的项目克隆依赖项}
 
-If you're using another VCS or offer your source in an archive, you might have a hard time relying on Git submodules bringing in external dependencies to your repository. Chances are that the environment that will build your code has Git installed and could execute the git clone command.
+若正在使用另一种VCS或在存档中提供源码，那么可能很难依赖Git子模块为存储库引入外部依赖项。构建代码的环境可能已经安装了Git，并且可以执行Git clone命令。
 
-Let's see how we can go about this:
+让我们看看该怎么做:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter07/07-git-clone/CMakeLists.txt
@@ -184,6 +164,7 @@ configure_file(config.yaml config.yaml COPYONLY)
 find_package(yaml-cpp QUIET)
 if (NOT yaml-cpp_FOUND)
 	message("yaml-cpp not found, cloning git repository")
+################################################
 	find_package(Git)
 	if (NOT Git_FOUND)
 		message(FATAL_ERROR "Git not found, can't initialize!")
@@ -193,25 +174,26 @@ if (NOT yaml-cpp_FOUND)
 		https://github.com/jbeder/yaml-cpp.git
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/extern
 	)
+################################################
 	add_subdirectory(extern/yaml-cpp)
 endif()
 target_link_libraries(welcome PRIVATE yaml-cpp)
 \end{lstlisting}
 
-Again, the highlighted lines are new parts in our YAML project. Here's what happens:
+同样，\#中的行是YAML项目中的新部分。发生了什么:
 
 \begin{itemize}
 \item 
-We start by checking if Git is available through the FindGit find-module.
+首先通过FindGit查找模块检查Git是否可用。
 
 \item 
-If it's not, we're stuck. We'll issue FATAL\_ERROR and hope that the user knows what to do next.
+若不可用，就会陷入困境。将发出FATAL\_ERROR，并希望用户知道下一步要做什么。
 
 \item 
-Otherwise, we'll call execute\_process() with the GIT\_EXECUTABLE variable that was set by find\_package() and clone the repository we're interested in.
+否则，将使用find\_package()设置的GIT\_EXECUTABLE变量调用execute\_process()，并克隆我们感兴趣的存储库。
 \end{itemize}
 
-Git is especially attractive for developers who have some experience with it. It can be a good fit for a smaller project that doesn't contain nested references to the same repositories. However, if it does, you'll find that you might need to clone and build the same project multiple times. If the dependency project doesn't use Git at all, you'll need another solution.
+Git对于有一定经验的开发人员特别有吸引力，非常适合不包含对相同存储库的嵌套引用的较小项目。但若是这样，将发现可能需要多次克隆和构建同一个项目。若依赖项项目根本不使用Git，则需要另一种解决方案。
 
 
 
