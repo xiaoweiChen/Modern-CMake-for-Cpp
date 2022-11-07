@@ -1,7 +1,7 @@
 
-Writing unit tests is technically possible without any kind of framework. All we have to do is create an instance of the class we want to test, execute one of its methods, and check if the new state or value returned meets our expectations. Then, we report the result and delete the object under test. Let's try it out.
+编写单元测试在技术上是不需要任何类型的框架的。所要做的就是创建想要测试的类的实例，执行它的一个方法，并检查返回的新状态或值是否符合期望。然后，我们报告结果并删除测试对象。
 
-We'll use the following structure:
+将使用以下目录结构:
 
 \begin{tcblisting}{commandshell={}}
 - CMakeLists.txt
@@ -10,12 +10,14 @@ We'll use the following structure:
      |- calc.cpp
      |- calc.h
      |- main.cpp
+\end{tcblisting}
+\begin{tcblisting}{commandshell={}}
 - test
      |- CMakeLists.txt
      |- calc_test.cpp
 \end{tcblisting}
 
-Starting from main.cpp, we can see it will use a Calc class, as illustrated in the following code snippet:
+从main.cpp开始，可以看到它将使用一个Calc类:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/01-no-framework/src/main.cpp
@@ -31,7 +33,7 @@ int main() {
 }
 \end{lstlisting} 
 
-Nothing too fancy—main.cpp simply includes the calc.h header and calls two methods of the Calc object. Let's quickly glance at the interface of Calc, our SUT, as follows:
+没什么特别的——main.cpp只是包含了Calc.h头文件，并调用Calc对象的两个方法。快速浏览一下Calc(我们的SUT)的接口，如下所示:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/01-no-framework/src/calc.h
@@ -44,7 +46,7 @@ class Calc {
 };
 \end{lstlisting} 
 
-The interface is as simple as possible. We're using \#pragma once here—it works exactly like commonly seen preprocessor include guards and is understood by almost all modern compilers, despite not being part of the official standard. Let's see the class implementation, as follows:
+接口很简单。在这里使用了\#pragma——其工作原理和常见的预处理器包括保护完全一样，尽管不是官方标准的一部分，但几乎所有现代编译器都可以理解。让我们看看类的实现，如下所示:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/01-no-framework/src/calc.cpp
@@ -59,7 +61,7 @@ int Calc::Multiply(int a, int b) {
 }
 \end{lstlisting} 
 
-Uh-oh! We introduced a mistake! Multiply is ignoring the b argument and returns a squared instead. That should be detected by correctly written unit tests. So, let's write some! Here we go:
+啊哦!我们引入了一个错误!乘法忽略b参数，返回a的平方。应该通过正确编写的单元测试来检测。所以，让我们开始吧:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/01-no-framework/test/calc_test.cpp
@@ -80,9 +82,9 @@ void MultiplyMultipliesTwoIntegers() {
 }
 \end{lstlisting} 
 
-We start our calc\_test.cpp file by writing two test methods, one for each tested method of SUT. If the value returned from the called method doesn't match expectations, each function will call std::exit(1). We could use assert(), abort(), or terminate() here, but that would result in a less explicit Subprocess aborted message in the output of ctest, instead of the more readable Failed message.
+通过编写两个测试方法启动calc\_test.cpp文件，每个SUT的测试方法对应一个测试方法。若方法返回的值不符合预期，每个函数将调用std::exit(1)。可以在这里使用assert()、abort()或terminate()，但这将导致在ctest的输出中出现一个不太显式的Subprocess中止消息，而不是可读性更强的Failed消息。
 
-Time to create a test runner. Ours will be simple as possible because doing it correctly would require a ridiculous amount of work. Just look at the main() function we had to write in order to run just two tests:
+是时候创建一个测试运行程序了。因为正确地做它将需要大量的工作，所以需要尽可能地简单。我们必须编写main()函数，以运行两个测试:
 
 \begin{lstlisting}[style=styleCXX]
 chapter08/01-no-framework/test/unit_tests.cpp
@@ -100,30 +102,28 @@ int main(int argc, char *argv[]) {
 }
 \end{lstlisting} 
 
-Here's a breakdown of what happens here:
+以下是具体情况:
 
 \begin{itemize}
 \item 
-We declare two external functions that will be linked from another translation unit.
+声明两个外部函数，它们将从另一个翻译单元链接。
+
+若没有提供参数，则执行两个测试(argv[]中的第0个元素始终是程序名)。
 
 \item 
-If no arguments were provided, execute both tests (the zeroth element in argv[] is always the program name).
+若第一个参数是测试的标识符，则执行。
 
 \item 
-If the first argument is an identifier of the test, execute it.
+若任何测试失败，它将在内部调用exit()并返回一个1退出代码。
 
 \item 
-If any of the tests fail, it internally calls exit() and returns with a 1 exit code.
-
-\item 
-If no tests were executed or all passed, it implicitly returns with a 0 exit code.
+若没有执行任何测试或所有测试都通过，则隐式返回并带有退出代码0。
 \end{itemize}
 
-To run the first test, we'll execute ./unit\_tests 1; to run the second, we'll execute ./unit\_tests 2. We simplified the code as much as we could, and it still turned out to be pretty hard to read. Anyone who might need to maintain this section isn't going to have a great time after adding a few more tests, not to mention that this functionality is pretty raw—debugging such a test suite will be a lot of work. Nevertheless, let's see how we can use it with CTest, as follows:
+要运行第一个测试，我们将执行./unit\_tests 1;要运行第二个，将执行./unit\_tests 2。这里尽可能地简化了代码，但仍然很难阅读。添加了一些测试之后，可能需要维护这一部分的人都不会有很多的使能，更不用说这个功能是非常原始的——调试这样的测试套件将是大量的工作。然而，来看看如何在CTest中使用它:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter08/01-no-framework/CMakeLists.txt
-
 
 cmake_minimum_required(VERSION 3.20.0)
 project(NoFrameworkTests CXX)
@@ -132,9 +132,9 @@ add_subdirectory(src bin)
 add_subdirectory(test)
 \end{lstlisting} 
 
-We start with the usual heading and enable\_testing(). This is to tell CTest that we'd like to enable tests in this directory and its subdirectories. Next, we'll include two nested listfiles in each of the subdirectories: src and test. The highlighted bin value states that we'd like the binary output of src subdirectories to be placed in <build\_tree>/ bin. Otherwise, binary files would end up in <build\_tree>/src, which could be confusing. After all, build artifacts are no longer source files.
+通常从enable\_testing()开始，这是为了告诉CTest需要在这个目录及其子目录中启用测试。接下来，将在每个子目录中包含两个嵌套的列表文件:src和test。突出显示的bin值表明，需要将src子目录的二进制输出放在<build\_tree>/bin中。否则，二进制文件将在<build\_tree>/src中结束，这可能令人困惑。毕竟，构建的工件不是源文件。
 
-The listfile for the src directory is very straightforward and contains a simple main target definition, as illustrated here:
+src目录的列表文件非常简单，包含一个简单的主目标定义:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter08/01-no-framework/src/CMakeLists.txt
@@ -142,7 +142,7 @@ The listfile for the src directory is very straightforward and contains a simple
 add_executable(main main.cpp calc.cpp)
 \end{lstlisting} 
 
-We also need a listfile for the test directory, as follows:
+还需要一个test目录的列表文件:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter08/01-no-framework/test/CMakeLists.txt
@@ -157,9 +157,9 @@ add_test(NAME SumAddsTwoInts COMMAND unit_tests 1)
 add_test(NAME MultiplyMultipliesTwoInts COMMAND unit_tests 2)
 \end{lstlisting} 
 
-We have now defined a second unit\_tests target that also uses the src/calc. cpp implementation file and respective header. Finally, we explicitly add two tests: SumAddsTwoInts and MultiplyMultipliesTwoInts. Each provides its ID as an argument to the add\_test() command. CTest will simply take anything provided after the COMMAND keyword and execute it in a subshell, collecting the output and exit code. Don't get too attached to add\_test()—in the Unit-testing frameworks section, we'll discover a much better way of dealing with test cases, so we'll skip describing it in detail here.
+现在已经定义了第二个unit\_tests目标，也使用src/calc.cpp实现文件和各自的头文件。最后，显式添加两个测试:SumAddsTwoInts和MultiplyMultipliesTwoInts。每个都将其ID作为参数提供给add\_test()指令。CTest将简单地接受COMMAND关键字之后提供的内容，并在子shell中执行，收集输出和退出代码。不要太执着于在单元测试框架部分add\_test()，会有处理测试用例的更好的方法，因此这里将跳过这里的详细描述。
 
-This is how ctest works in practice when executed in the build tree:
+这是ctest在构建树中执行时的实际工作方式:
 
 \begin{tcblisting}{commandshell={}}
 # ctest
@@ -182,73 +182,73 @@ Use "--rerun-failed --output-on-failure" to re-run the failed
 cases verbosely.
 \end{tcblisting}
 
-CTest executed both tests and reported that one of them is failing—the returned value from Calc::Multiply didn't meet expectations. Very good. We now know that our code has a bug, and someone should fix it.
+CTest执行了两个测试，并报告其中一个测试失败——从Calc::Multiply返回的值没有达到预期。现在知道我们的代码有一个bug，需要修复它。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-You may have noticed that in most examples so far, we didn't necessarily employ the project structure described in Chapter 3, Setting Up Your First CMake Project. This was done to keep things brief. This chapter discusses more advanced concepts, and therefore using a full structure is warranted. In your projects (no matter how small), it's best to follow this structure from the start. As a wise man once said: "You step onto the road, and if you don't keep your feet, there's no knowing where you might be swept off to."
+可能已经注意到，大多数例子中，我们都没有采用第3章中描述的项目结构。这样做是为了简短。本章讨论更高级的概念，因此使用完整的结构是有保证的。在项目中(无论多么小)，最好从一开始就遵循这个结构。一位智者曾经说过:“当你踏上道路，若不保持脚步，谁也不知道你会到达哪里。”
 \end{tcolorbox}
 
-It's no secret that you should avoid building a testing framework as part of your own project. Even the most basic example is hard on the eyes, has a lot of overhead, and doesn't add any value. However, before we can adopt a unit-testing framework, we'll need to rethink the structure of the project.
+应该避免将构建测试框架作为项目的一部分。即使是最基本的例子也很难看，有很多开销，没有任何价值。然而，使用单元测试框架之前，需要重新考虑项目的结构。
 
-\subsubsubsection{8.4.1\hspace{0.2cm}Structuring our projects for testing}
+\subsubsubsection{8.4.1\hspace{0.2cm}为测试构建项目}
 
-C++ has some limited introspection capabilities, but cannot offer such powerful retrospection features as Java can. This might be the very reason why writing tests and unit-testing frameworks for C++ code is much harder than in other, richer environments. One implication of such an economic approach is the fact that the programmer has to be more involved in crafting testable code. We'll not only have to design our interfaces more carefully, but also answer questions about the practicalities, such as this: How do we avoid doubling the compilation, and reuse artifacts between tests and production?
+C++有一些有限的内省功能，但不能提供像Java那样强大的追溯功能。这可能就是为什么为C++代码编写测试和单元测试框架，比在其他更丰富的环境中要困难得多的原因。这种经济方法的一个含义是开发者必须更多地参与编写可测试代码，不仅要更仔细地设计我们的接口，而且还要回答关于实用性的问题，例如:如何避免加倍编译，以及在测试和生产之间重用工件?
 
-Compilation time might not be a significant problem for smaller projects, but as time flies, the projects grow. The need for short compilation loops does not go away. In the previous example, we appended all the sut sources to the unit-test executable apart from the main.cpp file. If you were reading closely, you will have noticed that we had some code in that file that didn't get tested (the contents of main() itself). By compiling the code twice, there's a slight chance that the produced artifacts won't be exactly the same. These things can potentially diverge over time (due to the addition of compilation flags and preprocessor directives). This may be especially dangerous when engineers contributing to the code base are in a rush, inexperienced, or simply unfamiliar with the project.
+对于较小的项目来说，编译时间可能不是一个大问题，但是随着时间的流逝，项目会增长。前面的示例中，除了main.cpp文件之外，将所有SUT源附加到单元测试可执行文件中。有些读者可能会注意到该文件中有一些代码没有经过测试(main()本身的内容)。通过编译两次代码，产生的工件有可能不完全相同。随着时间的推移，这些东西可能会产生分歧(由于添加了编译标志和预处理器指令)。当为代码库做出贡献的工程师很匆忙、缺乏经验或对项目不熟悉时，这特别危险。
 
-There are multiple ways of dealing with the problem, but the most elegant is to build your entire solution as a library and link it with unit tests. You might ask: "How are we going to run it then?" We'll need a bootstrap executable that will link with the library and run its code.
+处理这个问题有多种方法，但最优雅的方法是将整个解决方案构建为一个库，并将其与单元测试链接起来。可能会问:“那要怎么运行它呢?”需要一个将链接到库并运行其代码的引导可执行文件。
 
-Begin by renaming your current main() function to run(), start\_program(), or something similar. Then, create another implementation file (bootstrap.cpp) with a new main() function, and this function only. This will be our adapter (or wrapper, if you will): its sole role is to provide an entry point and call the run() forwarding commandline arguments (if any). All that's left is to link everything together, and we've got ourselves a testable project.
+首先将当前的main()函数重命名为run()、start\_program()或类似的东西。然后，使用新的main()函数创建另一个实现文件(bootstrap.cpp)，并且只使用这个函数。这将是适配器(或者包装器，如果您愿意的话):唯一作用是提供一个入口点并调用run()转发命令行参数(如果有的话)。剩下的就是把所有东西连接起来，就得到了一个可测试的项目。
 
-By renaming main(), we can now link SUT with tests and test its primary function too. Otherwise, we'd be in violation of the One Definition Rule (ODR) discussed in Chapter 6, Linking with CMake, as the test runner needs its own entry point, a separate main() function. As promised in the Separating main() for testing section of Chapter 6, we'll explain this subject in detail.
+通过重命名main()，可以将SUT与测试联系起来，并测试它的主要功能。否则，将违反第6章中讨论的单一定义规则(ODR)，因为测试运行程序需要它自己的入口点，一个单独的main()函数。
 
-The testing framework may provide its own implementation of the main() function out of the box, so we don't need to write it. Usually, it will detect all tests that we've linked and execute them according to the desired configuration.
+测试框架可以提供自己的main()函数的开箱即用实现，因此不需要编写它。通常，其将检测我们链接的所有测试，并根据需要配置执行。
 
-Artifacts produced by this approach can be grouped into the following targets:
+这种方法产生的工件可以分为以下目标:
 
 \begin{itemize}
 \item 
-A sut library with production code
+带有生产代码的sut库
 
 \item 
-bootstrap with a main() wrapper calling run() from sut
+使用main()包装器从sut调用run()进行引导
 
 \item 
-unit tests with a main() wrapper that runs all the tests on sut
+使用main()包装器进行单元测试，该包装器在sut上运行所有测试
 \end{itemize}
 
-The following diagram shows the symbol relations between targets:
+下图显示了目标之间的符号关系:
 
 \begin{center}
 \includegraphics[width=0.8\textwidth]{content/3/chapter8/images/2.jpg}\\
-Figure 8.2 ‒ Sharing artifacts between test and production executables
+图8.2 测试和生产可执行程序之间共享工件
 \end{center}
 
-We end up with six implementation files that will produce their respective (.o) object files, as follows:
+最终得到了6个实现文件，它们将产生各自的(.o)目标文件:
 
 \begin{itemize}
 \item 
-calc.cpp—The Calc class to be unit-tested. This is called a unit under test (UUT) because UUT is a specialization of SUT.
+calc.cpp—要进行单元测试的Calc类。这称为被测单元(UUT)，因为UUT是SUT的特化。
 
 \item 
-run.cpp—Original entry point renamed run(), which can be now tested.
+run.cpp—原来的入口点重命名为run()，现在可以对其进行测试。
 
 \item 
-bootstrap.cpp—New main() entry point calling run().
+bootstrap.cpp—新的main()入口点调用run()。
 
 \item 
-calc\_test.cpp—Tests the Calc class.
+calc\_test.cpp—测试Calc类。
 
 \item 
-run\_test.cpp—New tests for run() can go here.
+run\_test.cpp—run()的新测试可以放在这里。
 
 \item 
-unit\_tests.o—Entry point for unit tests, extended to call tests for run().
+unit\_tests.o—单元测试的入口点，扩展为run()的调用测试。
 \end{itemize}
 
-The library that we're about to build doesn't actually need to be a factual library: static or shared. By creating an object library, we can avoid unnecessary archiving or linking. Technically speaking, it's possible to shave a few moments by relying on dynamic linking for SUT, but more often than not, we're making changes in both targets: tests and sut, canceling out any potential gains.
+将要构建的库实际上不需要是一个实际的库:静态的或动态的。通过创建对象库，可以避免不必要的归档或链接。从技术上讲，通过依赖SUT的动态链接来节省一些时间是可能的，但我们在测试和SUT中都做了更改，抵消了潜在的收益。
 
-Let's see how our files have changed, starting with the file previously named main.cpp, as follows:
+来看看文件是如何改变的，从之前命名为main.cpp的文件开始:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/02-structured/src/run.cpp
@@ -265,9 +265,9 @@ int run() {
 }
 \end{lstlisting} 
 
-Not too many differences: renamed file and function. We also added a return statement as the compiler won't do this implicitly for functions that are not main().
+没有太多区别:重命名文件和函数。还添加了一个return语句，因为编译器不会对非main()的函数隐式执行此操作。
 
-The new main() function looks like this:
+新的main()函数如下所示:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/02-structured/src/bootstrap.cpp
@@ -278,7 +278,7 @@ int main() {
 }
 \end{lstlisting} 
 
-As simple as possible—we're declaring that the linker will provide the run() function from another translation unit, and we're calling it. Next to change is the src listfile, which you can see here:
+尽可能简单——声明链接器将从另一个翻译单元提供run()函数，并调用它。旁边的变化是src列表文件:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter08/02-structured/src/CMakeLists.txt
@@ -290,9 +290,9 @@ add_executable(bootstrap bootstrap.cpp)
 target_link_libraries(bootstrap PRIVATE sut)
 \end{lstlisting} 
 
-First, we created a sut library and marked . as a PUBLIC include directory so that it will be propagated to all targets that will link sut (that is, bootstrap and unit\_tests). Note that include directories are relative to the listfile, therefore we can use a dot (.) to refer to the current <source\_tree>/src directory.
+首先，创建了一个sut库并进行标记。作为一个PUBLIC包含目录，这样将传播到所有将链接sut(即引导和单元\_tests)的目标。注意，include目录是相对于列表文件的，因此我们可以使用一个点(.)来引用当前的<source\_tree>/src目录。
 
-Time to update our unit\_tests target. Here, we'll remove the direct reference to the ../src/calc.cpp file with a linking reference to sut for the unit\_tests target. We'll also add a new test for the primary function in the run\_test.cpp file. We'll skip discussing that for brevity, but if you're interested, check out the online examples. Meanwhile, here's the whole test listfile:
+是时候更新unit\_tests目标了。我们将删除对../src/calc.cpp文件的直接引用，并为unit\_tests目标添加到sut的链接引用。我们还将在run\_test.cpp文件中为主函数添加一个新的测试。为了简单起见，这里将跳过讨论，但若感兴趣，可以查看在线示例。同时，下面是整个测试列表文件:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter08/02-structured/test/CMakeLists.txt
@@ -304,7 +304,7 @@ add_executable(unit_tests
 target_link_libraries(unit_tests PRIVATE sut)
 \end{lstlisting} 
 
-We should also register the new test, as follows:
+需要注册新的测试:
 
 \begin{lstlisting}[style=styleCMake]
 add_test(NAME SumAddsTwoInts COMMAND unit_tests 1)
@@ -312,13 +312,13 @@ add_test(NAME MultiplyMultipliesTwoInts COMMAND unit_tests 2)
 add_test(NAME RunOutputsCorrectEquations COMMAND unit_tests 3)
 \end{lstlisting} 
 
-Done! By following this practice, you can be sure that your tests are executed on the very machine code that will be used in production.
+完成了!通过遵循此实践您可以确保在生产中使用的机器代码上执行测试。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-The target names we're using here, sut and bootstrap, are chosen to make it very clear what they're about from the perspective of testing. In real-life projects, you should pick names that match the context of the production code (rather than tests). For example, for a FooApp, name your target foo instead of bootstrap, and lib\_foo instead of sut.
+这里使用的目标名称sut和bootstrap，是为了从测试的角度非常清楚地说明它们的功能。实际项目中，应该选择与生产代码(而不是测试)的上下文相匹配的名称。例如，对于一个FooApp，命名你的目标foo而不是bootstrap, lib\_foo而不是sut。
 \end{tcolorbox}
 
-Now that we know how to structure a testable project in appropriate targets, let's shift our focus to the testing frameworks themselves. We don't want to add every test case to our listfiles manually, do we?
+现在知道了如何在适当的目标中构建可测试项目，让我们将焦点转移到测试框架本身。我们不希望手动地将每个测试用例添加到列表文件中，对吧?
 
 
 

@@ -1,29 +1,28 @@
-Tenured professionals know that testing has to be automated. Someone explained that to them years ago or they learned the hard way. This practice isn't as obvious to inexperienced programmers: it seems unnecessary, additional work that doesn't bring much value. No wonder: when someone is just starting writing code, they'll avoid writing complex solutions and contributing to vast code bases. Most likely, they're the sole developer on their pet project. These early projects hardly ever need more than a few months to complete, so there's hardly any opportunity to see how code rots over a longer period.
+专业人士都明白测试必须自动化。几年前就有人跟他们解释过了，或者直到吃了苦头才明白。这种实践对于没有经验的开发者来说并不明显:似乎是不必要的，额外的工作不会带来太多价值。难怪当刚开始编写代码时，会避免编写复杂的解决方案和贡献大量的代码库。最有可能的情况是，他们喜欢自己是项目的唯一开发者。这些早期的项目几乎不需要超过几个月的时间来完成，所以几乎没有机会看到代码在历史长河中是如何腐烂的。
 
-All these factors contribute toward the notion that writing tests is a waste of time and effort. The programming apprentice may say to themselves that they actually do test their code each time they execute the "build-and-run" routine. After all, they have manually confirmed that their code works and does what's expected. It's finally time to move on to the next task, right?
+这些因素让人感觉编写测试就是在浪费时间和精力。编程学徒可能会对自己说，每次执行“构建-运行”例程时，实际上都测试了代码。毕竟，他们已经手动确认了代码是否正常工作，并完成了预期的工作。终于到了进行下一个任务的时候了，对吧?
 
-Automated testing guarantees that new changes don't accidentally break our program. In this chapter, we'll learn why tests are important and how to use CTest (a tool bundled with CMake) to coordinate test execution. CTest is capable of querying available tests, filtering execution, shuffling, repeating, and time-limiting. We'll explore how to use those features, control the output of CTest, and handle test failures.
+自动化测试保证了新的更改不会意外地破坏我们的程序。本章中，将学习为什么测试是重要的，以及如何使用CTest(CMake附带的一个工具)来协调测试的执行。CTest能够查询可用的测试、过滤执行、变换、重复和时间限制。我们将探讨如何使用这些特性、控制CTest的输出，以及如何处理失败的测试。
 
-Next, we'll adapt our project's structure to support testing and create our own test runner.
-After discussing the basic principles, we'll move on to adding popular testing frameworks: Catch2 and GoogleTest with its mocking library. Lastly, we'll introduce detailed test coverage reporting with LCOV.
+接下来，将调整我们的项目结构，以支持测试并创建自己的测试运行器。在讨论了基本原则之后，将继续添加流行的测试框架:Catch2和带有mock库的GoogleTest。最后，将介绍使用LCOV的详细测试覆盖率报告。
 
-In this chapter, we're going to cover the following main topics:
+本章中，我们将讨论以下主题:
 
 \begin{itemize}
 \item 
-Why are automated tests worth the trouble?
+为什么自动化测试值得这么麻烦?
 
 \item 
-Using CTest to standardize testing in CMake
+使用CTest来标准化CMake中的测试
 
 \item 
-Creating the most basic unit test for CTest
+为CTest创建最基本的单元测试
 
 \item 
-Unit-testing frameworks
+单元测试框架
 
 \item 
-Generating test coverage reports
+生成测试覆盖报告
 \end{itemize}
 
 

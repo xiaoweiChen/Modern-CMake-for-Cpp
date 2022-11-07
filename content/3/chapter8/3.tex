@@ -1,49 +1,49 @@
 
-Ultimately, automated testing involves nothing other than running an executable that sets your system under test (or SUT) in a given state, performs tested operations, and checks if the results match expectations. You can think of them as a codified way of filling the blanks in the sentence "GIVEN \_ WHEN \_ THEN \_" and checking if it's true for SUT. As you can imagine, there's more than one way of doing this—actually, there are lots. Everything depends on the kind of framework you're going to use, how you are hooking it up to your SUT, and what is the exact configuration. Even things as minuscule as the filename of your testing binary will impact the experience of the person using your software. As there are no agreed-upon standards to these things, one developer will use the name test\_my\_app, another will go with unit\_tests, and a third will use something obscure or not provide tests at all. Discovering which file needs to be run, which framework is used, which arguments should be passed to the runner, and how to collect results are problems that users would like to avoid.
+最终，自动化测试只运行一个可执行文件，该可执行文件将系统设置为给定状态，执行测试操作，并检查结果是否符合预期。可以将其看作是一种成文的方法，用于填充“GIVEN \_ WHEN \_ THEN \_”语句中的空白，并检查SUT是否为真。其实，有不止一种方法可以做到这一点。一切都取决于要使用的框架类型、如何将其连接到SUT，以及具体的配置是什么。即使是像测试二进制文件文件名这样的小事情，也会影响软件的体验。由于这些东西没有公认的标准，一个开发人员会使用test\_my\_app的名称，另一个开发人员会使用unit\_tests，还有一个开发人员会使用一些模糊的名称，或者根本不提供测试。发现需要运行哪个文件、使用哪个框架、应该将哪些参数传递给运行程序，以及如何收集结果都是用户希望避免的问题。
 
-CMake solves this by introducing a separate ctest command-line tool. It's configured by the project's author through listfiles and provides a unified way of executing tests: the same, standardized interface for every project built with CMake. If you follow this convention, you will enjoy other benefits down the line: adding the project to a (CI/CD) pipeline will be easier, surfacing them in (IDEs) such as Visual Studio or CLion—all of these things will be streamlined and more convenient. More importantly, you'll get a more powerful test-running utility with very little investment.
+CMake通过引入一个单独的ctest命令行工具来解决这个问题，其由项目作者通过列表文件进行配置，并提供了执行测试的统一方式:为使用CMake构建的每个项目提供相同的标准化接口。若遵循这个惯例，将享受到其他的好处:将项目添加到(CI/CD)管道将更容易，将其显示在(IDE)中，如Visual Studio或Clion——所有这些事情都将简化并更方便。更重要的是，将以很少的开销获得更强大的测试运行实用程序。
 
-How to execute tests with CTest on an already configured project? We'll need to pick one of the following three modes of operation:
+如何在已配置的项目上使用CTest执行测试?需要从以下三种操作模式中选择一种:
 
 \begin{itemize}
 \item 
-Test
+测试
 
 \item 
-Build-and-test
+构建和测试
 
 \item 
-Dashboard client
+仪表板客户
 \end{itemize}
 
-The last mode allows you to send the results of the test to a separate tool called CDash (also from Kitware). CDash collects and aggregates software-quality test results in an easyto-navigate dashboard, as illustrated in the following screenshot:
+最后一种模式允许您将测试结果发送到一个名为CDash的单独工具(也来自Kitware)。CDash在一个易于导航的仪表板中收集和聚合软件质量测试结果，如下面的截图所示:
 
 \begin{center}
 \includegraphics[width=0.8\textwidth]{content/3/chapter8/images/1.jpg}\\
-Figure 8.1 ‒ Screenshot of the CDash dashboard timeline view
+图8.1 CDash仪表板时间轴视图的截图
 \end{center}
 
-CDash isn't in the scope of this book since it's an advanced solution used as a shared server, accessible for all developers in a company.
+CDash不在本书的讨论范围内，因为它是作为共享服务器使用的高级解决方案，公司中的所有开发人员都可以访问。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-If you're interested in learning more online, reference the official documentation of CMake and visit the CDash website:
+若有兴趣在线学习更多信息，请参考CMake的官方文档并访问CDash的网站:
 
 \url{https://cmake.org/cmake/help/latest/manual/ctest.1.html\#dashboard-client}
 
 \url{https://www.cdash.org/}
 \end{tcolorbox}
 
-Let's get back to the first two modes. The command line for test mode looks like this:
+回到前两种模式。测试模式的命令行如下所示:
 
 \begin{tcblisting}{commandshell={}}
 ctest [<options>]
 \end{tcblisting}
 
-In this mode, CTest should be executed in the build tree, after building the project with cmake. This is slightly cumbersome during the development cycle, as you'd need to execute multiple commands and change the working directory back and forth. To simplify the process, CTest added a second mode: build-and-test mode.
+这种模式下，使用cmake构建项目之后，应该在构建树中执行CTest。这在开发周期中有点麻烦，因为需要执行多个命令并来回更改工作目录。为了简化这个过程，CTest添加了第二个模式:构建-测试模式。
 
-\subsubsubsection{8.3.1\hspace{0.2cm}Build-and-test mode}
+\subsubsubsection{8.3.1\hspace{0.2cm}构建和测试模式}
 
-To use this mode, we need to execute ctest starting with -{}-build-and-test, as follows:
+要使用这种模式，需要执行以-{}-build-and-test开头的ctest，如下所示:
 
 \begin{tcblisting}{commandshell={}}
 ctest --build-and-test <path-to-source> <path-to-build>
@@ -52,73 +52,73 @@ ctest --build-and-test <path-to-source> <path-to-build>
       [--test-command <command> [<args>...]]
 \end{tcblisting}
 
-Essentially, this is a simple wrapper around the regular test mode that accepts a few build configuration options and allows us to append the command for the first mode— in other words, all options that can be passed to ctest <options> will work when passed to ctest --build-and-test. The only requirement here is to pass the full command after the -{}-test-command argument. Contrary to what you might think, build-and-test mode won't actually run any tests unless provided with ctest keyword after -{}-testcommand, like so:
+这是对常规测试模式的简单包装，接受一些构建配置选项，允许为第一种模式附加命令——可以传递给ctest <options>的选项在传递给ctest -{}-build-and-test时都将工作。要求是在-{}-test-command参数后面传递完整的命令。不过，构建-测试模式实际上不会运行任何测试，除非在-{}-testcommand后面提供ctest关键字，如下所示:
 
 \begin{tcblisting}{commandshell={}}
 ctest --build-and-test project/source-tree /tmp/build-tree
 --build-generator "Unix Makefiles" --test-command ctest
 \end{tcblisting}
 
-In this command, we specify source and build paths, and select a build generator. All three are required and follow the rules for the cmake command, described in detail in Chapter 1, First Steps with CMake.
+这个命令中，指定源和构建路径，并选择一个构建生成器。所有这三个都是必须的，并且遵循cmake命令的规则，在第1章中有详细描述。
 
-You may pass additional arguments to this mode. They come in three groups, controlling the configuration, the build process, or the tests.
+可以向此模式传递附加参数。分为三组，分别控制配置、构建过程或测试。
 
-Here are the arguments for controlling the configuration stage:
+以下是控制配置阶段的参数:
 
 \begin{itemize}
 \item 
--{}-build-options—Any extra options for the cmake configuration (not the build tool) should be provided just before -{}-test-command, which comes last.
+-{}-build-options—cmake配置(不是构建工具)的任何额外选项都应该在-{}-test-command之前提供，-{}-test-command位于最后。
 
 \item 
--{}-build-two-config—Run the configuration stage for CMake twice.
+-{}-build-two-config—为CMake运行两次配置阶段。
 
 \item 
--{}-build-nocmake—Skip the configuration stage.
+-{}-build-nocmake—跳过配置阶段。
 
 \item 
--{}-build-generator-platform, --build-generator-toolset— Provide a generator-specific platform and toolset.
+-{}-build-generator-platform, --build-generator-toolset— 提供生成器特定的平台和工具集。
 
 \item 
--{}-build-makeprogram—Specify a make executable when using Make- or Ninja-based generators.
+-{}-build-makeprogram—当使用基于make或基于ninja的生成器时，需要指定make可执行文件。
 \end{itemize}
 
-Here are the arguments for controlling the build stage:
+以下是控制构建阶段的点:
 
 \begin{itemize}
 \item 
--{}-build-target—Build the specified target (instead of the all target).
+-{}-build-target—构建指定的目标(而不是所有目标)。
 	
 \item 
--{}-build-noclean—Build without building the clean target first.
+-{}-build-noclean—在不构建干净目标的情况下进行构建。
 	
 \item 
--{}-build-project—Provide the name of the built project.
+-{}-build-project—提供所构建项目的名称。
 \end{itemize}
 
-This is the argument used to control the test stage:
+用来控制测试阶段的参数:
 
 \begin{itemize}
 \item 
--{}-test-timeout—Limit the execution of tests (provided in seconds).
+-{}-test-timeout—限制测试的执行(以秒为单位)。
 \end{itemize}
 
-All that's left is to configure the regular testing mode after the -{}-test-command cmake argument.
+剩下的就是在-{}-test-command参数之后配置常规测试模式。
 
-\subsubsubsection{8.3.2\hspace{0.2cm}Test mode}
+\subsubsubsection{8.3.2\hspace{0.2cm}测试模式}
 
-Assuming that we have built our project and we're executing ctest in the build tree (or we're using the build-and-test wrapper), we can finally execute our tests.
+假设已经构建了项目，并且在构建树中执行ctest(或者使用构建-测试包装器)，可以执行测试。
 
-A simple ctest command without any arguments is usually enough to get satisfactory results in most scenarios. If all tests pass, ctest will return a 0 exit code. Use this in your CI/CD pipeline to prevent faulty commits from merging to your repository's production branch.
+大多数情况下，不带参数的简单ctest命令通常就足以获得令人满意的结果。若所有测试都通过，ctest将返回一个0退出代码。在CI/CD流水中使用此功能，以防止错误提交合并到存储库的生产分支。
 
-Writing good tests can be as challenging as writing the production code itself. We set up our SUT to be in a specific state, run a single test, and then tear down the SUT instance. This process is rather complex and can generate all sorts of issues: cross-test pollution, temporal and concurrency disruptions, resource contention, frozen execution due to deadlocks, and many others.
+编写好的测试可能与编写生产代码本身一样具有挑战性。将SUT设置为特定的状态，运行一个测试，然后销毁SUT实例。这个过程相当复杂，可能会产生各种各样的问题:交叉测试污染、时间和并发中断、资源争用、死锁导致的执行停滞，以及许多其他问题。
 
-We can employ strategies that help detect and solve some of these problems. CTest allows you to affect test selection, their order, produced output, time limits, repetition, and so on. The following sections will provide the necessary context and a brief overview of the most useful options. As always, refer to the CMake documentation for an exhaustive list.
+可以采用有助于发现和解决其中一些问题的策略。CTest允许选择测试、测试顺序、产生的输出、时间限制、重复次数等。以下各节将提供必要的背景和对最有用的选项的简要概述，请参阅CMake文档以获得详尽的列表。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Querying tests}
+\textbf{查询测试}
 
-The first thing we might need to do is to understand which tests are actually written for the project. CTest offers an -N option, which disables execution and only prints a list, as follows:
+可能需要做的第一件事是了解哪些测试实际上是为项目编写的。CTest提供了一个-N选项，其禁用执行，只打印一个列表，如下所示:
 
 \begin{tcblisting}{commandshell={}}
 # ctest -N
@@ -128,163 +128,163 @@ Test project /tmp/b
 Total Tests: 2
 \end{tcblisting}
 
-You might want to use -N with the filters described in the next section to check which tests would be executed when a filter is applied.
+可能希望在下一节中描述的筛选器中使用-N，以检查在应用筛选器时将执行哪些测试。
 
-If you need a JSON format that can be consumed by automated tooling, execute ctest with --show-only=json-v1.
+若需要一个可以自动化工具使用的JSON格式，请使用-{}-show-only=json-v1执行ctest。
 
-CTest also offers a mechanism to group tests with LABELS keyword. To list all available labels (without actually executing any tests), use -{}-print-labels. This option is helpful when tests are defined manually with the add\_test(<name> <testcommand>) command in your listfile, as you are then able to specify individual labels through test properties, like this:
+CTest还提供了一种用LABELS关键字对测试进行分组的机制。要列出所有可用的标签(而不实际执行任何测试)，请使用-{}-print-labels。当在列表文件中使用add\_test(<name> <testcommand>)指令手动定义测试时，这个选项很有用，可以通过测试属性指定单独的标签:
 
 \begin{lstlisting}[style=styleCMake]
 set_tests_properties(<name> PROPERTIES LABELS "<label>")
 \end{lstlisting} 
 
-On the other hand, the frameworks we'll discuss later provide automatic test discovery, which unfortunately doesn't support such a granular level of labeling yet.
+另一方面，稍后将讨论的框架提供自动测试发现，但它还不支持这种细粒度级别的标记。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Filtering tests}
+\textbf{过滤测试}
 
-There are plenty of reasons to run only a subset of all tests—the most common one might be the need to debug a single failing test or a module you're working on. There's no point in waiting for all other tests in that case. Other advanced testing scenarios will even go as far as partitioning test cases and distributing the load across a fleet of test runners.
+有很多理由只运行所有测试的一个子集——最常见的原因可能是需要调试单个失败的测试或正在处理的模块。这种情况下，没有必要等待所有其他测试。其他高级的测试场景甚至可以划分测试用例，并将负载分布到测试运行人员的团队中。
 
-These flags will filter tests according to the provided <r> regular expression (regex), as follows:
+这些标志将根据提供的<r>正则表达式(正则表达式)筛选测试，如下所示:
 
 \begin{itemize}
 \item 
--R <r>, -{}-tests-regex <r>—Only run tests with names matching <r>
+-R <r>, -{}-tests-regex <r>—只运行名称匹配<r>的测试
 
 \item 
--E <r>, -{}-exclude-regex <r>—Skip tests with names matching <r>
+-E <r>, -{}-exclude-regex <r>—跳过名称匹配<r>的测试
 
 \item 
--L <r>, -{}-label-regex <r>—Only run tests with labels matching <r>
+-L <r>, -{}-label-regex <r>—只运行标签匹配<r>的测试
 
 \item 
--LE <r>, -{}-label-exclude <regex>—Skip tests with labels matching <r>
+-LE <r>, -{}-label-exclude <regex>—跳过标签匹配<r>的测试
 \end{itemize}
 
-Advanced scenarios can be achieved with the -{}-tests-information option (or the shorter form, -I). Use this filter to provide a range in a comma-separated format: <start>, <end>, <step>. Any of the fields can be empty, and after one more comma, you can append individual <test-id> values to run them additionally. Here are some examples:
+高级场景可以通过-{}-tests-information选项(或缩写形式-i)实现。使用此过滤器以逗号分隔的格式提供一个范围:<start>，<end>，<step>。任何字段都可以为空，在多一个逗号之后，可以附加单个<test-id>值以额外运行它们。下面是一些例子:
 
 \begin{itemize}
 \item 
--I 3,, will skip tests 1 and 2 (execution starts from the third test)
+-I 3,, 将跳过测试1和2(从第三个测试开始执行)
 
 \item 
--I ,2, will only run the first and second test
+-I ,2, 只运行第一个和第二个测试
 
 \item 
--I 2,,3 will run every third test, starting from the second test in the row
+-I 2,,3 从一行中的第二个测试开始，每隔第三个测试运行一次
 
 \item 
--I ,0,,3,9,7 will only run the third, ninth, and seventh test
+-I ,0,,3,9,7 只运行第三、第九和第七个测试
 \end{itemize}
 
-Optionally, CTest will accept the filename containing the specification in the same format. As you might imagine, users prefer filtering tests by name. This option can be used to distribute tests across multiple machines for really large suites.
+CTest可以选择接受包含相同格式的规范的文件名，用户更喜欢按名称筛选测试。此选项可用于为非常大的套件在多台机器上分发测试。
 
-By default, the -I option used with -R will narrow the execution (only tests matching both requirements will run). Add the -U option if you need the union of the two to execute instead (any of the requirements will suffice).
+默认情况下，与-R一起使用的-I选项将缩小执行范围(只有同时满足两个需求的测试才会运行)。若需要执行两者的并集(需求都可以满足)，则添加-U选项。
 
-As mentioned before, you can use the -N option to check the outcome of filtering.
-
-\hspace*{\fill} \\ %插入空行
-\noindent
-\textbf{Shuffling tests}
-
-Writing unit tests can be tricky. One of the more surprising problems to encounter is test coupling, which is a situation where one test affects another by incompletely setting or clearing the state of SUT. In other words, the first test to execute can "leak" its state and pollute the second test. Such coupling is bad news because it introduces unknown, implicit relations between tests.
-
-What's worse, this kind of error is known to hide really well in the complexities of testing scenarios. We might detect it when it causes one of the tests to fail when it shouldn't, but the opposite is equally possible: an incorrect state causes the test to pass when it shouldn't. Such falsely passing tests give developers an illusion of security, which is even worse than not having tests at all. The assumption that the code is correctly tested may encourage bolder actions, leading to unexpected outcomes.
-
-One way of discovering such problems is by running each test in isolation. Usually, this is not the case when executing test runners straight from the testing framework without CTest. To run a single test, you'll need to pass a framework-specific argument to the test executable. This allows you to detect tests that are passing in the suite but are failing when executed on their own.
-
-CTest, on the other hand, effectively removes all memory-based cross-contamination of tests by implicitly executing every test case in a child CTest instance. You may even go further and add the -{}-force-new-ctest-process option to enforce separate processes.
-
-Unfortunately, this alone won't work if your tests are using external, contested resources such as GPUs, databases, or files. An additional precaution we can take is to simply randomize the order of test execution. Such disturbance is often enough to eventually detect such spuriously passing tests. CTest supports this strategy with the --schedulerandom option.
+如前所述，可以使用-N选项检查过滤的结果。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Handling failures}
+\textbf{乱序测试}
 
-Here's a famous quote from John C. Maxwell: "Fail early, fail often, but always fail forward." This is exactly what we want to do when running unit tests (and perhaps in other areas of life). Unless you're running your tests with a debugger attached, it's not easy to learn where you made a mistake as CTest will keep things brief and only list tests that failed, without actually printing any of their output.
+编写单元测试可能很棘手。遇到的一个更令人惊讶的问题是测试耦合，即一个测试通过不完全设置，或清除SUT状态而影响另一个测试的情况。换句话说，要执行的第一个测试可能“泄漏”状态并污染第二个测试。这样的耦合是坏消息，因为这引入了测试之间未知的隐式关系。
 
-Messages printed to stdout by the test case or the SUT might be invaluable to determine what was wrong exactly. To see them, we can run ctest with -{}-output-on-failure. Alternatively, setting the CTEST\_OUTPUT\_ON\_FAILURE environment variable will have the same effect.
+更糟糕的是，这种错误可以很好地隐藏在复杂的测试场景中。将导致一个测试在不应该的情况下失败时，可能会检测到它，但相反的情况也同样可能发生:不正确的状态导致测试在不应该的情况下通过。这种错误地通过测试给了开发人员一种安全的错觉，这甚至比根本不进行测试还要糟糕。对代码进行了正确测试的假设可能会鼓励更大胆的行动，导致意想不到的结果。
 
-Depending on the size of the solution, it might make sense to stop execution after any of the tests fail. This can be done by providing the -{}-stop-on-failure argument to ctest.
+发现此类问题的一种方法是单独运行每个测试。通常，在没有CTest的情况下直接从测试框架执行测试运行程序时，情况就不是这样了。要运行单个测试，您需要向测试可执行文件传递一个特定于框架的参数。这允许检测在套件中通过，但在单独执行时失败的测试。
 
-CTest stores the names of failed tests. In order to save time in lengthy test suites, we can focus on these failed tests and skip running the passing tests until the problem is solved.
+另一方面，CTest通过隐式执行子CTest实例中的每个测试用例，有效地消除了所有基于内存的测试交叉污染。甚至可以进一步添加-{}-force-new-ctest-process选项来强制单独的进程。
 
-This feature is enabled with the -{}-rerun-failed option (any other filters will be ignored). Remember to run all tests after solving all issues to make sure that no regression has been introduced in the meantime.
-
-When CTest doesn't detect any tests, it may mean two things: either tests aren't there or there's an issue with the project. By default, ctest will print a warning message and return a 0 exit code, to avoid muddying the waters. Most users will have enough context to understand which case they encountered and what to do next. However, in some environments, ctest will be executed always, as part of an automated pipeline.
-
-Then, we might need to explicitly say that a lack of tests should be interpreted as an error (and return a nonzero exit code). We can configure this behavior by providing the -{}-no-tests=error argument. For the opposite behavior (no warning), use the -{}-no-tests=ignore option.
+但当测试正在使用外部的、有争议的资源(如GPU、数据库或文件)，那么仅靠这一点是不起作用的。可以采取的另一个预防措施，简单地随机化测试执行的顺序。这种干扰往往足以最终检测出这种虚假通过的测试。CTest通 -{}-schedulerandom选项支持这种策略。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Repeating tests}
+\textbf{处理失败}
 
-Sooner or later in your career, you'll encounter tests that work correctly most of the time. I want to emphasize the word most. Once in a blue moon, these tests will fail for environmental reasons: because of incorrectly mocked time, issues with event loops, poor handling of asynchronous execution, parallelism, hash collisions, and other really complicated scenarios that don't occur on every run. These unreliable tests are called "flaky tests".
+John C. Maxwell有句名言:“尽早失败，经常失败，但总是向前失败。”这正是在运行单元测试时想要做的事情(也许在生活的其他领域也是如此)。除非在运行带有调试器的测试时，否则不容易了解在哪里犯了错误，因为CTest将保持内容简短，只列出失败的测试，而不实际打印任何输出。
 
-Such inconsistency seems a not-so-important problem. We might say that tests aren't a real production environment and this is the ultimate reason why they sometimes fail. There is a grain of truth in this: tests aren't meant to replicate every little detail, because it's not viable. Tests are a simulation, an approximation of what might happen, and that's usually good enough. Does it hurt to rerun tests if they'll pass on the next execution?
+由测试用例或SUT打印到标准输出的消息对于确定错误的确切位置可能非常有用。要查看它们，可以运行ctest with -{}-output-on-failure。或者，设置CTEST\_OUTPUT\_ON\_FAILURE环境变量也会有相同的效果。
 
-Actually, it does. There are three main concerns, as outlined here:
+根据解决方案的大小，在测试失败后停止执行可能是有意义的。可以通过-{}-stop-on-failure参数来实现。
+
+CTest存储失败测试的名称。为了在冗长的测试套件中节省时间，可以将重点放在这些失败的测试上，并在问题解决之前跳过运行通过的测试。
+
+该特性是通过-{}-rerun-failed选项启用的(其他过滤器都将忽略)。记住在解决所有问题后运行所有测试，以确保在此期间没有引入回归。
+
+当CTest没有检测到测试时，这可能意味着两件事:要么没有测试，要么项目有问题。默认情况下，ctest将打印一条警告消息并返回一个0退出代码，以避免混淆视听。大多数用户将有足够的上下文来理解他们遇到的情况和下一步要做什么。然而，某些环境中，ctest将始终作为自动化流水的一部分执行。
+
+然后，可能需要显式地表示，缺乏测试应该解释为错误(并返回非零退出码)。可以通过提供-{}-no-tests=error参数来配置这种行为。对于相反的行为(没有警告)，使用-{}-no-tests=ignore选项。
+
+\hspace*{\fill} \\ %插入空行
+\noindent
+\textbf{重复测试}
+
+在职业生涯中，迟早会遇到大多数时候都能正常工作的测试。这些测试极有可能因为环境原因而失败:错误的模拟时间、事件循环问题、异步执行的糟糕处理、并行性、哈希冲突，以及其他并非每次运行都发生的非常复杂的场景。这些不可靠的测试被称为“片状测试”。
+
+这种不一致似乎不是一个重要的问题，测试不是真正的生产环境，这是它们有时失败的最终原因。有一点是正确的:测试并不意味着复制每一个小细节，因为是不可行的。测试是一种模拟，对可能发生的情况的近似，这通常就足够了。若测试在下次执行时会通过，那么重新运行测试是否会造成伤害?
+
+事实上，确实如此。这里概述了三个主要问题:
 
 \begin{itemize}
 \item 
-If you have gathered enough flaky tests in your code base, they will become a serious obstacle to the smooth delivery of code changes. It's especially frustrating when you're in a hurry: either getting ready to go home on a Friday afternoon or delivering a critical fix to a severe issue impacting your customers.
+若代码库中收集了足够多的零散测试，将成为代码更改顺利交付的严重障碍。当赶时间的时候，尤其令人沮丧:要么是在周五下午准备回家，要么是在为影响客户的严重问题进行关键修复。
 
 \item 
-You can't be truly sure that your flaky tests are failing because of the inadequacy of the testing environment. It may be the opposite: they fail because they replicated a rare scenario that already occurs in production. It's just not obvious enough to raise an alert… yet.
+不能确定，是否由于测试环境的不适当，不可靠的测试正在失败。事实可能恰恰相反:它们失败是因为复制了生产中已经出现的罕见场景。只是还没有明显到可以拉响警报的程度。
 
 \item 
-It's not the test that's flaky—it's your code! The environment is wonky from time to time—as programmers, we deal with that in a deterministic manner. If SUT behaves this way, it's a sign of a serious error—for example, the code might be reading from uninitialized memory.
+不是测试有问题，而是代码有问题!环境有时是不稳定的，作为开发者，需要以确定的方式处理它。若SUT以这种方式运行，这是一个严重的错误——例如，代码可能正在从未初始化的内存中读取。
 \end{itemize}
 
-There isn't a perfect way to address all of the preceding cases—the multitude of possible reasons is simply too great. However, we might increase our chance of identifying flaky tests by running them repeatedly with the –repeat <mode>:<\#> option. Three modes are available, as outlined here:
+没有一种完美的方法可以解决上述所有情况——可能的原因太多了。但可以通过-repeat <mode>:<\#>选项反复运行测试，从而增加识别不可靠测试的机会。有三种模式可供选择，如下所述:
 
 \begin{itemize}
 \item 
-until-fail—Run test <\#> times; all runs have to pass.
+until-fail—运行测试<\#>次;所有的测试都必须通过。
 
 \item 
-until-pass—Run test up to <\#> times; it has to pass at least once. This is useful when dealing with tests that are known to be flaky, but too difficult and important to debug or disable.
+until-pass—运行测试到<\#>次;至少要通过一次。这在处理已知的不稳定、但太难调试或不能禁用的测试时非常有用。
 
 \item 
-after-timeout—Run test up to <\#> times but retry only if the test is timing out. Use it in busy test environments.
+after-timeout—运行测试直到<\#>次，但只有在测试超时时才重试。可以在负载过高的测试环境中使用。
 \end{itemize}
 
-A general recommendation is to debug flaky tests as quickly as possible or get rid of them if they can't be trusted to produce consistent results.
+一般的建议是尽可能快地调试不可靠的测试，若不能相信它们能产生一致的结果，就去掉它们。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Controlling output}
+\textbf{控制输出}
 
-Printing every piece of information to the screen every time would instantly get incredibly busy. CTest reduces the noise and collects the outputs of tests it executes to the log files, providing only the most useful information on regular runs. When things go bad and tests fail, you can expect a summary and possibly some logs if you enabled --output-onfailure, as mentioned earlier.
+每次将信息打印到屏幕上都会立刻变得异常繁忙。CTest减少噪音并收集它执行到日志文件的测试的输出，只提供关于常规运行的最有用的信息。当情况变糟，测试失败时，若启用了-{}-output-onfailure，就可以预期得到一个摘要和一些日志。
 
-I know from experience that "enough information" is enough until it isn't. Sometimes, we may want to see the output of passed tests too, perhaps to check if they're truly working (and not just silently stopping without an error). To get access to more verbose output, add the -V option (or -{}-verbose if you want to be explicit in your automated pipelines).
+从经验中知道，“足够的信息”是足够的。但有时，可能也想查看通过的测试的输出，也许是为了检查它们是否真的在工作(而不是没有错误地默默地停止)。要访问更详细的输出，添加-v选项(或者-{}-verbose，若想在自动化流水中显式显示)。
 
-If that's not enough, you might want -VV or -{}-extra-verbose. For extremely in-depth debugging, use -{}-debug (but be prepared for walls of text with all the details). If you're looking for the opposite, CTest also offers "Zen mode" enabled with -Q, or -{}-quiet. No output will be printed then (you can stop worrying and learn to love the calm). It seems that this option has no other use than to confuse people, but be aware that the output will still be stored in test files (in ./Testing/Temporary by default). Automated pipelines can check if the exit code is a nonzero value and collect the log files for further processing without littering the main output with details that may confuse developers not familiar with the product.
+若这还不够，可能需要-VV或-{}-extra-verbose。对于非常深入的调试，请使用-{}-debug(但要准备好面对包含所有细节的文本墙)。若想要的是相反的，CTest还提供“禅模式”，启用-q或-{}-quiet。没有输出将打印出来(可以停止担心，学会享受平静)。这个选项似乎除了迷惑人们之外没有其他用途，但是要注意输出仍然会存储在测试文件中(默认情况下在./Testing/Temporary中)。自动化流水可以检查退出代码是否为非零值，并收集日志文件以进行进一步处理，而不会用可能使不熟悉产品的开发人员感到困惑的信息(从而破坏主要输出)。
 
-To store the logs in a specific path, use the -O <file>, -{}-output-log <file> option. If you're suffering from lengthy outputs, there are two limit options to cap them to the given number of bytes per test: -{}-test-output-size-passed <size> and -{}-test-output-size-failed <size>.
+使用-O <file>，-{}-output-log <file>选项将日志存储在指定的路径中。若遇到了冗长的输出，可以使用两个限制选项来限制每个测试的给定字节数:-{}-test-output-size-passed <size>和-{}-test-output-size-failed <size>。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Miscellaneous}
+\textbf{其他选项}
 
-There are a few other useful options that can be useful for your everyday testing needs, as outlined here:
+对于日常测试需求，还有其他一些有用的选项:
 
 \begin{itemize}
 \item 
--C <cfg>, -{}-build-config <cfg> (multi-configuration generators only)— Use this to specify which configuration to test. The Debug configuration usually has debugging symbols, making things easier to understand, but Release should be tested too, as heavy optimization options could potentially affect the behavior of SUT.
+-C <cfg>, -{}-build-config <cfg> (仅支持多配置生成器)——指定要测试的配置。Debug配置通常有调试符号，但是Release也应该进行测试，因为大量的优化选项可能会潜在地影响SUT的行为。
 
 \item 
--j <jobs>, -{}-parallel <jobs>—This sets the number of tests executed in parallel. It's very useful to speed up the execution of long tests during development. Be mindful that in a busy environment (on a shared test runner), it might have an adverse effect due to scheduling. This can be slightly mitigated with the next option
+-j <jobs>, -{}-parallel <jobs>—这将设置并行执行的测试数。这对于在开发过程中加速长时间测试的执行非常有用。注意，在繁忙的环境中(在共享测试运行器上)，可能会由于调度而产生不利影响。下一个选项可以稍微缓解这种情况
 
 \item 
--{}-test-load <level>—Use this to schedule parallel tests in a fashion that CPU load doesn't exceed the <level> value (on a best-effort basis).
+-{}-test-load <level>—使用此选项调度并行测试，使CPU负载不超过<level>值(在尽最大努力的基础上)。
 
 \item 
--{}-timeout <seconds>—Use this to specify the default limit of time for a single test.
+-{}-timeout <seconds>—使用此命令指定单个测试的默认时间限制。
 \end{itemize}
 
-Now that we understand how to execute ctest in many different scenarios, let's learn how to add a simple test.
+现在已经了解了如何在许多不同的场景中执行ctest。接下来，让我们学习如何添加一个测试。
 
 
 
