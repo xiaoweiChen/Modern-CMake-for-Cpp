@@ -1,53 +1,53 @@
 
-Valgrind (\url{https://www.valgrind.org}) is an instrumentation framework that allows building dynamic analysis utilities – that is, analysis performed during a program's runtime. It offers an extensive tool suite that allows all kinds of investigations and checks. Some of the tools are as follows:
+Valgrind (\url{https://www.valgrind.org})是一个工具框架，允许构建动态分析实用程序——在程序运行时执行的分析。提供了很多工具套件，允许进行各种调查和检查。其中一些工具如下:
 
 \begin{itemize}
 \item 
-Memcheck – detects memory-management problems
+Memcheck – 检测内存管理问题
 
 \item 
-Cachegrind – profiles CPU caches, and pinpoints cache misses and other cache issues
+Cachegrind – 配置CPU缓存，并精确指出缓存缺失和其他缓存问题
 
 \item 
-Callgrind – an extension of Cachegrind with extra information on call graphs
+Callgrind – Cachegrind的扩展，提供了调用图的额外信息
 
 \item 
-Massif – a heap profiler that shows which parts of the program use heap over time
+Massif – 堆分析器，显示程序的哪些部分在一段时间内使用堆
 
 \item 
-Helgrind – a thread debugger, which helps with data race issues
+Helgrind – 线程调试器，帮助解决数据竞争问题
 
 \item 
-DRD – a lighter, limited version of Helgrind
+DRD – 更轻的限量版Helgrind
 \end{itemize}
 
-Every single tool from this list is extremely handy when the occasion is right. Most package managers know Valgrind and can install it on your OS with ease (it's possible that it's already installed if you're using Linux). In any case, the official website offers the source code, so you can build it yourself.
+合适的场合，列表中的每一个工具都非常方便。大多数包管理器都知道Valgrind，并且可以轻松地将它安装到操作系统上(若使用的是Linux，可能已经安装了它)。并且，官方网站提供了源代码，也可以自己构建。
 
-We'll limit our focus to the most useful application from the suite. When people refer to Valgrind, they very often mean Valgrind's Memcheck. Let's figure out how to use it with CMake – it will pave the way for the adoption of other tools, should you need them.
+我们将把重点限制在套件中最有用的应用程序上。当人们提到Valgrind时，通常指的是Valgrind的Memcheck。让我们了解一下如何在CMake中使用它——这将为采用其他工具铺平道路。
 
 \subsubsubsection{9.4.1\hspace{0.2cm}Memcheck}
 
-Memcheck can be indispensable when debugging memory issues. This subject is particularly tricky in C++, as programmers have tremendous control over how they manage memory. All kinds of mistakes are possible: reading unallocated memory, reading memory that was already freed, attempting to free memory more than once, and writing to incorrect addresses. Developers obviously try to avoid these, but since these bugs are so inconspicuous, they can sneak into even the simplest programs. Sometimes, all it takes is a forgotten variable initialization and we're in a pinch.
+调试内存问题时，Memcheck不可缺少。因为开发者对如何管理内存有很大的控制权，所以这个主题在C++中特别棘手。各种各样的错误都有可能发生:读取未分配的内存、读取已经释放的内存、多次尝试释放内存以及写入不正确的地址。开发人员显然试图避免这些错误，但由于这些错误是如此不显眼，甚至可以潜入最简单的程序。有时，只需要一个遗忘的变量初始化，我们就会陷入困境。
 
-Invoking Memcheck looks like this:
+使用Memcheck的方式是这样的:
 
 \begin{tcblisting}{commandshell={}}
 valgrind [valgrind-options] tested-binary [binary-options]
 \end{tcblisting}
 
-Memcheck is the default tool of Valgrind, but you can also select it explicitly:
+Memcheck是Valgrind的默认工具，也可以显式选择它:
 
 \begin{tcblisting}{commandshell={}}
 valgrind --tool=memcheck tested-binary
 \end{tcblisting}
 
-Running Memcheck is expensive; the manual (see the link in Further reading) says that programs instrumented with it can be 10–15 times slower. To avoid waiting for Valgrind every time we run tests, we'll create a separate target that will be called from the command line whenever we need to test our code. Ideally, the developer will run it before merging their change to the default branch of the repository. This can be done with an early Git hook or added as a step in the CI pipeline. To build a custom target, we'll use the following command after the generation stage has been completed:
+运行Memcheck的开销很大。手册(参见扩展阅读中的链接)里说，它可使程序慢10-15倍。为了避免每次运行测试时都等待Valgrind，将创建一个单独的目标，在需要测试代码时从命令行调用该目标。理想情况下，开发人员将在将更改合并到存储库的默认分支之前运行它。这可以通过Git钩子完成，也可以作为CI流水中的一个步骤。要构建一个自定义目标，需要在生成阶段完成后使用以下命令:
 
 \begin{tcblisting}{commandshell={}}
 cmake --build <build-tree> -t valgrind
 \end{tcblisting}
 
-Adding such a target isn't very difficult:
+添加这样一个目标并不难:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter09/03-valgrind/cmake/Valgrind.cmake
@@ -62,32 +62,32 @@ function(AddValgrind target)
 endfunction()
 \end{lstlisting}
 
-In this example, we created a CMake module (so we can reuse the same file across projects) wrapping function that will accept the target to be tested. Two things happen here:
+本例中，创建了一个CMake模块(因此我们可以跨项目重用相同的文件)包装函数，将接受要测试的目标。这里会发生两件事:
 
 \begin{itemize}
 \item 
-CMake searches default system paths for the valgrind executable and stores it in the VALGRIND\_PATH variable. The REQUIRED keyword will stop the configuration with an error if the binary wasn't found.
+CMake搜索valgrind可执行文件的默认系统路径，并将其存储在VALGRIND\_PATH变量中。若没有找到二进制文件，REQUIRED关键字将停止配置并报错。
 
 \item 
-A custom target, valgrind, is created; it will execute the Memcheck tool on the target binary. We also added an option to always check for memory leaks.
+创建了一个自定义目标valgrind，将在目标二进制文件上执行Memcheck工具，这里还添加了一个检查内存泄漏的选项。
 \end{itemize}
 
-When it comes to Valgrind options, we can provide them as command-line arguments and also in the following:
+当涉及到Valgrind选项时，可以将它们作为命令行参数提供，也可以使用以下方式提供:
 
 \begin{enumerate}
 \item 
-The ~/.valgrindrc file (in your home directory)
+~/.valgrindrc文件(在主目录中)
 
 \item 
-The \$VALGRIND\_OPTS environment variable
+\$VALGRIND\_OPTS环境变量
 
 \item 
-The ./.valgrindrc file (in the working directory)
+./.Valgrindrc文件(在工作目录中)
 \end{enumerate}
 
-These are checked in that order. Also, note that the last file will only be considered if it belongs to the current user, is a regular file, and isn't marked as world-writable. This is a safety mechanism, as options given to Valgrind can be potentially harmful.
+这些是按顺序检查的。另外，最后一个文件只有在属于当前用户、是常规文件且没有标记为全球可写的情况下才会考虑。因为给Valgrind的选项可能是潜在有害的，所以这是一种安全机制。
 
-To use the AddValgrind function, we should provide it with a unit\_tests target:
+要使用AddValgrind函数，应该为它提供一个unit\_tests目标:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter09/03-valgrind/test/CMakeLists.txt (fragment)
@@ -99,19 +99,19 @@ include(Valgrind)
 AddValgrind(unit_tests)
 \end{lstlisting}
 
-Remember that generating build trees with the Debug config allows Valgrind to tap into the debug information, which makes its output much clearer. Let's see how this works in practice:
+使用Debug配置生成构建树允许Valgrind进入调试信息，这使它的输出更加清晰。来看看这在实践中是如何工作的:
 
 \begin{tcblisting}{commandshell={}}
 # cmake --build <build-tree> -t valgrind
 \end{tcblisting}
 
-This will build the sut and unit\_tests targets:
+这将构建sut和unit\_tests目标:
 
 \begin{tcblisting}{commandshell={}}
 [100%] Built target unit_tests
 \end{tcblisting}
 
-Start the execution of Memcheck, which will provide us with general information:
+开始执行Memcheck，其为我们提供基本信息:
 
 \begin{tcblisting}{commandshell={}}
 ==954== Memcheck, a memory error detector
@@ -122,9 +122,9 @@ copyright info
 ==954== Command: ./unit_tests
 \end{tcblisting}
 
-The ==954== prefix contains the process ID. This is added to distinguish Valgrind commentary from the output of the tested process.
+前缀==954==包含进程ID。添加这一点是为了将Valgrind注释与测试过程的输出区分开来。
 
-Next, tests are run as usual with gtest:
+接下来，使用gtest运行测试:
 
 \begin{tcblisting}{commandshell={}}
 [==========] Running 3 tests from 2 test suites.
@@ -134,7 +134,7 @@ Next, tests are run as usual with gtest:
 [ PASSED ] 3 tests.
 \end{tcblisting}
 
-At the end, a summary is presented:
+最后，进行总结:
 
 \begin{tcblisting}{commandshell={}}
 ==954==
@@ -144,7 +144,7 @@ At the end, a summary is presented:
 bytes allocated
 \end{tcblisting}
 
-Uh-oh! We are still using at least 1 byte. Allocations made with malloc() and new aren't matched with appropriate free() and delete operations. It seems we have a memory leak in our program. Valgrind provides more details to find it:
+啊哦!我们仍然使用至少1个字节。使用malloc()和new进行的分配与适当的free()和delete操作不匹配，程序似乎有内存泄漏。Valgrind提供了更多的细节来找到它:
 
 \begin{tcblisting}{commandshell={}}
 ==954== 1 bytes in 1 blocks are definitely lost in loss record
@@ -157,7 +157,7 @@ so)
 Test::TestBody() (run_test.cpp:14)
 \end{tcblisting}
 
-Lines starting with by 0x<address> indicate individual functions in a call stack. I've truncated the output (it had some noise from GTest) to focus on the interesting bit – the topmost function and source reference, run()(run.cpp:6): Finally, the summary is found at the bottom:
+以by 0x<address>开头的行表示调用堆栈中的各个函数。这里截断了输出(有一些输出来自GTest)，以关注有趣的部分——最顶层的函数和源引用，run()(run.cpp:6):最后，在底部找到总结信息:
 
 \begin{tcblisting}{commandshell={}}
 ==954== LEAK SUMMARY:
@@ -171,9 +171,9 @@ Lines starting with by 0x<address> indicate individual functions in a call stack
 from 0)
 \end{tcblisting}
 
-Valgrind does a very good job of finding very intricate issues. On occasion, it's capable of digging even deeper to find questionable situations that can't be categorized automatically. Such discoveries will be accounted for in the possibly lost row.
+Valgrind在发现非常复杂的问题方面做得很好。有时，还能够更深入地挖掘，找到无法自动分类的可疑情况。这些发现将归入可能丢失的那一类。
 
-Let's see what the issue found by Memcheck was in this case:
+来看看Memcheck在这个案例中发现了什么问题:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter09/03-valgrind/src/run.cpp
@@ -183,37 +183,37 @@ Let's see what the issue found by Memcheck was in this case:
 using namespace std;
 
 int run() {
-	auto c = new Calc();
+	auto c = new Calc(); // ERROR
 	cout << "2 + 2 = " << c->Sum(2, 2) << endl;
 	cout << "3 * 3 = " << c->Multiply(3, 3) << endl;
 	return 0;
 }
 \end{lstlisting}
 
-That's right: the highlighted code is faulty. We do, in fact, create an object that isn't deleted before the test ends. This is the exact reason why having extensive test coverage is so important.
+没错:突出显示的代码是错误的。事实上，我们确实创建了一个在测试结束之前没有删除的对象。这就是为什么拥有广泛的测试覆盖率是如此重要的确切原因。
 
-Valgrind is an extremely useful tool, but it can get a bit verbose when dealing with more complex programs. There must be a way to collect that information in a more manageable form.
+Valgrind是一个非常有用的工具，但是在处理更复杂的程序时，其输出会变得有点冗长。必须有一种方法以更易于管理的形式收集这些信息。
 
 \subsubsubsection{9.4.2\hspace{0.2cm}Memcheck-Cover}
 
-Commercial IDEs such as CLion natively support parsing Valgrind's output to something that can be easily navigated through GUI without scrolling through the console window to find the right message. If your editor doesn't have this option, you still can get a much clearer view of the errors by using a third-party report generator. Memcheck-cover, written by David Garcin, offers a nicer experience in the form of a generated HTML file, as shown in Figure 9.1:
+商业IDE(如CLion)本身支持将Valgrind的输出解析为可以在GUI中轻松导航的内容，而无需通过控制台窗口滚动来查找正确的消息。若编辑器没有这个选项，仍然可以通过使用第三方报告生成器更清楚地查看错误。David Garcin编写的Memcheck-cover以生成HTML文件的形式提供了更好的体验，如图9.1所示:
 
 \begin{center}
 \includegraphics[width=0.8\textwidth]{content/3/chapter9/images/1.jpg}\\
-Figure 9.1 – A report generated by memcheck-cover
+图9.1 由memcheck-cover生成的报告
 \end{center}
 
-This neat little project is available on GitHub (\url{https://github.com/Farigh/memcheck-cover}); it requires Valgrind and gawk (GNU AWK tool). To use it, we'll prepare a setup function in a separate CMake module. It will consist of two parts:
+这个整洁的小项目可以在GitHub(\url{https://github.com/Farigh/memcheck-cover})，需要Valgrind和gawk (GNU AWK工具)。要使用它，需要在单独的CMake模块中准备一个setup函数。其由两部分组成:
 
 \begin{itemize}
 \item 
-Fetching and configuring the tool
+获取和配置工具
 
 \item 
-Adding a custom target that executes Valgrind and generates a report
+添加执行Valgrind并生成报告的自定义目标
 \end{itemize}
 
-The configuration looks as follows:
+配置如下所示:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter09/04-memcheck/cmake/Memcheck.cmake
@@ -229,9 +229,9 @@ function(AddMemcheck target)
 set(MEMCHECK_PATH ${memcheck-cover_SOURCE_DIR}/bin)
 \end{lstlisting}
 
-In the first part, we follow the same practices as with a regular dependency: include the FetchContent module, and specify the project's repository and desired Git tag with FetchContent\_Declare. Next, we initiate the fetch process and configure the path to the binary using the memcheck-cover\_SOURCE\_DIR variable set by FetchContent\_Populate (called implicitly by FetchContent\_MakeAvailable).
+第一部分中，我们遵循与常规依赖项相同的实践:包括FetchContent模块，并使用FetchContent\_Declare指定项目的存储库和所需的Git标记。接下来，我们启动获取过程，并使用FetchContent\_Populate(由FetchContent\_MakeAvailable隐式调用)设置的memcheck-cover\_SOURCE\_DIR变量配置到二进制文件的路径。
 
-The second part of the function is creating the target to generate reports. We'll call it memcheck (so that it doesn't overlap with the previous valgrind target if we want to keep both options for some reason):
+该函数的第二部分是创建生成报告的目标，将其命名为memcheck(这样就不会与之前的valgrind目标重叠):
 
 \begin{lstlisting}[style=styleCMake]
 # chapter09/04-memcheck/cmake/Memcheck.cmake (continued)
@@ -248,19 +248,19 @@ The second part of the function is creating the target to generate reports. We'l
 endfunction()
 \end{lstlisting}
 
-This happens in two commands:
+这发生在两个命令中:
 
 \begin{enumerate}
 \item 
-First, we'll run the memcheck\_runner.sh wrapper script, which will execute Valgrind's Memcheck and collect the output to the file provided with the -o argument.
+首先，运行memcheck\_runner.sh包装器脚本，该脚本将执行Valgrind的memcheck并将输出收集到带有-o参数的文件中。
 
 \item 
-Then, we'll parse the output and create the report with generate\_html\_report.sh. This script requires input and output directories provided with the -i and -o arguments.
+然后，将解析输出并使用generate\_html\_report.sh创建报告。这个脚本需要使用-i和-o参数提供的输入和输出目录。
 \end{enumerate}
 
-Both steps should be executed in the CMAKE\_BINARY\_DIR working directory so that the unit test binary can access files through relative paths if needed.
+这两个步骤都应该在CMAKE\_BINARY\_DIR工作目录中执行，以便单元测试二进制可以在需要时通过相对路径访问文件。
 
-The last thing we need to add to our list files is, of course, a call to this function. It has the same pattern as AddValgrind:
+需要添加到列表文件的最后一件事当然是对这个函数的调用，与AddValgrind有相同的模式:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter09/04-memcheck/test/CMakeLists.txt (fragment)
@@ -269,13 +269,13 @@ include(Memcheck)
 AddMemcheck(unit_tests)
 \end{lstlisting}
 
-After generating a buildsystem with the Debug config, we can build the target with the following:
+用Debug配置生成一个构建系统之后，可以用以下方法构建目标:
 
 \begin{tcblisting}{commandshell={}}
 cmake --build <build-tree> -t memcheck
 \end{tcblisting}
 
-And then we can enjoy our formatted report. Well, to truly enjoy it we'll need to add that missing delete c; in run.cpp so that it stops complaining (or, better yet, use a smart pointer instead).
+然后，就可以享受格式化的报告了。为了真正享受它，需要在run.cpp中添加缺失的delete c;，使它停止抱怨(或者，使用智能指针代替)。
 
 
 

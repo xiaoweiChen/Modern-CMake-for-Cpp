@@ -1,20 +1,22 @@
-Professional developers generally follow rules. They say that senior developers know when to break one (as they can justify the need to). On the other hand, it is said that very senior developers don't break rules because it's a waste of time having to keep explaining their reasons to others. I say, pick your battles and focus on things that actually matter and have a tangible impact on the product.
+专业开发人员通常遵循规则，说高级开发人员知道什么时候打破规则(他们可以证明需要这样做)。另一方面，据说非常资深的开发人员不会违反规则，因为不断向他人解释自己的理由是浪费时间。我说，选择你认可的方式即可，专注于真正重要的事情，对产品有实际影响的事情。
 
-When it comes to coding style and formatting, programmers are presented with a myriad of choices: should we use tabs or spaces for indentation? If spaces, how many? What is the limit of characters in a column? How about in a file? Such choices don't impact the behavior of the program in most cases, but they do generate a lot of noise and start lengthy discussions that don't bring much value to a product.
+当谈到编码风格和格式时，程序员面临着无数的选择:我们应该使用制表符。还是空格来缩进?若是空格，有多少?一列的字符限制是多少?在文件中呢?大多数情况下，这样的选择不会影响程序的行为，但它们确实会产生很多杂声，并开始冗长的讨论，而这些讨论不会给产品带来太多价值。
 
-Some practices are commonly agreed upon, but most of the time, we're debating personal preference and anecdotal evidence. After all, enforcing 80 characters in a column over 120 is an arbitrary choice. It doesn't really matter what we're going to choose as long as we're consistent. Inconsistency in style is bad, as it affects an important aspect of the software – the readability of the code.
+有些做法是公认的，但大多数时候是在争论个人偏好。毕竟，在超过120的列中强制执行80个字符是一种随意的选择。选择什么并不重要，只要一致。风格一致是挺好，因为它会影响软件代码的可读性。
 
-The best way to avoid it is to use a formatting tool such as clang-format. This can alert us that the code isn't formatted properly and even fix things that stand out if we let it.
-Here's an example of a command that formats code:
+避免这种情况的最好方法是使用格式化工具，如clang-format。若代码的格式不正确我们会得到提醒，甚至可以进行修复。
+
+下面是一个格式化代码的命令示例:
 
 \begin{tcblisting}{commandshell={}}
 clang-format -i --style=LLVM filename1.cpp filename2.cpp
 \end{tcblisting}
 
-The -i option tells ClangFormat to edit files in place. -{}-style selects which supported formatting style should be used: LLVM, Google, Chromium, Mozilla, WebKit, or custom, provided from file (there are links to details in the Further reading section).
-Of course, we don't want to execute this command manually every time we make a change; CMake should take care of this as part of the building process. We already know how to find clang-format in the system (we'll need to install it manually beforehand).
+-i选项告诉ClangFormat就地编辑文件。-{}-style选择应该使用的支持的格式化样式:LLVM，Google，Chromium, Mozilla, WebKit，或自定义(以文件方式提供)(在扩展阅读部分有详细的链接)。
 
-What we haven't discussed yet is the process of applying an external tool to all of our source files. To do it, we'll create a convenient function that can be included from the cmake directory:
+当然，我们不希望每次进行更改时都手动执行此命令，CMake应该将此作为构建过程的一部分来处理。我们已经知道如何在系统中找到clang-format(需要手动安装)。
+
+我们还没有讨论如何将外部工具应用到所有源文件的过程。为此，我们会创建一个方便的函数，可以放在cmake目录中:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter09/01-formatting/cmake/Format.cmake
@@ -32,32 +34,32 @@ function(Format target directory)
 endfunction()
 \end{lstlisting}
 
-The Format function takes two arguments: target and directory. It will format all source files from directory, right before target is built.
+Format函数接受两个参数:target和directory，在目标构建之前，其将格式化目录中的所有源文件。
 
-Technically, not all files in directory must necessarily belong to target (and target sources can potentially be in multiple directories). However, finding all the source files and headers that belong to the target (and possible dependent targets) is a very complex process, especially when we need to filter out headers that belong to external libraries and shouldn't be formatted. It's just more manageable to work on directories in this scenario. We can just call the function for each directory of the formatted target.
+从技术上讲，并非目录中的所有文件都必须属于目标(而且目标源可能位于多个目录中)。然而，查找属于目标(以及可能的依赖目标)的所有源文件和头文件是一个复杂的过程，特别是当需要过滤掉属于外部库，且是不应该格式化的头文件。这种情况下，处理目录更容易管理。我们可以为格式化目标的每个目录调用函数。
 
-This function has the following steps:
+这个函数有以下步骤:
 
 \begin{enumerate}
 \item 
-Find the clang-format binary installed in the system. The REQUIRED keyword will stop the configuration with an error if the binary wasn't found.
+找到系统中安装的clang-format二进制文件。若没有找到二进制文件，REQUIRED关键字将停止配置并报错。
 
 \item 
-Create a list of file extensions to format (to be used as a globbing expression).
+创建要格式化的文件扩展名列表(用作globbing表达式)。
 
 \item 
-Prepend each expression with a path to directory.
+每个表达式前面加上到目录的路径。
 
 \item 
-Recursively search for sources and headers (using the previously created list), skip directories, and put their paths into the SOURCE\_FILES variable.
+递归地搜索源和头文件(使用前面创建的列表)，跳过目录，并将它们的路径放入SOURCE\_FILES变量中。
 
 \item 
-Hook the formatting command as the PRE\_BUILD step of target.
+将格式化命令作为目标的PRE\_BUILD步骤。
 \end{enumerate}
 
-This command will work well for small-to-medium code bases. For high amounts of files, we'd need to transform absolute file paths to relative paths and execute formatting using directory as a working directory (the list(TRANSFORM) command is useful here). This might be necessary because commands passed to the shell have a limit on their length (usually about 13,000 characters) and too many long paths simply won't fit.
+该命令将很好地用于中小型代码基础。对于大量的文件，需要将绝对文件路径转换为相对路径，并使用目录作为工作目录执行格式化(list(transform)在这里很有用)。这可能是必要的，因为传递给shell的命令有长度限制(通常约为13000个字符)，太长的路径根本不适合。
 
-Let's see how we can use this function in practice. We'll use the following project structure:
+来看看如何在实践中使用这个函数，将使用以下项目结构:
 
 \begin{tcblisting}{commandshell={}}
 - CMakeLists.txt
@@ -70,7 +72,7 @@ Let's see how we can use this function in practice. We'll use the following proj
     |- main.cpp
 \end{tcblisting}
 
-First, we'll need to set up the project and add the cmake directory to the module path so that we can include it later:
+首先，需要设置项目，并将cmake目录添加到模块路径中，以便稍后包含:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter09/01-formatting/CMakeLists.txt
@@ -82,7 +84,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 add_subdirectory(src bin)
 \end{lstlisting}
 
-Having that set, let's fill in the list file for the src directory:
+设置好之后，为src目录完成列表文件:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter09/01-formatting/src/CMakeLists.txt
@@ -92,9 +94,9 @@ include(Format)
 Format(main .)
 \end{lstlisting}
 
-This is simple and to the point. We have created an executable target main, included the Format.cmake module, and called the Format() function for the main target in the current directory (src).
+我们已经创建了一个可执行的目标主文件，包括Format.cmake模块，并为当前目录(src)中的主目标使用Format()函数。
 
-Now, we need some unformatted source files. The header is just a simple unused function:
+现在，需要一些未格式化的源文件。头文件中只是一个简单的未使用的函数:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter09/01-formatting/src/header.h
@@ -102,19 +104,20 @@ Now, we need some unformatted source files. The header is just a simple unused f
 int unused() { return 2 + 2; }
 \end{lstlisting}
 
-We'll also add a source file with way too much whitespace:
+我们还将添加一个有太多空格的源文件:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter09/01-formatting/src/main.cpp
 
 #include <iostream>
-using namespace std;
-int main() {
-	cout << "Hello, world!" << endl;
-}
+	using namespace std;
+		int main() {
+			
+			cout << "Hello, world!" << endl;
+		}
 \end{lstlisting}
 
-We're almost set. All that's left is the configuration file of the formatter (which is enabled with the -{}-style=file argument in the command line):
+差不多准备好了。剩下的就是格式化器的配置文件(通过命令行中的-{}style=file参数启用):
 
 \begin{lstlisting}[style=stylePython]
 # chapter09/01-formatting/.clang-format
@@ -127,9 +130,9 @@ AllowShortFunctionsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: false
 \end{lstlisting}
 
-Clang Format will scan the parent directories for the .clang-format file, which specifies the exact formatting rules. This allows us to specify every little detail, or to customize one of the standards mentioned earlier. In my case, I've chosen to start with Google's coding style and throw in a few tweaks: limit columns to 140 characters, remove tabs, and allow short loops, functions, and if statements.
+Clang Format将扫描父目录以找到.clang-format文件，该文件指定了确切的格式化规则。这允许指定每个小细节，或者定制前面提到的标准之一。在这个例子中，选择从Google的编码风格开始，并进行了一些调整:将列限制为140个字符，删除制表符，并允许短循环、函数和if语句。
 
-Let's see how files have changed after building this project (formatting happens automatically before compilation):
+来看看在构建这个项目之后文件是如何变化的(在编译之前会自动格式化):
 
 \begin{lstlisting}[style=styleCXX]
 // chapter09/01-formatting/src/header.h (formatted)
@@ -139,7 +142,7 @@ int unused() {
 }
 \end{lstlisting}
 
-The header file was formatted, even though it isn't used by the target; short functions aren't allowed on a single line. The formatter added new lines, just as expected. The main.cpp file also looks pretty slick now:
+头文件格式化了，即使它没有被目标使用，短函数不允许在一行中出现。正如预期的那样，格式化程序添加了新行。main.cpp文件现在看起来也很舒服:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter09/01-formatting/src/main.cpp (formatted)
@@ -151,12 +154,12 @@ int main() {
 }
 \end{lstlisting}
 
-Unnecessary whitespace was removed and indentations were standardized.
+删除不必要的空白，标准化缩进。
 
-Adding the automated formatter isn't too big of an effort and will save you a bunch of time in code reviews. If you've ever had to amend a commit to correct some whitespace, you know the feeling. Consistent formatting keeps your code neat without any effort.
+添加自动格式化器并不需要花费太多精力，而且会为代码检查方面节省大量时间。若曾经不得不修改提交以纠正一些空白，就会了解这种感觉，一致的格式会使代码更简洁。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-Applying formatting to an existing code base will most likely introduce a big one-off change to the majority of the files in the repository. This may cause a lot of merge conflicts if you (or your teammates) have some ongoing work. It's best to coordinate such efforts to happen after all pending changes are done. If this isn't possible, consider gradual adoption, perhaps on a per-directory basis. Your fellow developers will thank you.
+将格式化应用于现有的代码库，很可能会对存储库中的大多数文件引入一个大的一次性更改。若(或您的团队成员)有一些正在进行的工作，这可能会导致许多合并冲突。最好是在完成所有挂起的修改之后协调这些工作。若不行，则考虑逐步进行，也许是在每个目录的基础上。您的开发同事会感谢您的。
 \end{tcolorbox}
 
-The formatter is a great and simple tool to bring the visual aspect of the code together, but it isn't a fully fledged program analysis tool (it focuses mostly on whitespace). To deal with more advanced scenarios, we need to reach for utilities capable of understanding the program's source to perform a static analysis.
+格式化器是一个伟大而简单的工具，可以将代码的可视化方面整合在一起，但不是一个成熟的程序分析工具(主要关注空白)。要处理更高级的场景，我们更需要使用能够理解程序源代码的实用程序，来进行代码静态分析。
