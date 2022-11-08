@@ -1,15 +1,16 @@
 
 
-On the surface, it may seem that complexities associated with proper testing are so great, they aren't worth the effort. It's striking how much code out there is running without any tests at all, the primary argument being that testing your software is a daunting endeavor. I'll add: even more so if done manually. Unfortunately, without rigorous automated testing, visibility of any issues in the code is incomplete or non-existent. Untested code is often quicker to write (not always), but it's definitely much slower to read, refactor, and fix.
+从表面上看，与适当的测试相关的复杂性似乎是如此之大，不值得付出努力。有多少代码在没有测试的情况下运行，主要的争论是，测试软件是一项令人生畏的努力。我将补充:若手动完成，情况会更糟。不幸的是，若没有严格的自动化测试，代码中问题的可见性都是不完整的或不存在的。未测试的代码通常编写得更快(并非总是如此)，但读取、重构和修复肯定要慢得多。
 
-In this chapter, we outlined some key reasons for going forward with tests from the get-go. One of the most compelling is mental health and a good night's sleep. Not one developer lies in their bed thinking: I can't wait to be woken up in a few hours to put out some fires and fix bugs. But seriously: catching errors before deploying them to production can be a life-saver for you (and the company).
+本章中，概述了从一开始就进行测试的一些关键原因。其中最重要的是心理健康和良好的睡眠。没有一个开发人员躺在床上想:我等不及几个小时后被叫醒，去解决一些问题和bug。但严肃地说:在将错误部署到生产环境之前捕获它们可以挽救您(和公司)的生命。
 
-When it comes to testing utilities, CMake really shows its true strength. CTest can do wonders in detecting faulty tests: isolation, shuffling, repetition, timeouts. All these techniques are extremely handy and available through a simple flag straight from the command line. We also learned how we can use CTest to list tests, filter them, and control the output of test cases, but most importantly, we now know the true power of adopting a standard solution across the board. Any project built with CMake can be tested exactly the same, without investigating any details about its internals.
+说到测试实用程序，CMake真正展示了它的实力。CTest在检测错误测试(隔离、乱序、重复、超时)方面可以发挥神奇的作用。所有这些技术都非常方便，可以通过命令行中的一个简单标志直接获得。还学习了如何使用CTest来列出测试、筛选它们并控制测试用例的输出，但最重要的是，我们现在知道了全面采用标准解决方案的真正力量。用CMake构建的项目都可以使用相同的方式测试，而不需要细究其内部的细节。
 
-Next, we structured our project to simplify the process of testing and reuse the same object files between production code and test runners. It was interesting to write our own test runner, but maybe let's focus on the actual problem our program should solve and invest time in embracing a popular third-party testing framework.
+接下来，我们构建了项目，以简化测试过程，并在生产代码和测试运行程序之间重用相同的目标文件。编写自己的测试运行程序是很有趣的，但这里应该把重点放在程序解决的实际问题上，并投入时间采用流行的第三方测试框架。
 
-Speaking of which, we learned the very basics of Catch2 and GTest. We further dove into details of the GMock library and understood how test doubles work to make true unit tests possible. Lastly, we set up some reporting with LCOV. After all, there's nothing better than hard data to prove that our solution is, in fact, fully tested.
-In the next chapter, we'll discuss more useful tooling to improve the quality of our source code and find issues we didn't even know existed.
+说到这里，我们学习了Catch2和GTest的基本知识。进一步深入研究了GMock库的细节，了解了测试双精度的工作原理，从而使真正的单元测试成为可能。最后，我们用LCOV设置了一些报告。毕竟，没有什么比硬数据更能证明解决方案是经过充分测试的了。
+
+下一章中，将讨论更多有用的工具，以提高源代码的质量，并发现甚至不知道存在的问题。
 
 
 

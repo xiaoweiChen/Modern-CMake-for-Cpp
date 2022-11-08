@@ -1,23 +1,23 @@
 
-The previous section proves that it isn't extremely complicated to write a tiny unit-testing driver. It wasn't pretty, but believe it or not, professional developers actually do like to reinvent the wheel (theirs will be fancier, rounder, and faster than the legacy one). Don't fall into this trap: you'll create so much boilerplate that it could become a separate project. Introducing a popular unit-test framework to your solution aligns it to a standard that transcends projects and companies and will get you free updates and extensions for cheap. You can't lose.
+上一节证明了编写一个小型单元测试驱动程序并不复杂，但信不信由你，专业开发人员实际上喜欢重新发明轮子(会比传统的更漂亮、更圆、更快)。不要落入这个陷阱:这样会创建太多的样板文件，可能会成为一个独立的项目。在解决方案中引入流行的单元测试框架，使其与超越项目和公司的标准保持一致，可以以低廉的成本提供免费的更新和扩展。你，值得拥有！
 
-How do we add a unit-testing framework to our project? Well, write tests in implementation files according to the chosen framework's rules and link these tests with a test runner provided by the framework. Test runners are your entry points that will start the execution of selected tests. Unlike the basic unit\_tests.cpp file we saw earlier in the chapter, many of them will detect all the tests automatically. Beautiful.
+如何将单元测试框架添加到项目中?根据所选框架的规则在实现文件中编写测试，并将这些测试与框架提供的测试运行器链接起来。测试运行程序是将开始执行选定测试的入口点。与前面看到的基本unit\_tests.cpp文件不同，它们中的许多将自动检测所有测试。很漂亮！
 
-There are two unit-testing frameworks I decided to introduce in this chapter. I picked them for the following reasons:
+我会在本章中介绍两个单元测试框架，选择他们的原因如下所示:
 
 \begin{itemize}
 \item 
-Catch2 is a relatively easy-to-learn and well-supported and -documented project. It offers simple test cases, but also provides elegant macros for behavior-driven development (BDD). It lacks some features but can be coupled with external tools when needed. You can visit its home page here: \url{https://github.com/ catchorg/Catch2}.
+Catch2是一个相对容易学习、支持良好且有文档记录的项目。提供了简单的测试用例，但也为行为驱动开发(BDD)提供了优雅的宏。但缺少一些功能，可以在需要时与外部工具结合使用。可以浏览它的主页:\url{https://github.com/catchorg/Catch2}。
 
 \item 
-GTest is also very convenient, but much more advanced. Its key features are a rich set of assertions, user-defined assertions, death tests, fatal and non-fatal failures, value- and type-parametrized tests, XML test report generation, and mocking. The last one is delivered in the GMock module available from the same repository: \url{https://github.com/google/googletest}.
+GTest也非常方便，但更高级。主要特性是一组丰富的断言、用户定义的断言、死亡测试、致命和非致命失败、值和类型参数化测试、XML测试报告生成和模拟。最后一个是在GMock模块中交付的，可从相同的存储库获得:\url{https://github.com/google/googletest}。
 \end{itemize}
 
-Which framework you should choose depends on your learning approach and the size of the project. If you prefer a slow, gradual process and don't need all the bells and whistles, go with Catch2. Developers who prefer starting from the deep end and need a lot of firepower will benefit from choosing GTest.
+应该选择哪种框架取决于自己额偏好和项目的规模。若更喜欢一个缓慢、渐进的过程，不需要那些花哨的东西，那就用Catch2吧。喜欢从深层入手，并有大量开发人员可用的话，可以选择GTest。
 
 \subsubsubsection{8.5.1\hspace{0.2cm}Catch2}
 
-This framework, maintained by Martin Hořeňovský, is great for beginners and smaller projects. This is not to say that it can't handle the bigger applications, as long as you keep in mind that there will be areas where additional tooling may be necessary. I would deviate too much from the topic of this book if I went into it in detail, but I still want to give you an overview. To start, let's take a brief look at the implementation of a unit test we can write for our Calc class, as follows:
+这个由Martin维护的框架Hořeňovský非常适合初学者和较小的项目。这并不是说它不能处理更大的应用程序，在某些领域可能需要额外的工具。若详细地讲下去，就会偏离本书的主题，但还是进行一下概述。首先，可以为Calc类编写的单元测试的实现，如下所示:
 
 \begin{lstlisting}[style=styleCXX]
 //chapter08/03-catch2/test/calc_test.cpp
@@ -36,11 +36,11 @@ TEST_CASE("MultiplyMultipliesTwoInts", "[calc]") {
 }
 \end{lstlisting} 
 
-That's it. These few lines are much more powerful than what we wrote in the previous examples. CHECK() macros will not only verify if the expectation is met—they will actually collect all failed assertions and present them in a single output so that you can do a single fix and avoid constant recompilation.
+这几行代码比我们在前面的例子中所写的要强大得多。CHECK()宏不仅会验证是否满足预期——实际上会收集所有失败的断言，并将它们显示在单个输出中，以便可以进行修复，并避免重新编译。
 
-Now, to the best part: we don't need to add these tests anywhere or even inform CMake they exist; you can forget about add\_test() because you won't need it again. Catch2 will automatically register your tests with CTest if you let it. Adding the framework is very easy after configuring the project as described in the previous section. We need to bring it into the project with FetchContent().
+现在，不需要在任何地方添加这些测试，甚至不需要通知CMake它们的存在;您可以忘记add\_test()，因为不需要，Catch2将自动向CTest注册测试。如前一节所述，在配置了项目之后，添加框架非常容易。只需要使用FetchContent()将其引入项目中即可。
 
-There are two major versions to choose from: v2 and v3. Version 2 is offered as a singleheader library (just \#include <catch2/catch.hpp>) for C++11, and will be eventually deprecated by Version 3. This one has multiple headers, is compiled as a static library, and requires C++14. Of course, it's recommended to go with the newer release if you can use modern C++ (yes—C++11 is no longer considered "modern"). When working with Catch2, you should pick a Git tag and pin it in your listfile. In other words, it is not guaranteed that an upgrade won't break your code (it likely won't, but don't risk going with the devel branch if you don't need to). To fetch Catch2, we need to provide a URL to the repository, as follows:
+有两个主要版本可供选择:v2和v3。版本2作为C++11的单头库(仅\#include <catch2/catch.hpp>)提供，最终将在版本3中弃用。它有多个头文件，可以编译为静态库，需要支持C++14。当然，若还没使用现代C++(是的，C++11不再认为是“现代的”)编译器，建议使用更新的版本。在使用Catch2时，应该选择一个Git标记并将其固定在列表文件中。换句话说，不能保证升级不会破坏测试的代码(很可能不会，但若不需要，就不要冒险使用devel分支)。为了获取Catch2，需要向存储库提供一个URL:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter08/03-catch2/test/CMakeLists.txt
@@ -53,7 +53,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 \end{lstlisting} 
 
-Then, we need to define our unit\_tests target and link it with sut and with a framework-provided entry point and Catch2::Catch2WithMain library. Since Catch2 provides its own main() function, we no longer use the unit\_tests.cpp file (this file can be removed). The code is illustrated in the following snippet:
+然后，需要定义unit\_tests目标，并将其与sut和框架提供的入口点以及Catch2::Catch2WithMain库链接起来。因为Catch2提供了main()函数，所以这里不再使用unit\_tests.cpp文件(这个文件可以被删除)。代码如下所示:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter08/03-catch2/test/CMakeLists.txt (continued)
@@ -65,7 +65,7 @@ target_link_libraries(unit_tests PRIVATE
 						sut Catch2::Catch2WithMain)
 \end{lstlisting} 
 
-Lastly, we use a catch\_discover\_tests() command defined in the module provided by Catch2 that will detect all test cases from unit\_tests and register them with CTest, as follows:
+最后，使用catch\_discover\_tests()指令，在Catch2提供的模块中，它将从unit\_tests中检测所有测试用例，并将它们注册到CTest:
 
 \begin{lstlisting}[style=styleCMake]
 #chapter08/03-catch2/test/CMakeLists.txt (continued)
@@ -75,7 +75,7 @@ include(Catch)
 catch_discover_tests(unit_tests)
 \end{lstlisting} 
 
-Done. We just added a unit-testing framework to our solution. Let's now see it in practice. The output from the test runner looks like this:
+完成了。我们已经在解决方案中添加了一个单元测试框架。现在让来看看它在实践中的应用。测试运行器的输出如下所示:
 
 \begin{tcblisting}{commandshell={}}
 # ./test/unit_tests
@@ -95,11 +95,11 @@ test cases: 3 | 2 passed | 1 failed
 assertions: 3 | 2 passed | 1 failed
 \end{tcblisting}
 
-The direct execution of the runner (compiled unit\_test executable) is slightly faster, but normally, you'd like to use the ctest -{}-output-on-failure command instead of executing the test runner directly to get all the CTest benefits mentioned earlier. Note also that Catch2 was able to conveniently expand the sut.Multiply(3, 4) expression to 9, providing us with more context.
+直接执行运行程序(已编译的unit\_test可执行文件)稍微快一些，但通常情况下，应该使用ctest -{}-output-on-failure命令，而不是直接执行测试运行程序，以获得前面提到的所有ctest好处。注意，Catch2能够方便地扩展sut。
 
-This concludes the setup of Catch2. If you ever need to add more tests, just create implementation files and insert their paths to the list of sources for the unit\_tests target.
+这就是Catch2的设置。若需要添加更多的测试，只需创建实现文件并将它们的路径插入到unit\_tests目标的源列表中即可。
 
-This framework has quite a few interesting tricks up its sleeve: event listeners, data generators, and micro benchmarking, but it doesn't provide a mocking functionality. If you don't know what mocks are, read on—we'll cover that in a moment. Nevertheless, if you find yourself in need of mocks, you can always add one of the mocking frameworks next to Catch2, as listed here:
+这个框架有很多有趣的技巧:事件监听器、数据生成器和微基准测试，但没有提供模拟功能。若不知道mock是什么，请继续阅读。然而，若发现自己需要模拟，可以在Catch2旁边添加一个模拟框架，如下所示:
 
 \begin{itemize}
 \item 
@@ -112,19 +112,19 @@ Hippomocks (\url{https://github.com/dascandy/hippomocks})
 Trompeloeil (\url{https://github.com/rollbear/trompeloeil})
 \end{itemize}
 
-That said, for a more streamlined, advanced experience, there is another framework worth looking at.
+也就是说，对于更精简、更高级的体验，还有另一个框架值得一看。
 
 \subsubsubsection{8.5.2\hspace{0.2cm}GTest}
 
-There are a few important advantages when it comes to using GTest: it's been around quite a long time and is highly recognized in the C++ community (thus, multiple IDEs support it natively). The company behind the biggest search engine on the planet is maintaining and using it extensively, so it's quite unlikely it will become stale or abandoned any time soon. It can test C++11 and up, so if you're stuck in a bit older environment, you're in luck.
+使用GTest有几个重要的优点:在C++社区中得到了高度认可(因此，多个IDE本身就支持它)。这个星球上最大的搜索引擎背后的公司正在维护和使用它，所以其不太可能在短时间内变得过时或抛弃。它可以测试C++11及以上版本，所以若使用旧一些的环境，就不必担心了。
 
-The GTest repository comprises two projects: GTest (the main testing framework) and GMock (a library adding the mocking functionality). That means you can download both with a single FetchContent() call.
+GTest存储库包含两个项目:GTest(主要测试框架)和GMock(一个添加了模拟功能的库)。可以通过一个FetchContent()调用来下载两者。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Using GTest}
+\textbf{使用GTest}
 
-To use GTest, our project needs to follow the directions from the Structuring our projects for testing section. This is how we'd write a unit test in this framework:
+使用GTest，项目需要遵循结构化测试部分的指导。下面是如何在这个框架中编写单元测试:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/04-gtest/test/calc_test.cpp
@@ -146,21 +146,21 @@ TEST_F(CalcTestSuite, MultiplyMultipliesTwoInts) {
 }
 \end{lstlisting} 
 
-Since this example will be used also in GMock, I decided to put tests in a single CalcTestSuite class. Test suites are group related tests, so they can reuse the same fields, methods, setup (initialization), and teardown (cleanup) steps. To create a test suite, we need to declare a new class inheriting from ::testing::Test and put reused elements (fields, methods) in its protected section.
+这个例子也将在GMock中使用，所以可以将测试放在一个单独的CalcTestSuite类中。测试套件是与组相关的测试，因此可以重用相同的字段、方法、设置(初始化)和拆卸(清理)步骤。要创建测试套件，需要声明一个继承自::testing::Test的新类，并将重用的元素(字段、方法)放在其受保护的部分。
 
-Each test case in a test suite is declared with a TEST\_F() preprocessor macro that stringifies provided names for the test suite and test case (there's also a simple TEST() macro that defines unaffiliated tests). Because we defined Calc sut\_ in the class, each test case can access it as if the test were a method of CalcTestSuite. In reality, each test case is run in its own class implicitly inheriting from CalcTestSuite (that's why we need the protected keyword). Note that reused fields are not meant to share any data between consecutive tests—their function is to keep the code DRY.
+测试套件中的每个测试用例都用TEST\_F()预处理器宏声明，该宏将测试套件和测试用例提供的名称字符串化(还有一个简单的TEST()宏，定义了不相关的测试)。因为在类中定义了Calc sut\_，所以每个测试用例都可以访问，就好像测试是CalcTestSuite的一个方法一样。实际上，每个测试用例都在自己的类中运行，隐式地继承自CalcTestSuite(这就是需要protected的原因)。注意，重用字段并不意味着要在连续的测试之间共享数据——其功能是为了保持代码DRY。
 
-GTest doesn't offer natural syntax for assertions like Catch2 does. Instead, we need to use an explicit comparison, such as EXPECT\_EQ(). By convention, we put the expected value as the first argument and the actual value as the second argument. There are many other assertions, helpers, and macros worth learning about.
+GTest不像Catch2那样为断言提供自然的语法。而需要使用显式比较，例如EXPECT\_EQ()。按照惯例，将期望值作为第一个参数，将实际值作为第二个参数。还有许多其他的断言、帮助器和宏值得学习。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-For detailed information on GTest, see the official reference material(\url{https://google.github.io/googletest/})
+有关GTest的详细信息，请参阅官方参考资料(\url{https://google.github.io/googletest/})
 \end{tcolorbox}
 
-To add this dependency to our project, we need to decide which version to use. Unlike Catch2, GTest is leaning toward a "live at head" philosophy (originating from the Abseil project that GTest depends on). It states: "If you build our dependency from source and follow our API, you shouldn't have any issues." (Refer to the Further reading section for more details.)
+要将这个依赖项添加到我们的项目中，我们需要决定使用哪个版本。与Catch2不同，GTest倾向于“live at head”的理念(源自GTest所依赖的Abseil项目)。它指出:“若从源代码构建依赖并遵循API，应该不会有任何问题。”(更多细节请参考扩展阅读部分。)
 
-If you're comfortable following this rule (and building from source isn't an issue), set your Git tag to the master branch. Otherwise, pick a release from the GTest repository. We can also choose to search the host machine for the installed copy first, as CMake offers a bundled FindGTest module to find the local installation. Since v3.20, CMake will use the upstream GTestConfig.cmake config-file, if it exists, instead of relying on the find-module, which might become outdated.
+若愿意遵循此规则(并且从源代码构建也不是问题)，可以将Git标记设置为主分支。否则，从GTest存储库中选择一个版本。还可以选择首先在主机上搜索已安装的副本，因为CMake提供了一个绑定的FindGTest模块来查找本地安装。从3.20版本开始，CMake将使用上游的GTestConfig.cmake配置文件，将替换依赖于查找模块的方式。
 
-In any case, adding a dependency on GTest looks like this:
+在GTest上添加一个依赖是这样的:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter08/04-gtest/test/CMakeLists.txt
@@ -175,9 +175,9 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 \end{lstlisting}
 
-We're following the same method as with Catch2—execute FetchContent() and build the framework from source. The only difference is the addition of the set(gtest...) command, as recommended by GTest authors to prevent overriding the parent project's compiler and linker settings on Windows.
+遵循与Catch2执行FetchContent()相同的方法，并从源代码构建框架。唯一的区别是添加了set(gtest…)，这是gtest作者推荐的，以防止在Windows上覆盖父项目的编译器和链接器设置。
 
-Finally, we can declare our test runner executable, link it with gtest\_main, and have our test cases automatically discovered thanks to the built-in CMake GoogleTest module, as illustrated here: 
+最后，可以声明可执行的测试运行器，并链接到gtest\_main，并通过内置的CMake GoogleTest模块自动找到我们的测试用例:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter08/04-gtest/test/CMakeLists.txt (continued)
@@ -190,7 +190,7 @@ include(GoogleTest)
 gtest_discover_tests(unit_tests)
 \end{lstlisting}
 
-This completes the setup of GTest. The output of the test runner is much more verbose than from Catch2, but we can pass -{}-gtest\_brief=1 to limit it to failures only, as follows:
+这就完成了GTest的设置。测试运行器的输出比Catch2的输出要详细得多，但是我们可以通过-{}-gtest\_brief=1将其限制为仅适用于失败用例:
 
 \begin{tcblisting}{commandshell={}}
 # ./test/unit_tests --gtest_brief=1
@@ -204,34 +204,34 @@ Expected equality of these values:
 [ PASSED ] 2 tests.
 \end{tcblisting}
 
-Luckily, even the noisy output will be suppressed when running from CTest (unless we explicitly enable it on the ctest -{}-output-on-failure command line).
+在从CTest运行时，会抑制噪声输出(除非我们在ctest -{}-output-on-failure命令行显式地启用它)。
 
-Now that we have the framework in place, let's discuss mocking. After all, no test can be truly "unit" when it's coupled with other elements.
+现在已经有了框架，再来讨论一下mock。毕竟，当测试与其他元素结合在一起时，不可能是真正的“单元”。
 
 \subsubsubsection{8.5.3\hspace{0.2cm}GMock}
 
-Writing true unit tests is about executing a piece of code in isolation from other pieces of code. Such a unit is understood as a self-contained element, either a class or a component. Of course, hardly any programs written in C++ have all of their units in clear isolation from others. Most likely, your code will rely heavily on some form of association relationship between classes. There's only one problem with that: objects of such a class will require objects of another class, and those will require yet another. Before you know it, your entire solution is participating in a "unit test". Even worse, your code might be coupled to an external system and be dependent on its state—for example, specific records in a database, network packets coming in, or specific files stored on the disk.
+编写真正的单元测试是要与其他代码隔离的情况下执行一段代码。这样的单元可以理解为一个自包含的元素，要么是类，要么是组件。当然，若没有用C++编写的程序，那么所有单元都是与其他单元隔离。最有可能的是，代码将严重依赖于类之间的某种形式的关联关系。这样做只有一个问题:这样一个类的对象将需要另一个类的对象，而另一个类又需要另一个类的对象。在知道之前，整个解决方案都参与了“单元测试”。更糟糕的是，代码可能与外部系统耦合，并依赖于它的状态——例如，数据库中的特定记录、传入的网络数据包或存储在磁盘上的特定文件。
 
-To decouple units for the purpose of testing, developers use test doubles or a special version of classes that are used by a class under test. Some examples include fakes, stubs, and mocks. Here are some rough definitions of these:
+为了解耦单元以进行测试，开发人员使用测试副本或测试类使用的特殊版本的类。一些例子包括fake，stub和mock。以下是一些粗略的定义:
 
 \begin{itemize}
 \item 
-A fake is a limited implementation of some more complex class. An example could be an in-memory map instead of an actual database client.
+fake是一些更复杂类的有限实现。一个例子可能是内存中的映射，而不是实际的数据库客户机。
 
 \item 
-A stub provides specific, canned answers to method calls, limited to responses used by tests. It can also record which methods were called and how many times this occurred.
+stub为方法调用提供特定的、固定的回答，仅限于测试使用的响应。还可以记录调用了哪些方法，以及调用了多少次。
 
 \item 
-A mock is a bit more extended version of a stub. It will additionally verify if methods were called during the test as expected.
+mock是stub的扩展版本，其还将验证在测试期间是否按预期调用了方法。
 \end{itemize}
 
-Such a test double is created at the beginning of a test and provided as an argument to the constructor of a tested class to be used instead of a real object. This mechanism is called dependency injection. The problem with simple test doubles is the fact that they are too simple. To simulate behaviors for different test scenarios, we would have to provide many different doubles, one for every state in which the coupled object can be. This isn't very practical and would scatter testing code across too many files. This is where GMock comes in: it allows developers to create a generic test double for a specific class and define its behavior for every test in line. GMock calls these doubles "mocks", but in reality, they're a mixture of all the aforementioned types, depending on the occasion.
+这样的测试双精度对象在测试开始时创建，并作为参数提供给被测试类的构造函数，以代替实际对象。这种机制称为依赖注入。简单测试双精度的问题是它们太简单了。为了模拟不同测试场景的行为，必须提供许多不同的double，一个用于耦合对象可能处于的每个状态。这不是很实际，而且会将测试代码分散到太多的文件中。这就是GMock的用得上的地方:允许开发人员为特定的类创建通用测试副本，并为每行测试定义其行为。GMock称这些双精度对象为“mock”，但它们是上述所有类型的混合，具体取决于场合。
 
-Consider the following example: let's add a functionality to our Calc class that would add a random number to the provided argument. It will be represented by an AddRandomNumber() method that returns this sum as an int. How would we confirm the fact that the returned value is really an exact sum of something random and the value provided to the class? As we know, relying on randomness is key to many important processes, and if we're using it incorrectly, we might suffer all kinds of consequences. Checking all random numbers until we exhaust all possibilities isn't very practical.
+考虑下面的例子:向Calc类添加一个函数，将向提供的参数添加一个随机数。它将由AddRandomNumber()方法表示，该方法将这个和作为int返回。我们如何确认返回值确实是某个随机值和提供给类的值的精确和?依赖随机性是许多重要过程的关键，若不正确地使用它，可能会有很严重的后果。检查所有的随机数，直到穷尽所有的可能性是不可能的。
 
-To test it, we need to wrap a random number generator in a class that could be mocked (or, in other words, replaced with a mock). Mocks will allow us to force a specific response, which is to "fake" generation of a random number. Calc will use that value in AddRandomNumber() and allow us to check if the returned value from that method meets expectations. The clean separation of random number generation to another unit is an added value (as we'll be able to exchange one type of generator for another).
+为了测试，需要在一个可以模拟的类中包装一个随机数生成器(或者，换句话说，用模拟替换)。mock将允许我们强制一个特定的响应，即“假”生成一个随机数。Calc将在AddRandomNumber()中使用该值，并允许检查从该方法返回的值是否符合预期。随机数生成与另一个单元的清晰分离是一种附加价值(因为可以将一种类型的生成器交换为另一种类型的生成器)。
 
-Let's start with the public interface for the abstract generator. This will allow us to implement it in the actual generator and a mock, enabling us to use them interchangeably. We'll execute the following code:
+从抽象生成器的公共接口开始，可以在实际的生成器和mock中实现它，使我们能够交换地使用。我们将执行以下代码:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/05-gmock/src/rng.h
@@ -244,7 +244,7 @@ class RandomNumberGenerator {
 };
 \end{lstlisting}
 
-Classes implementing this interface will provide us with a random number from the Get() method. Note the virtual keyword—it has to be on all methods to be mocked unless we'd like to get involved with more complex template-based mocking. We also need to remember to add a virtual destructor. Next, we have to extend our Calc class to accept and store the generator, as follows:
+实现此接口的类将为我们提供来自Get()方法的随机数。注意虚拟关键字—必须在所有要被模拟的方法上，除非想涉及更复杂的基于模板的模拟。还需要记住添加一个虚析构函数。接下来，必须扩展我们的Calc类来接受和存储生成器:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/05-gmock/src/calc.h
@@ -262,7 +262,7 @@ public:
 };
 \end{lstlisting}
 
-We included the header and added a method to provide random additions. Additionally, a field to store the pointer to the generator was created, along with a parameterized constructor. This is how dependency injection works in practice. Now, we implement these methods, as follows:
+我们包含了头文件并添加了一个方法来提供随机添加。此外，还创建了一个用于存储指向生成器的指针的字段，以及一个参数化的构造函数。这就是依赖注入在实践中的工作方式。现在，我们实现了这些方法:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/05-gmock/src/calc.cpp
@@ -286,7 +286,7 @@ int Calc::AddRandomNumber(int a) {
 }
 \end{lstlisting}
 
-In the constructor, we're assigning the provided pointer to a class field. We're then using this field in AddRandomNumber() to fetch the generated value. The production code will use a real number generator; the tests will use mocks. Remember that we need to dereference pointers to enable polymorphism. As a bonus, we could possibly create different generator classes for different implementations. I just need one: a Mersenne Twister pseudo-random generator with uniform distribution, as illustrated in the following code snippet:
+构造函数中，提供的指针赋值给类字段。然后，使用AddRandomNumber()中的这个字段来获取生成的值。生产代码将使用实数生成器，这些测试将使用模拟，需要解引用指针来启用多态性。也可以为不同的实现创建不同的生成器类。这里只需要一个:一个具有均匀分布的Mersenne Twister伪随机生成器:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/05-gmock/src/rng_mt19937.cpp
@@ -301,7 +301,7 @@ int RandomNumberGeneratorMt19937::Get() {
 }
 \end{lstlisting}
 
-This code isn't very efficient, but it will suffice for this simple example. The purpose is to generate numbers from 1 to 6 and return them to the caller. The header for this class is as simple as possible, as we can see here:
+这段代码的效率不是很高，但对于这个简单的示例来说已经足够了。其目的是生成从1到6的数字并将它们返回给调用者。这个类的头文件非常简单:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/05-gmock/src/rng_mt19937.h
@@ -314,7 +314,7 @@ public:
 };
 \end{lstlisting}
 
-And this is how we're using it in the production code:
+这是生产代码中使用它的方式:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/05-gmock/src/run.cpp
@@ -334,7 +334,7 @@ int run() {
 }
 \end{lstlisting}
 
-We have created a generator and passed a pointer to it to the constructor of Calc. Everything is ready, and we can start writing our mock. To keep things organized, developers usually put mocks in a separate test/mocks directory. To prevent ambiguity, the header name has a \_mock suffix. Here is the code we will execute:
+我们已经创建了一个生成器，并将指向它的指针传递给Calc的构造函数。一切准备就绪，可以开始编写mock了。为了使事情有条理，开发人员通常将模拟放在一个单独的test/mocks目录中。为了防止歧义，头名称有一个\_mock后缀。下面是我们要执行的代码:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/05-gmock/test/mocks/rng_mock.h
@@ -349,14 +349,14 @@ public:
 };
 \end{lstlisting}
 
-After adding the gmock.h header, we can declare our mock. As planned, it's a class implementing the RandomNumberGenerator interface. Instead of writing methods ourselves, we need to use MOCK\_METHOD macros provided by GMock. These are informing the framework as to which methods from the interface should be mocked. Use the following format (note the parentheses):
+添加了gmock.h头文件之后，可以声明我们的mock。按计划，它是一个实现RandomNumberGenerator接口的类。不需要自己编写方法，而是需要使用GMock提供的MOCK\_METHOD宏，告诉框架应该模拟接口中的哪些方法。使用以下格式(注意括号):
 
 \begin{lstlisting}[style=styleCXX]
 MOCK_METHOD(<return type>, <method name>,
 (<argument list>), (<keywords>))
 \end{lstlisting}
 
-We're ready to use the mock in our test suite (previous test cases are omited for brevity), as follows:
+我们准备在测试套件中使用模拟(为了简洁起见，省略了之前的测试用例):
 
 \begin{lstlisting}[style=styleCXX]
 // chapter08/05-gmock/test/calc_test.cpp
@@ -379,13 +379,13 @@ TEST_F(CalcTestSuite, AddRandomNumberAddsThree) {
 }
 \end{lstlisting}
 
-Let's break down the changes: we added the new header and created a new field for rng\_mock\_ in the test suite. Next, the mock's address is passed to the constructor of sut\_. We can do that because fields are initialized in order of declaration (rng\_mock\_ precedes sut\_).
+分析一下这些更改:我加了新的头文件，并在测试套件中为rng\_mock\_创建了一个新字段。接下来，模拟的地址传递给sut\_的构造函数，因为字段是按声明顺序初始化的(rng\_mock\_在sut\_之前)。
 
-In our test case, we call GMock's EXPECT\_CALL macro on the Get() method of rng\_mock\_. This tells the framework to fail the test if the Get() method isn't called during execution. The Times chained call explicitly states how many calls must happen for the test to pass. WillOnce determines what the mocking framework does after the method is called (it returns 3).
+测试用例中，在rng\_mock\_的Get()方法上调用GMock的EXPECT\_CALL宏。这告诉框架，若在执行期间没有调用Get()方法，则测试失败。Times链式调用显式地声明了，通过测试必须发生多少个调用。WillOnce确定在调用方法后模拟框架做什么(它返回3)。
 
-By virtue of using GMock, we're able to express mocked behavior alongside the expected outcome. This greatly improves readability and eases the maintenance of tests. Most importantly, though, it provides elasticity in each test case, as we get to differentiate what happens with a single, expressive statement.
+通过使用GMock，就能够在预期结果的同时表达模拟的行为。这极大地提高了可读性并简化了测试的维护。然而，最重要的是，它在每个测试用例中都提供了足够的弹性，我们可以区分单个表达语句所发生的情况。
 
-Finally, we need to make sure that the gmock library is linked with a test runner. To achieve that, we add it to the target\_link\_libraries() list, as follows:
+最后，需要确保gmock库与测试运行器链接。为了实现这一点，将它添加到target\_link\_libraries()中:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter08/05-gmock/test/CMakeLists.txt
@@ -409,7 +409,7 @@ include(GoogleTest)
 gtest_discover_tests(unit_tests)
 \end{lstlisting}
 
-Now, we can enjoy all the benefits of GTest frameworks. Both GTest and GMock are very advanced tools with a vast multitude of concepts, utilities, and helpers for different occasions. This example (despite being a bit lengthy) only touches the surface of what's possible. I encourage you to incorporate them in your projects as they will greatly increase the quality of your code. A good place to start with GMock is the Mocking for Dummies page in the official documentation (you can find a link to this in the Further reading section).
+现在，可以享受GTest框架的所有好处了。GTest和GMock都是非常高级的工具，具有用于不同场合的概念、程序和帮助程序。这个例子(尽管有点长)只触及了表面。但我鼓励您将它们合并到项目中，因为这将极大地提高项目的代码质量。从官方文档中的mock for Dummies页面开始学习GMock的一个好地方(可以在扩展阅读部分中找到该页面的链接)。
 
-Having tests in place, we should somehow measure what's tested and what isn't and strive to improve the situation. It's best to use automated tools that will collect and report this information.
+有了适当的测试，应该以某种方式衡量哪些测试了，哪些没有，并努力改善情况。最好使用自动工具来收集和报告这些信息。
 
