@@ -1,6 +1,6 @@
-How can we make the targets of project A available to the consuming project B? Usually, we'd reach for the find\_package() command, but that would mean that we'd need to create a package and install it on the system. That approach is useful, but it takes some work. Sometimes, we just need a really quick way to build a project and make its targets available for other projects.
+如何使项目A的目标对项目B可用?通常，会使用find\_package()指令，但这需要创建一个包并将其安装到系统上。这种方法没问题，但需要一些工作。有时，只需要一种非常快速的方法来构建一个项目，并使其目标可用于其他项目。
 
-We could save some time by including the main listfile of A: it contains all the target definitions already. Unfortunately, it also potentially contains a lot of other things: global configuration, requirements, CMake commands with side effects, additional dependencies, and perhaps targets that we don't want in B (such as unit tests). So, let's not do that. It's better to achieve this by providing a target export file that the consuming project, B, can include with the include() command:
+可以通过包含A的主列表文件来节省一些时间:它已经包含了所有的目标定义，但还可能包含许多其他东西:全局配置、需求、带有副作用的CMake指令、附加依赖项，以及在B中不想要的目标(例如单元测试)。所以，不要这样做。最好是通过提供消费项目B可以使用include()包含的目标导出文件来实现这一点:
 
 \begin{lstlisting}[style=styleCMake]
 cmake_minimum_required(VERSION 3.20.0)
@@ -8,9 +8,9 @@ project(B)
 include(/path/to/project-A/ProjectATargets.cmake)
 \end{lstlisting}
 
-Doing this will provide definitions (commands such as add\_library() and add\_executable()) for all the targets of A with the correct properties set.
+这样做将为A的所有目标提供定义(如add\_library()和add\_executable()等指令)，并设置正确的属性。
 
-Of course, we're not going to write such a file manually – that wouldn't be a very DRY approach. CMake can generate these files for us with the export() command, which has the following signature:
+当然，不需要手动编写这样一个文件——不是非常DRY的方法。CMake可以用export()指令生成这些文件，该命令具有以下签名:
 
 \begin{lstlisting}[style=styleCMake]
 export(TARGETS [target1 [target2 [...]]]
@@ -18,20 +18,20 @@ export(TARGETS [target1 [target2 [...]]]
 	[EXPORT_LINK_INTERFACE_LIBRARIES])
 \end{lstlisting}
 
-We must supply all the targets that we'd like to export after the TARGET keyword and provide the destination filename after FILE. The other arguments are optional:
+必须在TARGET关键字之后提供想要导出的所有目标，并在FILE之后提供目标文件名。其他参数可选:
 
 \begin{itemize}
 \item 
-NAMESPACE is recommended as a hint, stating that the target has been imported from other projects.
+建议使用NAMESPACE作为提示，说明目标已从其他项目导入。
 
 \item 
-APPEND tells CMake that it shouldn't erase the contents of the file before writing.
+APPEND告诉CMake，不应该在写入之前擦除文件的内容。
 
 \item 
-EXPORT\_LINK\_INTERFACE\_LIBRARIES will export target link dependencies (including imported and config-specific variants).
+EXPORT\_LINK\_INTERFACE\_LIBRARIES将导出目标链接依赖项(包括导入的和配置特定的变量)。
 \end{itemize}
 
-Let's see this in action with our example Calc library, which provides two simple methods:
+用我们的示例Calc库来看看它的作用，其提供了两个简单的方法:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter-11/01-export/src/include/calc/calc.h
@@ -41,7 +41,7 @@ int Sum(int a, int b);
 int Multiply(int a, int b);
 \end{lstlisting}
 
-We declare its target like so:
+我们这样声明其目标:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-11/01-export/src/CMakeLists.txt
@@ -50,7 +50,7 @@ add_library(calc STATIC calc.cpp)
 target_include_directories(calc INTERFACE include)
 \end{lstlisting}
 
-Then, we ask CMake to generate the export file with the export(TARGETS) command:
+然后，用export(TARGETS)指令生成导出文件:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-11/01-export/CMakeLists.txt (fragment)
@@ -66,18 +66,18 @@ export(TARGETS calc
 ...
 \end{lstlisting}
 
-In the preceding code, we can see that the EXPORT\_DIR variable has been set to the cmake subdirectory of the build tree (as per the convention for .cmake files). Then, we export the target declaration file, CalcTargets.cmake, with a single target calc that's visible as Calc::calc for projects that will include this file.
+前面的代码中，可以看到EXPORT\_DIR变量设置为构建树的cmake子目录(根据.cmake文件的约定)。导出目标声明文件CalcTargets.cmake，对于包含此文件的项目，有一个可见的calc::calc目标calc。
 
-Note that this export file is not a package yet. And, more importantly, all the paths in this file are absolute and hardcoded to the build tree. In other words, they're non-relocatable (we'll discuss this in the Understanding the issues with relocatable targets section).
+注意，这个导出文件还不是一个包。而且，这个文件中的所有路径都是绝对的，并且硬编码到构建树中。换句话说，它们是不可重定位的。
 
-The export() command also has a shorter version:
+export()指令也有一个简短的版本:
 
 \begin{lstlisting}[style=styleCMake]
 export(EXPORT <export> [NAMESPACE <namespace>] [FILE
 	<path>])
 \end{lstlisting}
 
-However, it requires a <export> name rather than a list of exported targets. Such <export> instances are named lists of targets that are defined by install(TARGETS) (we'll cover this command in the Installing logical targets section). Here's a tiny example demonstrating how this shorthand is used in practice:
+但需要<export>名称，而不是导出目标的列表。这样的<export>实例是由install(targets)定义的目标的命名列表。这里有一个例子，展示了这种简版在实践中如何使用:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-11/01-export/CMakeLists.txt (continued)
@@ -90,9 +90,9 @@ export(EXPORT CalcTargets
 )
 \end{lstlisting}
 
-The preceding code works exactly like the previous one, but now, a single target list between the export() and install() commands is being shared.
+现在，export()和install()指令之间共享一个目标列表。
 
-Both ways of generating export files will produce the same results. They will contain some boilerplate code and a few lines defining the target. With /tmp/b set to the build tree path, they'll look like this:
+两种生成导出文件的方法将产生相同的结果，将包含一些样板代码和几行定义目标的代码。将/tmp/b设置为构建树路径:
 
 \begin{lstlisting}[style=styleCMake]
 # /tmp/b/cmake/CalcTargets.cmake (fragment)
@@ -113,7 +113,7 @@ set_target_properties(Calc::calc PROPERTIES
 )
 \end{lstlisting}
 
-Normally, we wouldn't edit this file or even open it, but I wanted to highlight the hardcoded paths in this generated file. In its current form, the package is not relocatable. If we want to change that, we'll need to jump through some hoops first. We'll explore why that's important in the next section.
+通常，我们不会编辑这个文件，甚至不会打开它，这里想突出显示这个生成文件中的硬编码路径。在当前的形式中，包是不可重定位的。若想改变这一点，需要先克服一些困难。我们将在下一节中探讨这为什么很重要。
 
 
 
