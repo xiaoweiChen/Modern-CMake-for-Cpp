@@ -1,12 +1,12 @@
-Building projects from a source has its benefits, but it can take a long time and introduce a lot of complexity. This isn't the best experience for end users who just want to use the package, especially if they aren't developers themselves. A much more convenient form of software distribution is to use binary packages that contain compiled artifacts and other static files that are needed by the runtime. CMake supports generating multiple kinds of such packages through a command-line tool called cpack.
+从源代码构建项目有它的好处，但会花费很长时间并引入很多复杂性。对于只想使用包的最终用户来说，这不是最好的体验，特别是不是开发人员的情况下。软件分发的一种更方便的形式是使用二进制包，其中包含已编译的工件和运行时需要的其他静态文件。CMake支持通过名为cpack的命令行工具生成多种类型的包。
 
-The following table lists the available package generators:
+下表列出了可用的包生成器:
 
 \begin{table}[H]
 	\centering
 	\begin{tabular}{|l|l|l|}
 		\hline
-		\textbf{Name} & \textbf{File Types} & \textbf{Platform}                         \\ \hline
+		\textbf{名称} & \textbf{文件类型} & \textbf{平台}                         \\ \hline
 		Archive &
 		\begin{tabular}[c]{@{}l@{}}7Z - 7zip - (.7z)\\ TBZ2(.tar.bz2)\\ TGZ(.tar.gz)\\ TXZ(.tar.xz)\\ TZ(.tar.Z)\\ TZST(.tar.zst)\\ ZIP(.zip)\end{tabular} &
 		Cross-platform \\ \hline
@@ -24,15 +24,15 @@ The following table lists the available package generators:
 	\end{tabular}
 \end{table}
 
-Most of these generators have extensive configurations. It is beyond the scope of this book to delve into all their details, so be sure to check out the full documentation, which can be found in the Further reading section. Instead, we'll focus on the general use case.
+大多数生成器都具有丰富的配置。深入研究它们的所有细节超出了本书的范围，所以一定要查看完整的文档，可以在扩展阅读部分找到。相反，我们将关注一般用例。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-Package generators shouldn't be confused with buildsystem generators (Unix Makefiles, Visual Studio, and so on).
+包生成器不应该与构建系统生成器(Unix Makefiles, Visual Studio等等)混淆。
 \end{tcolorbox}
 
-To use CPack, we'll need to correctly configure the installation of our project with the necessary install() commands and build our project. The resulting cmake\_install.cmake that's generated in our build tree will be used by cpack to prepare binary packages based on the configuration file (CPackConfig.cmake). While it's possible to create this file manually, it's easier to use include(CPack) to include the utility module in our project's listfile. It will generate the configuration in the project's build tree and supply all the default values where needed.
+要使用CPack，需要使用必要的install()指令正确配置项目的安装，并构建项目。cpack将使用在构建树中生成的生成的cmake\_install.cmake，再基于配置文件(CPackConfig.cmake)准备二进制包。虽然可以手动创建该文件，但使用include(CPack)将实用程序模块包含到项目的列表文件中更容易。其将在项目的构建树中生成配置，并在需要的地方提供所有默认值。
 
-Let's see how we can extend the example 11-components so that it can work with CPack:
+来看看如何扩展示例中的11个组件，使其能够与CPack一起工作:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-11/12-cpack/CMakeLists.txt (fragment)
@@ -52,7 +52,7 @@ set(CPACK_PACKAGE_DESCRIPTION "Simple Calculator")
 include(CPack)
 \end{lstlisting}
 
-The code is pretty self-explanatory, so we won't dwell on it too much (please refer to the module documentation, which can be found in the Further reading section). One thing worth noting here is the fact that the CPack module will infer a few values from the project() command:
+代码不难，所以不会过多地讨论它(请参考模块文档，可以在扩展阅读部分找到)。CPack模块将从project()指令中推断出一些值:
 
 \begin{itemize}
 \item 
@@ -65,58 +65,58 @@ CPACK\_PACKAGE\_VERSION
 CPACK\_PACKAGE\_FILE\_NAME
 \end{itemize}
 
-The last value will be used to produce the output package. Its structure is as follows:
+最后一个值将用于生成输出包。其结构如下:
 
 \begin{lstlisting}[style=styleCMake]
 $CPACK_PACKAGE_NAME-$CPACK_PACKAGE_VERSION-$CPACK_SYSTEM_NAME
 \end{lstlisting}
 
-Here, CPACK\_SYSTEM\_NAME is the name of the target OS; for example, Linux or win32. For example, by executing a ZIP generator on Debian, CPack will generate a file named CPackPackage-1.2.3-Linux.zip.
+这里，CPACK\_SYSTEM\_NAME是目标操作系统的名称;例如，Linux或win32。例如，通过在Debian上执行ZIP生成器，CPack将生成一个名为CPackPackage-1.2.3-Linux.zip的文件。
 
-After building our project, we can generate actual packages by running the cpack binary in the build tree:
+构建项目之后，可以通过在构建树中运行cpack二进制代码来生成实际的包:
 
 \begin{tcblisting}{commandshell={}}
 cpack [<options>]
 \end{tcblisting}
 
-Technically speaking, CPack is capable of reading all its options from the configuration file that's been placed in the current working directory, but you may choose to override these settings from the command line:
+从技术上讲，CPack能够从当前工作目录中的配置文件中读取所有选项，但可以使用命令行覆盖这些设置:
 
 \begin{itemize}
 \item 
--G <generators>: This is a semicolon-separated list of package generators to use. The default value can be specified in the CPackConfig.cmake in the CPACK\_GENERATOR variable.
+-G <generators>: 这是一个用分号分隔的包生成器列表。默认值可以在CPackConfig.cmake的CPACK\_GENERATOR变量中指定。
 
 \item 
--C <configs>: This is a semicolon-separated list of build configurations (debug, release) to generate packages for (required for multi-configuration buildsystem generators).
+-C <configs>: 这是一个分号分隔的构建配置(调试、发布)列表，用于为其生成包(多配置构建系统生成器所需)。
 
 \item 
--D <var>=<value>: This overrides a <var> variable that's set in the CPackConfig.cmake file with <value>
+-D <var>=<value>: 这将使用<value>覆盖CPackConfig.cmake中设置的<var>。
 
 \item 
--{}-config <config-file>: This is the config-file you should use instead of the default CPackConfig.cmake.
+-{}-config <config-file>: 这是应该使用的配置文件，而不是默认的CPackConfig.cmake。
 
 \item 
--{}-verbose, -V: Provides verbose output.
+-{}-verbose, -V: 提供详细输出。
 
 \item 
--P <packageName>: Overrides the package name.
+-P <packageName>: 覆盖包名称。
 
 \item 
--R <packageVersion>: Overrides the package version.
+-R <packageVersion>: 覆盖包版本。
 
 \item 
--{}-vendor <vendorName>: Overrides the package vendor.
+-{}-vendor <vendorName>: 覆盖包供应商。
 
 \item 
--B <packageDirectory>: Specifies the output directory for cpack (by default, this will be the current working directory).
+-B <packageDirectory>: 指定cpack的输出目录(默认情况下，这将是当前的工作目录)。
 \end{itemize}
 
-Let's try generating packages for our 12-cpack output. We're going to use ZIP, 7Z, and the Debian package generator:
+可以试着为12个包的输出生成包。我们将使用ZIP、7Z和Debian包生成器:
 
 \begin{tcblisting}{commandshell={}}
 cpack -G "ZIP;7Z;DEB" -B packages
 \end{tcblisting}
 
-The following packages should be generated:
+应该生成以下包:
 
 \begin{itemize}
 \item 
@@ -129,7 +129,7 @@ CPackPackage-1.2.3-Linux.deb
 CPackPackage-1.2.3-Linux.zip
 \end{itemize}
 
-In this format, binary packages are ready to be published on the website of our project, in a GitHub release, or sent to a package repository for end users to enjoy.
+这种格式中，二进制包可以发布到我们项目的网站上，在GitHub版本中，或者发送到包存储库供最终用户使用。
 
 
 

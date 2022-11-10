@@ -1,5 +1,5 @@
 
-We'll start talking about package components by clearing up some possible confusion around the term component. Look at the full signature for find\_package():
+我们将通过澄清组件这个术语可能引起的混淆来开始讨论包组件。查看find\_package()的完整签名:
 
 \begin{lstlisting}[style=styleCMake]
 find_package(<PackageName> [version] [EXACT] [QUIET] [MODULE]
@@ -8,25 +8,25 @@ find_package(<PackageName> [version] [EXACT] [QUIET] [MODULE]
 	[NO_POLICY_SCOPE])
 \end{lstlisting}
 
-The components that are mentioned here shouldn't be conflated with the COMPONENT keyword that's used in the install() command. They are different concepts that must be understood separately, despite sharing the same name. We'll look at this in more detail in the following subsections.
+这里提到的组件不应该与install()指令中使用的COMPONENT关键字合并。它们是不同的概念，尽管名称相同，但必须分开理解。我们将在下面的小节中更详细地讨论这一点。
 
-\subsubsubsection{11.5.1\hspace{0.2cm}How to use components in find\_package()}
+\subsubsubsection{11.5.1\hspace{0.2cm}在find\_package()中使用组件}
 
-When we call find\_package() with a list of COMPONENTS or OPTIONAL\_COMPONENTS, we tell CMake that we're only interested in packages that provide them. However, it's important to realize that it's up to the package to verify this requirement, and if the package vendor doesn't add the necessary checks to the config-file mentioned in the Creating advanced config-file section, then nothing happens.
+当使用带有组件列表的find\_package()或OPTIONAL\_COMPONENTS时，我们只对提供这些组件的包感兴趣。然而，重要的是要认识到由包来验证这个需求，若包供应商没有向创建高级配置文件一节中提到的配置文件添加必要的检查，那么什么也不会发生。
 
-Requested components are passed to the config-file in the <package>\_FIND\_COMPONENTS variable (both optional and not). Additionally, for every non-optional component, a <package>\_FIND\_REQUIRED\_<component> will be set. As package authors, we could write a macro to scan this list and check if we have provided all the required components. But we don't need to – this is exactly what check\_required\_components() does. To use it, the config-file should set the <Package>\_<Component>\_FOUND variable when the necessary component is found. The macro at the end of the file will check if all the required variables were set.
+请求的组件传递到<package>\_FIND\_COMPONENTS变量中的配置文件(可选和不可选)。此外，对于每个非可选组件，将设置一个<package>\_FIND\_REQUIRED\_<component>。作为包的作者，可以编写一个宏来扫描这个列表，并检查是否已经提供了所有必需的组件。但这里不需要这样做——这是check\_required\_components()完成的工作。配置文件应该在找到必要的组件时设置<Package>\_<Component>\_FOUND变量，文件末尾的宏将检查是否设置了所有必需的变量。
 
-\subsubsubsection{11.5.2\hspace{0.2cm}How to use components in the install() command}
+\subsubsubsection{11.5.2\hspace{0.2cm}在install()指令中使用组件}
 
-Some produced artifacts may not need to be installed for all scenarios. For example, a project may install static libraries and public headers for developing purposes, but by default, it can just install a shared library for the runtime. To make this duality of behavior possible, we can group artifacts under a common name by using the COMPONENT keyword, which is available in all the install() commands. Users that are interested in limiting installation to a specific component can request this explicitly by running the following command (the component names are case-sensitive):
+有些生成的工件可能不需要为所有场景安装。例如，一个项目可能为了开发目的而安装静态库和公共头文件，但默认情况下，只能为运行时安装一个动态库。为了使这种双重行为成为可能，可以通过使用COMPONENT关键字将构件分组到一个公共名称下，该关键字在所有install()指令中都可用。将安装限制到特定组件的用户可以通过运行以下命令(组件名称区分大小写)显式请求:
 
 \begin{tcblisting}{commandshell={}}
 cmake --install <build tree> --component=<component name>
 \end{tcblisting}
 
-Marking an artifact with the COMPONENT keyword doesn't mean that it won't be installed by default. To prevent this from happening, we must add the EXCLUDE\_FROM\_ALL keyword.
+用COMPONENT关键字标记工件并不意味着它在默认情况下不会安装。为了防止这种情况发生，需要添加EXCLUDE\_FROM\_ALL关键字。
 
-Let's explore these components using a code example:
+可以通过码示例来探索这些组件:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-11/11-components/CMakeLists.txt (fragment)
@@ -51,70 +51,70 @@ install(CODE "MESSAGE(\"Installing 'extra' component\")"
 ...
 \end{lstlisting}
 
-These install commands define the following components:
+这些安装命令定义了以下组件:
 
 \begin{itemize}
 \item 
-lib: This contains the static library and target export files. It's installed by default.
+lib: 这包含静态库和目标导出文件。默认安装。
 
 \item 
-headers: This contains public header files. It is installed by default.
+headers: 包含公共头文件。默认安装。
 
 \item 
-extra: This executes a piece of code by printing a message. It's not installed by default.
+extra: 通过打印一条消息来执行一段代码。默认不安装。
 \end{itemize}
 
-Let's reiterate this:
+这里重申一下:
 
 \begin{itemize}
 \item 
-cmake -{}-install without the -{}-component argument will install both the lib and headers components.
+cmake -{}-install若没有-{}-component参数，将同时安装lib和header组件。
 
 \item 
-cmake -{}-install -{}-component headers will only install public headers.
+cmake -{}-install -{}-component headers 将只安装公共头文件。
 
 \item 
-cmake -{}-install -{}-component extra will print a message that's inaccessible otherwise (because of the EXCLUDE\_FROM\_ALL keyword).
+cmake -{}-install -{}-component extra将打印一个无法访问的消息(因为有EXCLUDE\_FROM\_ALL关键字)。
 \end{itemize}
 
-If no COMPONENT keyword is specified for the installed artifact, it will get a default value of Unspecified from the CMAKE\_INSTALL\_DEFAULT\_COMPONENT\_NAME variable.
+若没有为安装的工件指定COMPONENT关键字，将从CMAKE\_INSTALL\_DEFAULT\_COMPONENT\_NAME变量中获得一个未指定的默认值。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-Since there's no easy way to list all the components that are available from the cmake command line, users of your package will benefit from exhaustive documentation listing your package's components. Perhaps the INSTALL file would be a good place to mention it.
+因为没有简单的方法列出cmake命令行中可用的所有组件，所以包的用户将从列出包组件的详尽文档中受益，也许INSTALL文件是说明这些的好地方。
 \end{tcolorbox}
 
-If cmake is called with the -{}-component argument for a component that doesn't exist, then the command will succeed without any warnings or errors. It just won't install anything.
+若对不存在的组件使用-{}-component参数调用cmake，则该命令将成功执行，而不会出现任何警告或错误，就是不会安装任何东西。
 
-Partitioning our installation into components enables users to cherry-pick what they want to install. We have mostly discussed grouping installed files into components, but there are also are procedural steps such as install(SCRIPT|CODE) or creating symlinks for shared libraries.
+将安装划分为组件使用户能够挑选想要安装的组件。我们主要讨论了将已安装的文件分组为组件，但也有一些过程步骤，如install(SCRIPT|CODE)或为动态库创建符号链接。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Managing symbolic links for versioned shared libraries}
+\textbf{管理版本动态库的符号链接}
 
-The target platform for your installation may use symbolic links to help linkers discover the currently installed version of a shared library. After creating a lib<name>.so symlink to the lib<name>.so.1 file, it's possible to link this library by passing the -l<name> argument to the linker. The creation of such symlinks is handled by CMake's install(TARGETS <target> LIBRARY) block when needed.
+安装的目标平台可能使用符号链接来帮助链接程序发现动态库的当前安装版本。创建一个lib<name>.so后，将其连接到lib<name>.so.1，然后就可以通过-l<name>来链接这个库。这种符号链接的创建在需要时由CMake的install(TARGETS <target> LIBRARY)处理。
 
-However, we may decide to move that step into another install() command by adding NAMELINK\_SKIP to this block:
+然而，可以通过添加NAMELINK\_SKIP来决定将这个步骤移动到另一个install()指令中:
 
 \begin{lstlisting}[style=styleCMake]
 install(TARGETS <target> LIBRARY COMPONENT cmp
 	NAMELINK_SKIP)
 \end{lstlisting}
 
-To assign symlinking to another component (instead of disabling it altogether), we can repeat the install() command for the same target and specify a different component, followed by the NAMELINK\_ONLY keyword:
+要将符号链接分配给另一个组件(而不是完全禁用)，可以为相同的目标重复install()指令，并指定一个不同的组件，后面跟着NAMELINK\_ONLY关键字:
 
 \begin{lstlisting}[style=styleCMake]
 install(TARGETS <target> LIBRARY COMPONENT lnk
 	NAMELINK_ONLY)
 \end{lstlisting}
 
-The same can be achieved with the NAMELINK\_COMPONENT keyword:
+同样可以通过NAMELINK\_COMPONENT关键字实现:
 
 \begin{lstlisting}[style=styleCMake]
 install(TARGETS <target> LIBRARY
 	COMPONENT cmp NAMELINK_COMPONENT lnk)
 \end{lstlisting}
 
-Now that we have configured automatic installation, we can provide pre-built artifacts for our users using the CPack tool, which is included with CMake.
+现在已经配置了自动安装，可以使用CMake中包含的CPack工具为用户提供预构建的构件。
 
 
 

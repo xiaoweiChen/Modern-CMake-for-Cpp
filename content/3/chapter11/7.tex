@@ -1,17 +1,16 @@
-Writing installation scripts in a cross-platform way is an incredibly complex task without a tool such as CMake. While it still requires a little bit of work to set up, it's a much more streamlined process that ties closely to all the other concepts and techniques we've used so far in this book.
+若没有像CMake这样的工具，以跨平台的方式编写安装脚本是一项非常复杂的任务。虽然它仍然需要一些工作来设置，但这是一个更加精简的过程，与本书中迄今为止使用的所有其他概念和技术紧密相连。
 
-First, we learned how to export CMake targets from projects so that they can be consumed in other projects without installing them. Then, we learned how to install projects that had already been configured for this purpose.
+首先，我们学习了如何从项目中导出CMake目标，以便它们可以在其他项目中使用，而无需安装它们。然后，学习了如何安装已经为此目的配置的项目。
 
-After that, we started exploring the basics of installation by starting with the most important subject: installing CMake targets. We now know how CMake handles different destinations for various artifact types and how to deal with public headers that are somewhat special. To manage these installation steps at lower levels, we discussed other modes of the install() command, including installing files, programs, and directories and invoking scripts during the installation.
+然后，开始从最重要的主题开始探索安装的基础:安装CMake目标。我们现在知道了CMake如何处理各种工件类型的不同目的地，以及如何处理有些特殊的公共头文件。为了在较低级别上管理这些安装步骤，讨论了install()指令的其他模式，包括安装文件、程序和目录，以及在安装期间调用脚本。
 
-After explaining how to codify the installation steps, we learned about CMake's reusable packages. Specifically, we learned how to make targets in our projects relocatable so that the packages can be installed wherever the user wants. Then, we focused on forming a fully-defined package that can be consumed by other projects with find\_package(), which required preparing target export files, config-files, and version files.
+解释了如何编写安装步骤之后，了解了CMake的可重用包。学习了如何使项目中的目标可重定位，以便包可以安装在用户想要的地方。然后，我们着重于使用find\_package()形成一个可以让其他项目使用的包，这需要准备目标导出文件、配置文件和版本文件。
 
-Recognizing that different users may need different parts of our package, we discovered how to group artifacts and actions in installation components, as well as how they differ from the components of CMake packages.
-Finally, we touched on CPack and learned how to prepare basic binary packages that can be used to distribute our software in a pre-compiled form.
+认识到不同的用户可能需要包的不同部分，我们发现了如何在安装组件中对构件和操作进行分组，以及与CMake包的组件之间的区别。最后，介绍了CPack并学习了如何准备基本的二进制包，这些包可用于以预编译的形式分发软件。
 
-There's still a long way to go to fully grasp all the details and complexities of installation and packaging, but this chapter has given us a solid foundation to handle the most common scenarios and explore them further with confidence.
+要完全掌握安装和打包的所有细节和复杂性还有很长的路要走，但本章为我们提供了处理最常见场景的坚实基础，并有信心进一步探索它们。
 
-In the next chapter, we will put everything we've learned so far into practice by creating a coherent, professional project.
+下一章中，将通过创建一个连贯的、专业的项目，将所学到的一切付诸实践。
 
 
 

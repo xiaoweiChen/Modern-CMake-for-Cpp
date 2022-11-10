@@ -1,32 +1,32 @@
 
-We gathered all the required knowledge to build professional projects; we learned about structuring, building, dependency management, testing, analyzing, installing, and packaging. It's time to put these acquired skills into practice by creating a coherent, professional project.
+我们收集了建造专业项目所需的所有知识，学习了结构化、构建、依赖管理、测试、分析、安装和打包。是时候通过创建一个连贯、专业的项目来将这些获得的技能付诸实践了。
 
-The important thing to understand is that even trivial programs will benefit from automated quality checks and a streamlined end-to-end process that turns raw code into a fully fledged solution. It's true that this is often a considerable investment, as many steps need to be taken in order to prepare everything right – even more so if we're trying to add these mechanisms to already existing code bases (usually, they're already large and convoluted).
+重要的是要理解，即使是微不足道的程序也将受益于自动化的质量检查和简化的端到端流程，将原始代码转化为完整的解决方案。的确，这通常是一项相当大的投资，因为需要采取许多步骤来正确地准备一切——若试图将这些机制添加到已经存在的代码库中(通常，已经非常庞大和复杂)，则需要采取更多步骤。
 
-That's the very reason to use CMake from the get-go and set all the piping upfront; not only it will be easier to configure but, more importantly, it's also much more efficient to do it early, as all the quality controls and build automation have to be added to long-term projects at some point anyway.
+这就是从一开始就使用CMake并将所有管道设置在前面的原因，不仅将更容易配置，更重要的是，也更有效地尽早进行，因为所有的质量控制和构建自动化无论如何都必须添加到长期项目中。
 
-This is exactly what we'll do in this chapter – we'll write a new solution that is as small and as simple as possible. It will perform just a single (almost) practical function – adding two numbers together. Limiting the functionality of the business code will allow us to focus on every other aspect of the project that we learned about in the previous chapters.
+这正是在本章要做的——将编写一个尽可能小而简单的新解决方案。只执行一个(几乎)功能——两个数字相加，限制业务代码的功能将让我们专注于项目的其他方面。
 
-To have a more involved problem to solve, this project will build both a library and an executable. The library will provide the internal business logic and will also be available for other projects to consume as a CMake package. The executable will be meant for end users only and will implement a user interface that shows the functionality of the underlying library.
+为了解决一个更复杂的问题，这个项目将构建一个库和一个可执行文件。该库将提供内部业务逻辑，也可以供其他项目作为CMake包使用。可执行文件将只针对最终用户，并将实现一个显示底层库功能的用户界面。
 
 本章中，我们将讨论以下主题:
 
 \begin{itemize}
 \item 
-Planning our work
+规划工作
 
 \item 
-Project layout
+项目布局
 
 \item 
-Building and managing dependencies
+构建和管理依赖项
 
 \item 
-Testing and program analysis
+测试和程序分析
 
 \item 
-Installing and packaging
+安装和打包
 
 \item 
-Providing the documentation
+提供文档
 \end{itemize}
