@@ -1,108 +1,108 @@
-The string() command is used to manipulate strings. It comes with a variety of modes that perform different actions on the string: search and replace, manipulation, comparison, hashing, generation, and JSON operations (the last one available since CMake 3.19).
+string()命令用于操作字符串。它提供了多种模式，可以对字符串执行不同的操作:搜索和替换、操作、比较、哈希码、生成和JSON操作(自CMake 3.19以来的最后一个可用模式)。
 
-Full details can be found in the online documentation: \url{https://cmake.org/cmake/ help/latest/command/string.html}.
+完整的细节可以在在线文档中找到: \url{https://cmake.org/cmake/ help/latest/command/string.html}。
 
-string() modes that accept the <input> argument will accept multiple <input> values and concatenate them before the execution of the command:
+接受<input>参数的String()模式将接受多个<input>值，并在执行命令前将它们连接起来:
 
 \begin{lstlisting}[style=styleCMake]
 string(PREPEND myVariable "a" "b" "c")
 \end{lstlisting}
 
-This is the equivalent of the following:
+这等价于:
 
 \begin{lstlisting}[style=styleCMake]
 string(PREPEND myVariable "abc")
 \end{lstlisting}
 
-Let's explore all available string() modes.
+来研究一下所有可用的string()模式。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Search and replace}
+\textbf{搜索和替换}
 
-The following modes are available:
+有以下几种模式:
 
 \begin{itemize}
 \item 
-string(FIND <haystack> <pattern> <out> [REVERSE]) searches for <pattern> in the <haystack> string and writes the position found as an integer to the <out> variable. If the REVERSE flag was used, it searches from the end of the string to the beginning. This works only for ASCII strings (multibyte support isn't provided).
+string(FIND <haystack> <pattern> <out> [REVERSE]) 在<haystack>字符串中搜索<pattern>，并将找到的位置作为整数写入<out>变量。若使用REVERSE标志，它将从字符串的末尾搜索到开头。这只适用于ASCII字符串(不提供多字节支持)。
 
 \item 
-string(REPLACE <pattern> <replace> <out> <input>) replaces all occurrences of <pattern> in <input> with <replace> and stores them in the <out> variable.
+string(REPLACE <pattern> <replace> <out> <input>) 用<replace>替换<input>中<pattern>的所有出现，并存储在<out>变量中。
 
 \item 
-string(REGEX MATCH <pattern> <out> <input>) regex-matches the first occurrence of <pattern> in <input> with <replace> and stores it in the <out> variable.
+string(REGEX MATCH <pattern> <out> <input>) 将<input>中<pattern>的第一次出现与<replace>匹配，并将其存储在<out>变量中。
 
 \item 
-string(REGEX MATCHALL <pattern> <out> <input>) regex-matches all occurrences of <pattern> in <input> with <replace> and stores them in the <out> variable as a comma-separated list.
+string(REGEX MATCHALL <pattern> <out> <input>) 用<replace>匹配<input>中<pattern>的所有出现，并将它们作为逗号分隔的列表存储在<out>变量中。
 
 \item
-string(REGEX REPLACE <pattern> <replace> <out> <input>) regex-replaces all occurrences of <pattern> in <input> with the <replace> expression and stores them in the <out> variable.
+string(REGEX REPLACE <pattern> <replace> <out> <input>) 用<replace>表达式替换<input>中<pattern>的所有出现，并将它们存储在<out>变量中。
 \end{itemize}
 
-Regular expression operations follow C++ syntax as defined in the standard library in the <regex> header. You can use capturing groups to add matches to the <replace> expression with numeric placeholders: \verb|\|\verb|\|1, \verb|\|\verb|\|2... (double backslashes are required so arguments are parsed correctly).
+正则表达式操作遵循标准库<regex>标头中定义的C++语法。可以使用捕获组添加匹配<replace>表达式与数字占位符:\verb|\|\verb|\|1，\verb|\|\verb|\|2…(需要双反斜杠，以便正确解析参数)。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Manipulation}
+\textbf{操作}
 
-The following modes are available:
+有以下几种模式:
 
 \begin{itemize}
 \item 
-string(APPEND <out> <input>) mutates strings stored in <out> by appending the <input> string.
+string(APPEND <out> <input>) 通过附加<input>字符串，改变存储在<out>中的字符串。
 
 \item 
-string(PREPEND <out> <input>) mutates strings stored in <out> by prepending the <input> string.
+string(PREPEND <out> <input>) 通过在<input>字符串前面加上前缀，改变存储在<out>中的字符串。
 
 \item 
-string(CONCAT <out> <input>) concatenates all provided <input> strings and stores them in the <out> variable.
+string(CONCAT <out> <input>) 连接所有提供的<input>字符串并将它们存储在<out>变量中。
 
 \item 
-string(JOIN <glue> <out> <input>) interleaves all provided <input> strings with a <glue> value and stores them as a concatenated string in the <out> variable (don't use this mode for list variables).
+string(JOIN <glue> <out> <input>) 将所有提供的<input>字符串与<glue>值交错，并将它们作为串联的字符串存储在<out>变量中(不要对列表变量使用此模式)。
 
 \item
-string(TOLOWER <string> <out>) converts <string> to lowercase and stores it in the <out> variable.
+string(TOLOWER <string> <out>) 将<string>转换为小写并将其存储在<out>变量中。
 
 \item
-string(LENGTH <string> <out>) counts the bytes of <string> and stores the result in the <out> variable.
+string(LENGTH <string> <out>) 计算<string>的字节数，并将结果存储在<out>变量中。
 
 \item
-string(SUBSTRING <string> <begin> <length> <out>) extracts a substring of <string> of <length> bytes starting at the <begin> byte, and stores it in the <out> variable. Providing -1 as the length is understood as "till the end of the string."
+string(SUBSTRING <string> <begin> <length> <out>) 从<begin>字节开始提取长度<length>字节的<string>的子字符串，并将其存储在<out>变量中。length为-1可以理解为“直到字符串结束”。
 
 \item
-string(STRIP <string> <out>) removes trailing and leading whitespace from <string> and stores the result in the <out> variable.
+string(STRIP <string> <out>) 从<string>中删除尾随和前导空格，并将结果存储在<out>变量中。
 
 \item 
-string(GENEX\_STRIP <string> <out>) removes all generator expressions used in <string> and stores the result in the <out> variable.
+string(GENEX\_STRIP <string> <out>) 删除<string>中使用的所有生成器表达式，并将结果存储在<out>变量中。
 
 \item 
-string(REPEAT <string> <count> <out>) generates a string containing <count> repetitions of <string> and stores it in the <out> variable.
+string(REPEAT <string> <count> <out>) 生成一个包含<string>的<count>次重复的字符串，并将其存储在<out>变量中。
 \end{itemize}
 
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Comparison}
+\textbf{比较}
 
-A comparison of strings takes the following form:
+字符串的比较形式如下所示:
 
 \begin{lstlisting}[style=styleCMake]
 string(COMPARE <operation> <stringA> <stringB> <out>)
 \end{lstlisting}
 
-The <operation> argument is one of the following: LESS, GREATER, EQUAL, NOTEQUAL, LESS\_EQUAL, or GREATER\_EQUAL. It will be used to compare <stringA> with <stringB> and the result (true or false) will be stored in the <out> variable.
+<operation>参数是以下参数之一:LESS，GREATER，EQUAL，NOTEQUAL，LESS\_EQUAL或GREATER\_EQUAL。它将用于比较<stringa>与<stringb>，结果(true或false)将存储在<out>变量中。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Hashing}
+\textbf{哈希}
 
-The hashing mode has the following signature:
+哈希模式有以下签名:
 
 \begin{lstlisting}[style=styleCMake]
 string(<algorithm> <out> <string>)
 \end{lstlisting}
 
-It hashes <string> with <algorithm> and stores the result in the <out> variable. The following algorithms are supported:
+它哈希<string>和<algorithm>，并将结果存储在<out>变量中。支持以下算法:
 
 \begin{itemize}
 \item 
@@ -138,66 +138,66 @@ SHA3\_512: Keccak SHA-3
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Generation}
+\textbf{生成}
 
-The following modes are available:
+有以下几种模式:
 
 \begin{itemize}
 \item 
-string(ASCII <number>... <out>) stores ASCII characters of given <number> in the <out> variable.
+string(ASCII <number>... <out>) 在<out>变量中存储给定<number>的ASCII字符。
 
 \item 
-string(HEX <string> <out>) converts <string> to its hexadecimal representation and stores it in the <out> variable (since CMake 3.18).
+string(HEX <string> <out>) 将<string>转换为它的十六进制表示形式并将其存储在<out>变量中(自CMake 3.18以来)。
 
 \item 
-string(CONFIGURE <string> <out> [@ONLY] [ESCAPE\_QUOTES])works exactly like configure\_file() but for strings. The result is stored in the <out> variable.
+string(CONFIGURE <string> <out> [@ONLY] [ESCAPE\_QUOTES]) 与configure\_file()的工作原理完全相同，但适用于字符串。结果存储在<out>变量中。
 
 \item 
-string(MAKE\_C\_IDENTIFIER <string> <out>) converts non-alphanumeric characters in <string> to underscores and stores the result in the <out> variable.
+string(MAKE\_C\_IDENTIFIER <string> <out>) 将<string>中的非字母数字字符转换为下划线，并将结果存储在<out>变量中。
 
 \item
-string(RANDOM [LENGTH <len>] [ALPHABET <alphabet>] [RANDOM\_SEED <seed>] <out>)generates a random string of <len> characters (default 5) using the optional <alphabet> from the random seed, <seed>, and stores the result in the <out> variable.
+string(RANDOM [LENGTH <len>] [ALPHABET <alphabet>] [RANDOM\_SEED <seed>] <out>)使用来自随机种子<seed>的可选<alphabet>生成<len>字符的随机字符串(默认为5)，并将结果存储在<out>变量中。
 
 \item
-string(TIMESTAMP <out> [<format>] [UTC]) generates a string representing the current date and time and stores it in the <out> variable.
+string(TIMESTAMP <out> [<format>] [UTC]) 生成一个表示当前日期和时间的字符串，并将其存储在<out>变量中。
 
 \item
-string(UUID <out> ...) generates a universally unique identifier. This mode is a bit involved to use.
+string(UUID <out> ...) 生成一个通用唯一标识符。这种模式使用起来有点复杂。
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{JSON}
 
-Operations on JSON-formatted strings use the following signature:
+对JSON格式字符串的操作使用以下签名:
 
 \begin{lstlisting}[style=styleCMake]
 string(JSON <out> [ERROR_VARIABLE <error>] <operation + args>)
 \end{lstlisting}
 
-Several operations are available. They all store their results in the <out> variable, and errors in the <error> variable. Operations and their arguments are as follows:
+有几种操作，都将结果存储在<out>变量中，错误存储在<error>变量中。操作及其参数如下:
 
 \begin{itemize}
 \item 
-GET <json> <member|index>... returns the value of one or more elements from a <json> string using the <member> path or <index>.
+GET <json> <member|index>... 使用<member>路径或<index>从<json>字符串中返回一个或多个元素的值。
 
 \item 
-TYPE <json> <member|index>... returns the type of one or more elements from a <json> string using the <member> path or <index>.
+TYPE <json> <member|index>... 使用<member>路径或<index>从<json>字符串中返回一个或多个元素的类型。
 
 \item 
-MEMBER <json> <member|index>... <array-index> returns the member name of one or more array-typed elements on the <array-index> position from the <json> string using the <member> path or <index>.
+MEMBER <json> <member|index>... <array-index> 使用<member>路径或<index>从<json>字符串返回<array-index>位置上的一个或多个数组类型元素的成员名。
 
 \item 
-LENGTH <json> <member|index>... returns the element count of one or more array-typed elements from the <json> string using the <member> path or <index>.
+LENGTH <json> <member|index>... 使用<member>路径或<index>从<json>字符串中返回一个或多个数组类型元素的元素计数。
 
 \item
-REMOVE <json> <member|index>... returns the result of removal of one or more elements from the <json> string using the <member> path or <index>.
+REMOVE <json> <member|index>... 返回使用<member>路径或<index>从<json>字符串中删除一个或多个元素的结果。
 
 \item
-SET <json> <member|index>... <value> returns the result of upsertion of <value> to one or more elements from a <json> string using the <member> path or <index>.
+SET <json> <member|index>... <value> 使用<member>路径或<index>从<json>字符串中返回<value>上升到一个或多个元素的结果。
 
 \item
-EQUAL <jsonA> <jsonB> evaluates whether <jsonA> and <jsonB> are equal.
+EQUAL <jsonA> <jsonB> 计算<jsona>和<jsonb>是否相等。
 \end{itemize}
 
 

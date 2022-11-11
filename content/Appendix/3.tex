@@ -1,126 +1,128 @@
-This command provides all kinds of operations related to files: reading, transferring, locking, and archiving. It also provides modes to inspect the filesystem and operations on strings representing paths.
+该指令提供与文件相关的各种操作:读取、传输、锁定和归档，还提供了检查文件系统和对表示路径的字符串的操作的模式。
 
-Full details can be found in the online documentation: 
+完整的细节可以在在线文档中找到:
 
 \url{https://cmake.org/cmake/help/latest/command/file.html}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Reading}
+\textbf{读取}
 
-The following modes are available:
+有以下几种模式:
 
 \begin{itemize}
 \item 
-file(READ <filename> <out> [OFFSET <o>] [LIMIT <max>] [HEX]) reads the file from <filename> to the <out> variable. The read optionally starts at offset <o> and follows the optional limit of <max> bytes. The HEX flag specifies that output should be converted to hexadecimal representation.
+file(READ <filename> <out> [OFFSET <o>] [LIMIT <max>] [HEX]) 从<filename>读取文件到<out>变量。读取可选地从偏移量<o>开始，并遵循<max>字节的可选限制。>HEX标志指定输出应该转换为十六进制表示。
 
 \item 
-file(STRINGS <filename> <out>) reads strings from the file at <filename> to the <out> variable.
+file(STRINGS <filename> <out>) 从<filename>处的文件读取字符串到<out>变量。
 
 \item 
-file(<algorithm> <filename> <out>) computes the <algorithm> hash from the file at <filename> and stores the result in the <out> variable. Available algorithms are the same as for the string() hashing function.
+file(<algorithm> <filename> <out>) 从<filename>的文件计算<algorithm>哈希，并将结果存储在<out>变量中。可用的算法与string()哈希算法相同。
 
 \item 
-file(TIMESTAMP <filename> <out> [<format>]) generates a string representation of a timestamp of the file at <filename> and stores it in the <out> variable. Optionally accepts a <format> string.
+file(TIMESTAMP <filename> <out> [<format>]) 生成文件名<filename>的文件时间戳的字符串表示形式，并将其存储在<out>变量中，可选地接受<format>字符串。
 
 \item 
-file(GET\_RUNTIME\_DEPENDENCIES [...]) gets runtime dependencies for specified files. This is an advanced command to be used only in install(CODE) or install(SCRIPT) scenarios.
+file(GET\_RUNTIME\_DEPENDENCIES [...]) 获取指定文件的运行时依赖项。这是一个高级命令，只能在install(CODE)或install(SCRIPT)中使用。
 \end{itemize}
 
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Writing}
+\textbf{写入}
 
-The following modes are available:
+有以下几种模式:
 
 \begin{itemize}
 \item 
-file(\{WRITE | APPEND\} <filename> <content>...) writes or appends all <content> arguments to the file at <filename>. If the provided system path doesn't exist, it will be recursively created.
+file(\{WRITE | APPEND\} <filename> <content>...) 将所有<content>参数写入或追加到<filename>的文件。若提供的系统路径不存在，将递归地创建它。
 
 \item 
-file(\{TOUCH | TOUCH\_NOCREATE\} [<filename>...]) updates the timestamp of the <filename>. If the file doesn't exist, it will only be created in the TOUCH mode.
+file(\{TOUCH | TOUCH\_NOCREATE\} [<filename>...]) 更新<filename>的时间戳。若文件不存在，将只在TOUCH模式下创建。
 
 \item 
-file(GENERATE OUTPUT <output-file> [...]) is an advanced mode that generates an output file for each build configuration of the current CMake Generator.
+file(GENERATE OUTPUT <output-file> [...]) 是一种高级模式，它为当前CMake Generator的每个构建配置生成一个输出文件。
 
 \item 
-file(CONFIGURE OUTPUT <output-file> CONTENT <content> [...]) works like GENERATE\_OUTPUT, but also configures the generated files by substituting variable placeholders with values.
+file(CONFIGURE OUTPUT <output-file> CONTENT <content> [...]) 像GENERATE\_OUTPUT一样工作，也可以通过用值替换变量占位符来配置生成的文件。
 \end{itemize}
 
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Filesystem}
+\textbf{文件系统}
 
-The following modes are available:
+有以下几种模式:
 
 \begin{itemize}
 \item 
-file(\{GLOB | GLOB\_RECURSE\} <out> [...] [<globbingexpression>...]) generates a list of files matching <globbingexpression> and stores it in the <out> variable. GLOB\_RECURSE mode will also scan nested directories.
+file(\{GLOB | GLOB\_RECURSE\} <out> [...] [<globbingexpression>...]) 生成匹配<globbingexpression>的文件列表，并将其存储在<out>变量中。GLOB\_RECURSE模式也将扫描嵌套目录。
 
 \item 
-file(RENAME <oldname> <newname>) moves a file from <oldname> to <newname>.
+file(RENAME <oldname> <newname>) 将文件从<oldname>移动到<newname>。
 
 \item 
-file({REMOVE | REMOVE\_RECURSE } [<files>...]) deletes <files>. REMOVE\_RECURSE will also remove directories.
+file({REMOVE | REMOVE\_RECURSE } [<files>...]) 删除<files>。REMOVE\_RECURSE会删除目录。
 
 \item 
-file(MAKE\_DIRECTORY [<dir>...]) creates a directory
+file(MAKE\_DIRECTORY [<dir>...]) 创建目录
 
 \item 
-file(COPY <file>... DESTINATION <dir> [...]) copies files to the <dir> destination. Offers options for filtering, setting permissions, symlink chain following, and more.
+file(COPY <file>... DESTINATION <dir> [...]) 将文件复制到
+<dir>目标。提供筛选、设置权限、软链接等选项。
 
 \item 
-file(SIZE <filename> <out>) reads the size of <filename> in bytes and stores it in the <out> variable.
+file(SIZE <filename> <out>) 读取<filename>的字节大小，并将其存储在<out>变量中。
 
 \item 
-file(READ\_SYMLINK <linkname> <out>) reads the destination path of the <linkname> symlink and stores it in the <out> variable.
+file(READ\_SYMLINK <linkname> <out>) 读取<linkname>符号链接的目标路径，并将其存储在<out>变量中。
 
 \item
-file(CREATE\_LINK <original> <linkname> [...]) creates a symlink to <original> at <linkname>.
+file(CREATE\_LINK <original> <linkname> [...]) 在<linkname>处创建一个指向<original>的软链接。
 
 \item 
-file(\{CHMOD|CHMOD\_RECURSE\} <files>... <directories>... PERMISSIONS <permissions>... [...]) sets permissions on files and directories.
+file(\{CHMOD|CHMOD\_RECURSE\} <files>... <directories>... PERMISSIONS <permissions>... [...]) 设置文件和目录的权限。
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Path conversion}
+\textbf{路径转换}
 
-The following modes are available:
+有以下几种模式:
 
 \begin{itemize}
 \item 
-file(REAL\_PATH <path> <out> [BASE\_DIRECTORY <dir>]) computes the absolute path from the relative path and stores it in the <out> variable. Optionally accepts the <dir> base directory. It's been available since CMake 3.19.
+file(REAL\_PATH <path> <out> [BASE\_DIRECTORY <dir>]) 从相对路径计算绝对路径并将其存储在<out>变量中。可选地接受
+<dir>基目录。它从CMake 3.19开始就可以使用了。
 
 \item 
-file(RELATIVE\_PATH <out> <directory> <file>) computes the <file> path relative to <directory> and stores it in the <out> variable.
+file(RELATIVE\_PATH <out> <directory> <file>) 计算相对于<directory>的<file>路径，并将其存储在<out>变量中。
 
 \item 
-file(\{TO\_CMAKE\_PATH | TO\_NATIVE\_PATH\} <path> <out>) converts <path> to a CMake path (directories separated with a forward slash) to the native path of the platform and back. The result is stored in the <out> variable.
+file(\{TO\_CMAKE\_PATH | TO\_NATIVE\_PATH\} <path> <out>) 将转换为CMake路径(用正斜杠分隔的目录)到平台的本机路径并返回，结果存储在<out>变量中。
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Transfer}
+\textbf{传输}
 
-The following modes are available:
+有以下几种模式:
 
 \begin{itemize}
 \item 
-file(DOWNLOAD <url> [<path>] [...]) downloads a file from <url> and stores it in path.
+file(DOWNLOAD <url> [<path>] [...]) 从<url>下载文件并将其存储在path中。
 
 \item 
-file(UPLOAD <file> <url> [...]) uploads <file> to an URL.
+file(UPLOAD <file> <url> [...]) 上传<file>到URL。
 \end{itemize}
 
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Locking}
+\textbf{锁定}
 
-Locking mode places an advisory lock on the <path> resource:
+锁定模式在<path>资源上放置一个建议锁:
 
 \begin{lstlisting}[style=styleCMake]
 file(LOCK <path> [DIRECTORY] [RELEASE]
@@ -129,13 +131,13 @@ file(LOCK <path> [DIRECTORY] [RELEASE]
 	[TIMEOUT <seconds>])
 \end{lstlisting}
 
-This lock can be optionally scoped to FUNCTION, FILE, or PROCESS and limited with a timeout of <seconds>. To release the lock, provide the RELEASE keyword. The result will be stored in the <out> variable.
+该锁可以选择作用域为FUNCTION、FILE或PROCESS，并以<seconds>的超时进行限制。要释放锁，提供release关键字，结果将存储在<out>变量中。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Archiving}
+\textbf{归档}
 
-The creation of archives is provided with the following signature:
+归档文件的创建具有以下签名:
 
 \begin{lstlisting}[style=styleCMake]
 file(ARCHIVE_CREATE OUTPUT <destination> PATHS <source>...
@@ -144,16 +146,16 @@ file(ARCHIVE_CREATE OUTPUT <destination> PATHS <source>...
 	[MTIME <mtime>] [VERBOSE])
 \end{lstlisting}
 
-It creates an archive at the <destination> path comprising <source> files in one of the supported formats: 7zip, gnutar, pax, paxr, raw, or zip (paxr is the default). If the chosen format supports the compression level, it can be provided as a single-digit integer 0-9, with 0 being the default.
+它在<destination>路径上创建一个存档文件，其中包含支持的格式之一的<source>文件:7zip、gnutar、pax、paxr、raw或zip (paxr是默认格式)。如果所选格式支持压缩级别，则可以将其提供为一个单位数整数0-9，其中0为默认值。
 
-The extraction mode has the following signature:
+提取模式具有以下签名:
 
 \begin{lstlisting}[style=styleCMake]
 file(ARCHIVE_EXTRACT INPUT <archive> [DESTINATION <dir>]
 	[PATTERNS <patterns>...] [LIST_ONLY] [VERBOSE])
 \end{lstlisting}
 
-It extracts files matching optional <patterns> values from <archive> to the destination <dir>. If the LIST\_ONLY keyword is provided, files won't be extracted, but only listed instead.
+它将匹配可选<patterns>值的文件从<archive>提取到目标<dir>。如果提供了LIST\_ONLY关键字，则不会提取文件，而是只列出文件。
 
 
 

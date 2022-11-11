@@ -1,34 +1,34 @@
-This command provides basic operations on lists: reading, searching, modification, and ordering. Some modes will change list (mutate the original value). Be sure to copy the original value if you'll need it later.
+这个指令提供了关于列表的基本操作:读取、搜索、修改和排序。某些模式会改变列表(改变原始值)。若以后需要它，请确保复制原始值。
 
-Full details can be found in the online documentation: 
+完整的细节可以在在线文档中找到:
 
 \url{https://cmake.org/cmake/help/latest/command/list.html}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Reading}
+\textbf{读取}
 
-The following modes are available:
+有以下几种模式:
 
 \begin{itemize}
 \item 
-list(LENGTH <list> <out>) counts the elements in the <list> variable and stores the result in the <out> variable.
+list(LENGTH <list> <out>) 计算<list>变量中的元素，并将结果存储在<out>变量中。
 
 \item 
-list(GET <list> <index>... <out>) copies the <list> elements specified with the list of <index> indexes to the <out> variable.
+list(GET <list> <index>... <out>) 将<list>元素与<index>索引列表一起复制到<out>变量。
 
 \item 
-list(JOIN <list> <glue> <out>) interleaves <list> elements with the <glue> delimiter and stores the resulting string in the <out> variable.
+list(JOIN <list> <glue> <out>) 用<glue>分隔符<list>元素，并将结果字符串存储在<out>变量中。
 
 \item 
-list(SUBLIST <list> <begin> <length> <out>) works like the GET mode, but operates on range instead of explicit indexes. If <length> is -1, elements from <begin> index to the end of the list provided in the <list> variable will be returned.
+list(SUBLIST <list> <begin> <length> <out>) 与GET模式类似，但操作范围而不是显式索引。若<length>为-1，则返回<list>变量中提供的从<begin>索引到列表末尾的元素。
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Searching}
+\textbf{搜索}
 
-This mode simply finds the index of the <needle> element in the <list> variable and stores the result in the <out> variable (or -1 if the element wasn't found):
+该模式只是在<list>变量中查找<needle>元素的索引，并将结果存储在<out>变量中(若没有找到该元素，则为-1):
 
 \begin{lstlisting}[style=styleCMake]
 list(FIND <list> <needle> <out>)
@@ -36,58 +36,58 @@ list(FIND <list> <needle> <out>)
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Modification}
+\textbf{修改}
 
-The following modes are available:
+有以下几种模式:
 
 \begin{itemize}
 \item 
-list(APPEND <list> <element>...) adds one or more <element> value to the end of the <list> variable.
+list(APPEND <list> <element>...) 将一个或多个<element>值添加到<list>变量的末尾。
 
 \item 
-list(PREPEND <list> [<element>...]) works like APPEND, but adds elements to the beginning of the <list> variable.
+list(PREPEND <list> [<element>...]) 与APPEND类似，但在<list>变量的开头添加元素。
 
 \item 
-list(FILTER <list> {INCLUDE | EXCLUDE} REGEX <pattern>) filters the <list> variable to INCLUDE or EXCLUDE the elements matching the <pattern> value.
+list(FILTER <list> {INCLUDE | EXCLUDE} REGEX <pattern>) 过滤<list>变量以包含或排除值匹配<pattern>的元素。
 
 \item 
-list(INSERT <list> <index> [<element>...]) adds one or more <element> values to the <list> variable at the given <index>.
+list(INSERT <list> <index> [<element>...]) 在给定的<index>处向<list>变量添加一个或多个<element>值。
 
 \item 
-list(POP\_BACK <list> [<out>...]) removes an element from the end of the <list> variable and stores it in the optional <out> variable. If multiple <out> variables were provided, more elements will be removed to fill them.
+list(POP\_BACK <list> [<out>...]) 从<list>变量末尾删除一个元素，并将其存储在可选的<out>变量中。若提供了多个<out>变量，则将删除更多元素来填充它们。
 
 \item 
-list(POP\_FRONT <list> [<out>...]) works like POP\_BACK but removes an element from the beginning of the <list> variable.
+list(POP\_FRONT <list> [<out>...]) 类似于POP\_BACK，但从<list>变量的开头删除一个元素。
 
 \item 
-list(REMOVE\_ITEM <list> <value>...) shorthand for FILTER EXCLUDE, but without the support of regular expressions.
+list(REMOVE\_ITEM <list> <value>...) FILTER EXCLUDE的简写，但不支持正则表达式。
 
 \item 
-list(REMOVE\_AT <list> <index>...) removes elements from <list> at a specific <index>.
+list(REMOVE\_AT <list> <index>...) 从<list>中移除特定<index>处的元素。
 
 \item 
-list(REMOVE\_DUPLICATES <list>) removes duplicates from <list>.
+list(REMOVE\_DUPLICATES <list>) 从<list>中删除重复项。
 
 \item 
-list(TRANSFORM <list> <action> [<selector>] [OUTPUT\_VARIABLE <out>]) applies a specific transformation to the <list> elements.
+list(TRANSFORM <list> <action> [<selector>] [OUTPUT\_VARIABLE <out>]) 对<list>元素应用特定的转换。
 
-By default, the action is applied to all elements, but we may limit the effect by adding a <selector>. Provided list will be mutated (changed in place) unless the OUTPUT\_VARIABLE keyword was provided, in which case, the result is stored in the <out> variable.
+默认情况下，该动作应用于所有元素，但可以通过添加<selector>来限制效果。若提供了OUTPUT\_VARIABLE关键字，提供的列表将发生变化(就地更改)，结果将存储在<out>变量中。
 
-The following selectors are available: AT <index>, FOR <start> <stop> [<step>], and REGEX <pattern>. Actions include APPEND <string>, PREPEND <string>, TOLOWER, TOUPPER, STRIP, GENEX\_STRIP, and REPLACE <pattern> <expression>. They work exactly like the string() modes with the same name.
+以下选择器可用:AT <index>，FOR <start> <stop>[<step>]，以及REGEX <pattern>。操作包括APPEND <string>， PREPEND <string>，TOLOWER，TOUPPER，STRIP，GENEX\_STRIP和REPLACE  <expression>。工作原理与具有相同名称的string()模式完全相同。
 \end{itemize}
 
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{Ordering}
+\textbf{排序}
 
-The following modes are available:
+有以下几种模式:
 
 \begin{itemize}
 \item 
-list(REVERSE <list>) simply reverses the order of <list>.
+list(REVERSE <list>) 简单地颠倒<list>的顺序。
 
 \item 
-list(SORT <list>) sorts the list alphabetically. Refer to the online manual for more advanced options.
+list(SORT <list>) 按字典序对列表进行排序。更多高级选项请参考在线手册。
 \end{itemize}
 
