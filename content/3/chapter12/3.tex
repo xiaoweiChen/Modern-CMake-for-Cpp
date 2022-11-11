@@ -1,66 +1,66 @@
 
-To build any project, we should start with a clear understanding of what logical targets are going to be created in it. In this case, we'll follow the structure shown in Figure 12.2:
+要构建项目，应该从清楚地了解将在其中创建什么逻辑目标开始。本例中，将遵循图12.2所示的结构:
 
 \begin{center}
-\includegraphics[width=0.8\textwidth]{content/3/chapter12/images/2.jpg}\\
-Figure 12.2 – A structure of logical targets
+\includegraphics[width=0.6\textwidth]{content/3/chapter12/images/2.jpg}\\
+图12.2 逻辑目标的结构
 \end{center}
 
-Let's explore the structure by following the build order. First, we'll compile calc\_obj, which is an object library. We did mention object libraries a few times in the book, but we didn't actually introduce them as a concept. Let's do this now.
+我们按照构建顺序来探索这个结构。首先，编译calc\_obj，这是一个对象库。我们确实在书中几次提到了对象库，但并没有把它们作为一个概念来介绍。
 
-\subsubsubsection{12.3.1\hspace{0.2cm}Object libraries}
+\subsubsubsection{12.3.1\hspace{0.2cm}对象库}
 
-Object libraries are used to group multiple source files under a single logical target and are compiled into the (.o) object files during a build. To create an object library, we use the same method as with other libraries with the OBJECT keyword:
+对象库用于将多个源文件分组到单个逻辑目标下，并在构建期间编译到(.o)目标文件中。要创建一个对象库，使用OBJECT关键字与其他关键字相同:
 
 \begin{lstlisting}[style=styleCMake]
 add_library(<target> OBJECT <sources>)
 \end{lstlisting}
 
-Object files produced during the build can be added as compiled elements to other targets with the \$<TARGET\_OBJECTS:objlib> generator expression:
+构建过程中产生的对象文件可以通过\$<TARGET\_OBJECTS:objlib>生成器表达式作为编译后的元素添加到其他目标:
 
 \begin{lstlisting}[style=styleCMake]
 add_library(... $<TARGET_OBJECTS:objlib> ...)
 add_executable(... $<TARGET_OBJECTS:objlib> ...)
 \end{lstlisting}
 
-Alternatively, you can add them as dependencies with the target\_link\_libraries() command.
+或者，可以使用target\_link\_libraries()将它们作为依赖项添加。
 
-In our Calc library, object libraries will be useful to avoid repeating the compilation of library sources for the static and shared versions of the library. We'll just need to remember to explicitly compile the object files with POSITION\_INDEPENDENT\_CODE, as this is a requirement for a shared library.
+Calc库中，对象库将有助于避免为库的静态和动态版本重复编译库源。只需要记住显式地使用POSITION\_INDEPENDENT\_CODE编译目标文件，因为这是动态库的需求。
 
-With this out of the way, let's get back to the targets of this project: calc\_obj will provide compiled object files, which then will be used for both the calc\_static and calc\_shared libraries. What are the practical differences between them and why provide two libraries at all?
+解决了这些问题，回到这个项目的目标:calc\_obj将提供编译的目标文件，然后将用于calc\_static和calc\_shared库。它们之间的实际区别是什么?为什么要提供两个库?
 
-\subsubsubsection{12.3.2\hspace{0.2cm}Shared libraries versus static libraries}
+\subsubsubsection{12.3.2\hspace{0.2cm}比较动态库与静态库}
 
-We briefly introduced both types of libraries in Chapter 6, Linking with CMake. We then mentioned that overall memory usage can be better for multiple programs using the same shared library and that it's likely that a user already has the most popular libraries or knows how to quickly install them. More importantly, shared libraries are delivered in separate files that must be installed in specific paths for the dynamic linker to find them, while static libraries are merged as part of the executable file. In that form, they are slightly faster to use, as no additional lookups are required to find the location of code in memory.
+在第6章中简要介绍了这两种类型的库。然后我们提到，对于使用相同动态库的多个程序，整体内存使用可能会更好，而且用户很可能已经拥有最流行的库，或者知道如何快速安装。更重要的是，动态库是在单独的文件中交付的，这些文件必须安装在特定的路径中，以便动态链接器找到，而静态库是作为可执行文件的一部分。这种形式下，静态库使用起来稍微快一些，因为不需要在内存中查找代码的位置。
 
-As library authors, we can decide whether we're providing a static or shared version of the library, or we can simply ship both versions and leave this decision to the programmer using our library. We're opting for the latter here (just to see how it's done).
+作为库作者，可以决定是提供库的静态版本还是动态版本，或者可以简单地提供两个版本，并把这个决定留给使用库的开发者。我们在这里选择后者(只是为了了解如何完成)。
 
-A static library will be consumed by the calc\_test target, which will contain unit tests that guarantee that the provided business functionality of the library works as expected. As mentioned, we're building both versions from the same set of compiled object files. In this scenario, it's perfectly fine to test either version, as there really should be no practical difference in their behavior.
+静态库将由calc\_test目标使用，该目标将包含单元测试，以确保所提供的库业务功能按预期工作。我们从同一组已编译的目标文件构建两个版本，测试任何一个版本都是可以的，因为其行为真的不应该有区别。
 
-The console app provided with calc\_console\_static target will use the shared library. This target will also link against an external dependency: the Functional Terminal (X) User Interface (FTXUI) library by Arthur Sonzogni (there is a link to the GitHub project in the Further reading section). It provides a dependence-free, cross-platform framework for text user interfaces.
+由calc\_console\_static目标提供的控制台应用程序将使用动态库。该目标还将链接到一个外部依赖:Arthur Sonzogni的功能终端用户界面(FTXUI)库(在扩展阅读部分有一个到GitHub项目的链接)。它为文本用户界面提供了一个无依赖性、跨平台的框架。
 
-The last two targets are calc\_console and calc\_console\_test. The calc\_console target is just a bootstrap main() wrapper around calc\_console\_static. Its only purpose is to extract the entry point from the business code. This allows us to write the unit tests (which need to provide their own entry point) and run them from calc\_console\_test.
+最后两个目标是calc\_console和calc\_console\_test。calc\_console目标只是一个围绕calc\_console\_static的bootstrap main()包装器，其唯一目的是从业务代码中提取入口点。可以为其编写单元测试(需要提供接口)，并使用calc\_console\_test运行。
 
-We now know what targets need to be built and how they relate to each other. Let's figure out how to structure the project with files and directories.
+现在知道需要建立什么目标，以及它们之间的关系。来看看如何用文件和目录来组织项目。
 
-\subsubsubsection{12.3.3\hspace{0.2cm}Project file structure}
+\subsubsubsection{12.3.3\hspace{0.2cm}目录结构}
 
-The project consists of two primary targets, the calc library and the calc\_console executable, each of which will reside in directory trees under src and test to separate production code from tests (shown in Figure 12.3). Additionally, we'll have our files in two other directories:
+该项目包含两个主要目标，calc库和calc\_console可执行文件，每个目标都位于src和test下的目录树中，以将生产代码与测试代码分离(如图12.3所示)。此外，文件放在另外两个目录中:
 
 \begin{itemize}
 \item 
-The root directory containing top-level configuration and key project documentation files
+包含顶层配置和关键项目文档文件的根目录
 
 \item 
-The cmake directory for all the utility modules and helper files used by CMake to build and install the project:
+cmake目录中包含用来构建和安装项目的所有工具模块和帮助文件:
 
 \begin{center}
-\includegraphics[width=0.8\textwidth]{content/3/chapter12/images/3.jpg}\\
-Figure 12.3 – The directory structure of the project
+\includegraphics[width=0.6\textwidth]{content/3/chapter12/images/3.jpg}\\
+图12.3 项目的目录结构
 \end{center}
 \end{itemize}
 
-Here's the full list of files in each of the four main directories:
+以下是四个主目录下文件的完整列表:
 
 \begin{table}[H]
 	\centering
@@ -75,9 +75,9 @@ Here's the full list of files in each of the four main directories:
 	\end{tabular}
 \end{table}
 
-Initially, the cmake directory is busier than the business code, but this will quickly change as the project grows in functionality. The effort to start a clean project is significant, but don't worry – it will pay off very soon.
+最初，cmake目录比业务代码更繁忙，但随着项目功能的增长，这种情况将很快发生变化。启动一个清洁项目的努力是很重要的，但不要担心——很快就会得到回报。
 
-We'll go through all files and see in detail what they do and what role they play in the project. This will happen in four steps: building, testing, installing and providing documentation.
+我们将浏览所有文件，详细了解它们的作用以及它们在项目中扮演的角色。这将分为四个步骤:构建、测试、安装和提供文档。
 
 
 

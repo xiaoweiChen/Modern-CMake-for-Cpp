@@ -1,118 +1,118 @@
 
 
-The software we'll be building in this chapter isn't meant to be extremely complex – we'll create a simple calculator that adds two numbers together (Figure 12.1). It will be released as a console application with a text user interface and a library to perform mathematical operations, which can potentially be used in another project. While there isn't much use for such a project in real life, as C++ offers plenty of support for calculations in its standard library, its banality will be perfect to explore how all techniques discussed in this book work together in practice:
+本章中构建的软件并不复杂——我们将创建一个简单的计算器，将两个数字相加(图12.1)。它将作为一个控制台应用程序发布，带有一个文本用户界面和一个用于执行数学运算的库，这可能用于其他项目。虽然在现实生活中这样的项目没有太多用处，因为C++在其标准库中为计算提供了大量支持，但它将完美地用于探索本书中讨论的所有技术如何在实践中协同工作:
 
 \begin{center}
 \includegraphics[width=0.8\textwidth]{content/3/chapter12/images/1.jpg}\\
-Figure 12.1 – The two states of a console calculator's user interface
+图12.1 控制台计算器用户界面的两种状态
 \end{center}
 
-Usually, projects either produce a user-facing executable or a library for developers. Projects that do both are a bit rarer but not totally uncommon – some applications offer standalone SDKs or libraries supporting the creation of plugins. Another case may be a library that offers examples of its usage. The project we'll build in this chapter somewhat fits into the last category.
+通常，项目要么生成面向用户的可执行文件，要么为开发人员生成库。同时具备这两种功能的项目比较少见——一些应用程序提供独立的SDK或库来支持插件，另一种情况可能是提供其用法示例的库。我们在本章中构建的项目在某种程度上属于最后一类。
 
-We will start planning by reviewing the list of chapters, recalling their content, and selecting the techniques and tools described therein that we will use to build our computing application: 
+这里先回顾一下之前章节的内容，并选择其中描述的技术和工具来构建我们的应用程序:
 
-Chapter 1, First Steps with CMake: 
+第1章:
 
-The first chapter gave us basic information on CMake – how to install it and use its command line to build prepared projects. Information on project files provided here will be key: the responsibilities of different files, conventionally used names, and some quirks. In this chapter, we also discussed preset files for generators, but we'll skip these in this project.
+提供关于CMake的基本信息——如何安装它，并使用命令行来构建项目。这里提供的有关项目文件的信息是关键:不同文件的职责、常规使用的名称，以及一些怪癖。本章中，还讨论了生成器的预设文件，但在本项目中先跳过这些文件。
 
-Chapter 2, The CMake Language: 
+第2章:
 
-Here, we introduced tools necessary to write correct listfiles and scripts. We shared fundamental information on code: comments, command invocations, and arguments. We also thoroughly explained variables, lists, and control structures and presented a few very useful commands. This knowledge will be applied throughout the project.
+介绍了编写正确的列表文件和脚本所需的工具，分享了关于代码的基本信息:注释、命令调用和参数。我们还详细解释了变量、列表和控制结构，并给出了一些非常有用的命令。这些知识将应用于整个项目。
 
-Chapter 3, Setting Up Your First CMake Project:
+第3章:
 
-Topics covered in the third chapter will have a critical impact on the project:
+这里的内容将对项目产生关键性影响:
 
 \begin{itemize}
 \item 
-Specifying a minimal CMake version decides which CMake policies will apply; naming, versioning, and configuring a project's language affects the basic behavior of the build.
+指定最低的CMake版本将决定，应用哪些CMake策略;命名、版本控制和配置项目语言会影响构建的基本行为。
 
 \item 
-Insights into project partitioning and structuring that shape the layout of directories and files.
+了解形成目录和文件布局的项目分区和结构。
 
 \item 
-System discovery variables to help us decide how to handle different environments, specifically for this project – for example, do we need to run ldconfig?
+系统发现来帮助我们决定了如何处理不同的环境，特别是对于这个项目——例如，是否需要运行ldconfig?
 
 \item 
-Toolchain configuration allows the requirement of a particular version of C++ and a standard supported by the compiler.
+工具链配置允许特定版本的C++和编译器支持的标准需求。
 \end{itemize}
 
-This chapter also tells us that it's often a good idea to disable in-source builds, so we'll do that.
+本章还说明了禁用源代码内构建通常是一个好主意。
 
-Chapter 4, Working with Targets: 
+第4章:
 
-Here, we highlighted how every modern CMake project makes extensive use of targets. Ours will too, for the following reasons:
+这里，强调了每个现代CMake项目是如何使用目标的，原因如下:
 
 \begin{itemize}
 \item 
-Defining a few libraries and executables (both for test and production) will keep the project organized and DRY.
+定义一些库和可执行程序(用于测试和生产)将使项目保持有组织和DRY。
 
 \item 
-Target properties and transitive usage requirements (propagated properties) keep configuration close to target definitions.
+目标属性和传递性使用需求(传播属性)保持配置接近目标定义。
 
 \item 
-Generator expressions are going to appear throughout the solution, but we'll keep them as simple as possible.
+生成器表达式将在整个解决方案中出现，使它们尽可能简单。
 \end{itemize}
 
-In this project, we'll use custom commands to generate files for Valgrind and coverage reports, and we'll use target hooks (PRE\_BUILD) to clean the .gcda files produced by coverage instrumentation.
+这个项目中，将使用自定义命令为Valgrind和覆盖率报告生成文件，并且使用目标钩子(PRE\_BUILD)，来清理覆盖率工具生成的.gcda文件。
 
-Chapter 5, Compiling C++ Sources with CMake: 
+第5章:
 
-There's no C++ project without compilation. The basics are quite simple, but CMake allows us to tweak this process in so many ways: extend the sources of a target, configure the optimizer, and provide debugging information. For this project, the default compilation flags will do just fine, but we'll go ahead and play a bit with the preprocessor:
+没有编译就没有C++项目，CMake允许我们以多种方式调整这个过程:扩展目标的源、配置优化器和提供调试信息。对于这个项目，默认的编译标志就可以了，但我们将继续使用预处理器:
 
 \begin{itemize}
 \item 
-We'll store build metadata (the project version, build time, and the Git commit SHA) in the compiled executable and show it to the user.
+将在编译后的可执行文件中存储构建元数据(项目版本、构建时间和Git提交SHA)，并将其显示给用户。
 	
 \item 
-We'll enable the precompilation of headers. It's not really a necessity in such a small project, but it will help us practice this concept.
+将启用头文件的预编译。在如此小的项目中，这并不是必须的，但它将帮助我们实践这个知识点。
 \end{itemize}
 
-Unity builds won't be necessary – the project won't be big enough to make adding them worthwhile.
+统一构建将不是必要的——这个项目将不够大，但也可以添加。
 
-Chapter 6, Linking with CMake:
+第6章:
 
-The sixth chapter provides us with general information on linking (useful in any project), most of which comes in handy by default. But since this project also provides a library, we'll explicitly refer to some building instructions on the following:
+提供了关于链接的信息(在任何项目中都很有用)，其中大部分在默认情况下很有用。但是由于这个项目也提供了一个库，将显式地引用以下的一些构建说明:
 
 \begin{itemize}
 \item 
-Static libraries for testing and development
+用于测试和开发的静态库
 
 \item 
-Shared libraries for release
+要发布的动态库
 \end{itemize}
 
-This chapter outlines how to separate main() for testing, which we'll do as well.
+本章概述了如何分离main()进行测试，我们的项目中也有测试。
 
-Chapter 7, Managing Dependencies with CMake:
+第7章:
 
-To make the project more interesting, we'll bring an external dependency: a text UI library. We described a few dependency management methods in this chapter. Picking the right one isn't too difficult: the FetchContent utility module is usually recommended and most convenient (unless we are solving a specific corner case described in the chapter).
+为了使项目更有趣，将引入一个外部依赖项:一个文本UI库。本章中描述了一些依赖管理方法。选择正确的一个并不太难:FetchContent实用程序模块通常是推荐的，也是最方便的(除非解决本章中描述的特定情况)。
 
-Chapter 8, Testing Frameworks:
+第8章:
 
-Proper automated tests are imperative to assure that quality of our solution doesn't degrade over time. We'll add the support for CTest and properly structure our project for testing (we'll apply the main() separation mentioned earlier).
+适当的自动化测试是必须的，以确保解决方案的质量不会随着时间的推移而下降。我们将添加对CTest的支持，并为测试正确地构造项目(将应用前面提到的main()分离)。
 
-Also, in this chapter, we discussed two testing frameworks: Catch2 and GTest with gMock; for this project, we'll use the latter. To get clear information on our coverage, we'll generate HTML reports with LCOV
+此外，还讨论了两个测试框架:Catch2和GTest;对于这个项目，我们将使用后者。为了获得关于覆盖率的明确信息，将生成带有LCOV的HTML报告。
 
-Chapter 9, Program Analysis Tools:
+第9章:
 
-To perform static analysis, we can choose from a variety of tools: Clang-Tidy, Cpplint, Cppcheck, include-what-you-use, and link what you use. In this case, we'll go with Cppcheck , as Clang-Tidy doesn't work very well with precompiled headers built with GCC. The dynamic analysis will be done with Valgrind's Memcheck tool, and we'll use the Memcheck-cover wrapper to generate HTML reports. Our source will be also automatically formatted during the build with ClangFormat.
+要执行静态分析，可以从各种各样的工具中进行选择:Clang-Tidy、Cpplint、Cppcheck、include-what-you-use和连接其他工具。本例中，将使用Cppcheck，因为Clang-Tidy不能很好地处理用GCC编译的预编译头文件。动态分析将使用Valgrind的Memcheck工具完成，将使用Memcheck封面包装器生成HTML报告，源代码也将在编译过程中使用ClangFormat自动格式化。
 
-Chapter 10, Generating Documentation:
+第10章:
 
-Since we'll be providing a library as part of this project, it's key to provide at least some documentation to go with it. As we already know, CMake allows us to automate the generation of it with Doxygen. We'll do that in a refreshed design by adding the doxygenawesome-css look to it.
+因为提供一个库作为这个项目的一部分，所以至少要提供一些与之配套的文档。CMake允许我们用Doxygen自动生成，所以可以通过添加doxygenawesome-css来进行更新文档外观。
 
-Chapter 11, Installing and Packaging:
+第11章:
 
-Finally, we'll configure the installation and packaging of our solution. We'll prepare files to form the package as described, along with target definitions. We'll install that and the artifacts from build targets to appropriate directories by including the GNUInstallDirs module. We will additionally configure a few components to modularize the solution and prepare it for use with CPack.
+最后，配置解决方案的安装和打包，将按照描述准备文件以形成包，以及目标定义。我们将通过包含GNUInstallDirs模块将其和构件从构建目标安装到适当的目录中。我们将另外配置一些组件模块化，并与CPack一起使用。
 
-Professional projects also come with a few text files: README, LICENSE, INSTALL, and so on. We'll touch on this briefly at the end.
+专业项目还附带一些文本文件:README、LICENSE、INSTALL等。我们将在最后简要地讨论这个问题。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-To make things simpler, we won't implement logic that checks whether all the required utilities and dependencies are available. We'll rely on CMake here to show its diagnostics and tell users what's missing. If projects that you publish after reading this book get significant traction, you might want to consider adding these mechanisms to improve the user experience.
+为了使事情更简单，不会实现检查所有必需的实用程序和依赖项是否可用的逻辑。我们将在这里依赖CMake来显示诊断，并告诉用户缺少什么。若在阅读本书后发布的项目获得了显著的吸引力，可能需要考虑添加这些机制来改善用户体验。
 \end{tcolorbox}
 
-Having formed a clear plan, let's discuss how to actually structure the project, both in terms of logical targets and directory structure.
+形成了一个清晰的计划之后，再来讨论如何从逻辑目标和目录结构两方面实际构建项目。
 
 
 

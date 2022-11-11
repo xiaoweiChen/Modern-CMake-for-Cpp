@@ -1,12 +1,12 @@
 
-All build processes work the same way. We start from the top-level listfile and navigate downward into the project source tree. Figure 12.4 shows which project files partake in building. Numbers in parentheses indicate the order of the CMake script execution:
+所有构建流程都以相同的方式工作。从顶层列表文件开始，向下导航到项目源树。图12.4显示了参与构建的项目文件。括号中的数字表示CMake脚本执行的顺序:
 
 \begin{center}
-\includegraphics[width=0.8\textwidth]{content/3/chapter12/images/4.jpg}\\
-Figure 12.4 – Files used in the build stage
+\includegraphics[width=0.6\textwidth]{content/3/chapter12/images/4.jpg}\\
+图12.4 构建阶段使用的文件
 \end{center}
 
-Our top-level listfile will configure the project and load nested elements:
+顶层列表文件将配置项目，并加载嵌套元素:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/CMakeLists.txt
@@ -23,17 +23,17 @@ add_subdirectory(test)
 include(Install)
 \end{lstlisting}
 
-We start by providing key project details and adding a path to the CMake utility modules (the cmake directory in our project). We then disable in-source builds (through a custom module) and include two key directories:
+首先提供关键的项目细节，并添加到CMake实用程序模块的路径(项目中的CMake目录)。然后禁用源代码内构建(通过自定义模块)，并包含两个关键目录:
 
 \begin{itemize}
 \item 
-src, containing the project source (to be named bin in the build tree)
+src，包含项目源(在构建树中命名为bin)
 
 \item 
-test, containing all the testing utilities
+test，包含所有测试实用程序
 \end{itemize}
 
-Finally, we include another module that will set up the installation of the project. This will be discussed in another section. Meanwhile, let's take a look at the NoInSourceBuilds module to understand how it works:
+最后，将包含另一个模块，该模块将设置项目的安装。这将在另一节中讨论。同时，来看一看NoInSourceBuilds模块，了解它是如何工作的:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/NoInSourceBuilds.cmake
@@ -51,9 +51,9 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
 endif()
 \end{lstlisting}
 
-No surprises here – we simply check whether the user provided a destination directory as an argument to the cmake command to store generated files. It has to be a different path than the project source tree. If that's not the case, we inform the user how to provide it and how to clean the repository after the mistake.
+这里没有什么奇怪的——只是检查用户是否提供了一个目标目录作为cmake命令的参数来存储生成的文件，必须是与项目源树不同的路径。若不是这样，会通知用户如何提供，以及在错误发生后如何清理存储库。
 
-Our top-level listfile then includes the src subdirectory, instructing CMake to read the listfile in it:
+顶层列表文件然后包含src子目录，指示CMake读取其中的列表文件:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/src/CMakeLists.txt
@@ -62,11 +62,11 @@ add_subdirectory(calc)
 add_subdirectory(calc_console)
 \end{lstlisting}
 
-This file is very subtle – it simply steps into the nested directories, executing the listfiles in them. Let's follow the listfile of the calc library – it's a bit involved, so we'll discuss it in parts.
+这个文件非常微妙——只是进入嵌套目录，执行其中的列表文件。让我们跟随calc库的列表文件——有点复杂，所以只讨论其中一部分。
 
-\subsubsubsection{12.4.1\hspace{0.2cm}Building the Calc library}
+\subsubsubsection{12.4.1\hspace{0.2cm}构建Calc库}
 
-The list file for calc contains bits of testing configuration, but we'll focus on the building for now; the remainder will be discussed in the Testing and program analysis section:
+calc的列表文件包含一些测试配置，但现在将关注构建;其余的将在测试和程序分析部分讨论:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/src/calc/CMakeLists.txt (fragment)
@@ -89,20 +89,20 @@ target_link_libraries(calc_static calc_obj)
 # ... documentation generation
 \end{lstlisting}
 
-We declare three targets:
+我们声明三个目标:
 
 \begin{itemize}
 \item 
-calc\_obj, an object library compiling a calc.cpp implementation file. It also references the calc.h header file through the PUBLIC\_HEADER property, which can be found in the configured include directory (thanks to generator expressions providing appropriate paths for a specific mode – build or install). By using this library, we avoid repeated compilation of other targets, but we also need to enable POSITION\_INDEPENDENT\_CODE so that generated object files are usable by the shared library.
+编译calc.cpp实现文件的对象库，并通过PUBLIC\_HEADER属性引用calc.h头文件，该属性可以在配置的include目录中找到(由于生成器表达式为特定模式提供了适当的路径——构建或安装)。通过使用这个库，避免了对其他目标的重复编译，但还需要启用POSITION\_INDEPENDENT\_CODE，以便动态库可以使用生成的目标文件。
 
 \item 
-calc\_shared, a shared library depending on calc\_obj.
+calc\_shared，依赖于calc\_obj的动态库。
 
 \item 
-calc\_static, a static library depending on calc\_obj.
+calc\_static，依赖于calc\_obj的静态库。
 \end{itemize}
 
-For completeness, we'll add a listing of the calc library's C++ code:
+完整起见，这里将添加一个calc库的C++代码:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter-12/01-full-project/src/calc/include/calc/calc.h
@@ -115,9 +115,9 @@ namespace Calc {
 } // namespace Calc
 \end{lstlisting}
 
-This code is quite basic: it declares two global functions enclosed in a Calc namespace (C++ namespaces are extremely useful in libraries, helping to avoid name collisions).
+这段代码非常基础:声明了两个包含在Calc命名空间中的全局函数(C++名称空间在库中非常有用，有助于避免名称冲突)。
 
-The implementation file is also very straightforward:
+实现文件也非常简单:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter-12/01-full-project/src/calc/calc.cpp
@@ -133,11 +133,11 @@ int Multiply(int a, int b) {
 } // namespace Calc
 \end{lstlisting}
 
-This wraps up the explanation of files in the src/calc directory. Next up is the src/calc\_console and building the executable of the console calculator using this library.
+这结束了src/calc目录中文件的解释。接下来是src/calc\_console，并使用这个库构建控制台计算器的可执行文件。
 
-\subsubsubsection{12.4.2\hspace{0.2cm}Building the Calc Console executable}
+\subsubsubsection{12.4.2\hspace{0.2cm}构建Calc Console可执行文件}
 
-The source directory of calc\_console contains several files: a listfile, two implementation files (business code and a bootstrap), and a header file. The listfile looks as follows:
+calc\_console的源目录包含几个文件:一个列表文件、两个实现文件(业务代码和一个引导程序)和一个头文件。列表文件如下所示:
 
 \begin{lstlisting}[style=styleCMake]
 chapter-12/01-full-project/src/calc_console/CMakeLists.txt (fragment)
@@ -159,31 +159,31 @@ add_executable(calc_console bootstrap.cpp)
 target_link_libraries(calc_console calc_console_static)
 \end{lstlisting}
 
-The listfile seem very busy, but now, as experienced CMake users, we can easily untangle what's happening inside:
+列表文件看起来很忙，但是现在，作为有经验的CMake用户，可以很容易地理清里面发生的事情:
 
 \begin{itemize}
 \item 
-Include CMake module to fetch FTXUI dependency
+包含CMake模块来获取FTXUI依赖
 
 \item 
-Declare the calc\_console\_static target, which contains the business code, but not the main() function, to allow GTest to define its own entry point.
+声明calc\_console\_static目标，该目标包含业务代码，但不包含main()函数，以允许GTest定义自己的入口点。
 
 \item 
-Add a header precompilation – we're just adding a standard string header to prove a point, but for larger projects, we could add many more (including headers belonging to the project).
+添加头文件的预编译——只是添加一个标准的字符串头文件来证明这一点，但是对于较大的项目，可以添加更多的头文件(包括属于项目的头文件)。
 
 \item 
-Link the business code with the shared calc\_shared library and the FTXUI library.
+将业务代码与calc\_shared库和FTXUI库链接起来。
 
 \item 
-Add all the actions to be taken on this target: the generation of build information, testing, program analysis, and documentation.
+添加要在这个目标上执行的所有操作:生成构建信息、测试、程序分析和文档。
 
 \item 
-Add and link the calc\_console bootstrap executable, which provides the entry point.
+添加并链接calc\_console引导可执行文件，并提供了入口点。
 \end{itemize}
 
-Again, we'll defer discussing testing and documentation to appropriate sections in this chapter. Let's take a look at dependency management and build info generation instead.
+同样，这里把测试和文档的讨论推迟到本章的适当部分。让我们来看看依赖管理和构建信息生成。
 
-Note that we're preferring the utility module over find-module to bring in the FTXUI. This is because it isn't very likely that this dependency is already present in the system. Rather than hoping to find it, we'll fetch and install it:
+注意，我们更喜欢使用实用程序模块，而不是查找模块来引入FTXUI。这是因为该依赖项不太可能已经存在于系统中。而不是希望找到它，我们将获取并安装它:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/GetFTXUI.cmake
@@ -200,22 +200,22 @@ option(FTXUI_BUILD_DOCS "" OFF)
 FetchContent_MakeAvailable(FTXTUI)
 \end{lstlisting}
 
-We're using the recommended FetchContent method, described in detail in Chapter 7, Managing Dependencies with CMake. The only unusual addition is the calls of the option() command. They allow us to skip lengthy steps of the FTXUI build and disengage its installation configuration from the installation of this project. The same will be necessary for GTest dependency. The option() command is referenced in the Further reading section.
+我们使用推荐的FetchContent方法，第7章有详细介绍，唯一不同的添加是对option()指令的调用。其可以跳过FTXUI构建的冗长步骤，并将其安装配置从该项目的安装中分离出来。对于GTest依赖关系也需要同样的操作。option()指令在扩展阅读部分中有引用。
 
-The listfile for calc\_command includes one more custom utility module that is build-related: BuildInfo. We'll use it to record three values that can be surfaced in the executable:
+calc\_command的列表文件还包含一个与构建相关的自定义实用程序模块:BuildInfo。我们将使用它来记录三个可以在可执行文件中显示的值:
 
 \begin{itemize}
 \item 
-SHA of the current Git commit
+当前Git提交的SHA
 
 \item 
-The timestamp of the build
+构建的时间戳
 
 \item 
-The project version specified in the top-level listfile
+顶层列表文件中指定的项目版本
 \end{itemize}
 
-You might remember from Chapter 5, Compiling C++ Sources with CMake, that we can use CMake to capture some build-time values and provide them to C++ code through template files – for example, with a handy C++ struct:
+你可能还记得在第5章中，可以使用CMake来捕获一些构建时的值，并通过模板文件将其提供给C++代码——例如，使用一个C++结构体:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter-12/01-full-project/cmake/buildinfo.h.in
@@ -230,7 +230,7 @@ struct BuildInfo {
 };
 \end{lstlisting}
 
-To fill that structure during the configuration stage, we'll use the following code:
+为了在配置阶段填充该结构，我们会使用以下代码:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/BuildInfo.cmake
@@ -255,17 +255,17 @@ function(BuildInfo target)
 endfunction()
 \end{lstlisting}
 
-Including the module will set variables containing information we're after and then we'll call configure\_file() to generate buildinfo.h. All that's left is to call the BuildInfo function and add the directory of the produced file to include directories of the desired target. The file can be then shared with multiple different consumers if needed. In such a case, you'll probably want to add include\_guard(GLOBAL) at the top of the listfile to avoid running the git command for every target.
+包含该模块将设置包含所需要的信息的变量，然后使用configure\_file()来生成buildinfo.h。剩下的就是调用BuildInfo函数，并添加生成文件的目录，以包含所需目标的目录。然后，可以与多个不同的使用者共享该文件。这种情况下，可能需要在列表文件的顶部添加include\_guard(GLOBAL)，以避免对每个目标都运行git命令。
 
-Before delving into the implementation of the console calculator, I'd like to underline that you shouldn't worry too much about the complexity of the tui.cpp file. To fully understand it, you'll require some knowledge of the FXTUI library – we don't want to get in too deep here. Instead, let's focus on the highlighted lines:
+深入研究控制台计算器的实现之前，不应该过分担心tui.cpp文件的复杂性。要完全理解它，只需要对FXTUI库有一定的了解——这里我们不想太深入。相反，让我们关注突出显示的行:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter-12/01-full-project/src/calc_console/tui.cpp
 
 #include "tui.h"
 #include <ftxui/dom/elements.hpp>
-#include "buildinfo.h"
-#include "calc/calc.h"
+#include "buildinfo.h" // 突出显示的行
+#include "calc/calc.h" // 突出显示的行
 
 using namespace ftxui;
 using namespace std;
@@ -277,29 +277,29 @@ auto component = Container::Vertical({input_a, input_b});
 
 Component getTui() {
 	return Renderer(component, [&] {
-		auto sum = Calc::Sum(stoi(a), stoi(b));
+		auto sum = Calc::Sum(stoi(a), stoi(b)); // 突出显示的行
 		return vbox({
-			text("CalcConsole " + BuildInfo::Version),
-			text("Built: " + BuildInfo::Timestamp),
-			text("SHA: " + BuildInfo::CommitSHA),
+			text("CalcConsole " + BuildInfo::Version), // 突出显示的行
+			text("Built: " + BuildInfo::Timestamp), // 突出显示的行
+			text("SHA: " + BuildInfo::CommitSHA), // 突出显示的行
 			separator(),
 			input_a->Render(),
 			input_b->Render(),
 			separator(),
-			text("Sum: " + to_string(sum)),
+			text("Sum: " + to_string(sum)), // 突出显示的行
 			}) |
 		border;
 	});
 }
 \end{lstlisting}
 
-This piece of code provides a getTui() function, which returns a ftxui::Component, an object that encapsulates an interactive UI element with labels, text fields, separators, and a border. If you're interested in how it works in detail, you'll find suitable references in the Further reading section.
+这段代码提供了一个getTui()函数，返回一个ftxui::Component对象，该对象封装了一个带有标签、文本字段、分隔符和边框的交互式UI元素。若对它的详细工作原理感兴趣，可以在扩展阅读部分找到合适的参考资料。
 
-More importantly, look at the include directives: they refer to the headers we provided earlier with the calc\_obj target and the BuildInfo module. The first line of the lambda function provided to the constructor of the Renderer class will call the library's Calc::Sum method and use the resulting value to print a label with sum (by calling the text() function below).
+更重要的是，了解一下include指令:其引用了用calc\_obj目标和BuildInfo模块提供的头文件。提供给Renderer类构造函数的lambda函数的第一行将调用库的Calc::Sum方法，并使用结果值打印带有Sum的标签(通过调用下面的text()函数)。
 
-Similarly, the labels are used to present the user with the BuildInfo:: values collected at build time in three consecutive calls to text().
+类似地，标签用于向用户显示在构建时，通过连续三次调用text()来收集BuildInfo::values 。
 
-This method has its declaration in the related header file:
+这个方法在相关的头文件中有声明:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter-12/01-full-project/src/calc_console/include/tui.h
@@ -308,7 +308,7 @@ This method has its declaration in the related header file:
 ftxui::Component getTui();
 \end{lstlisting}
 
-This is then used by the bootstrap from the calc\_console target:
+然后，被calc\_console目标使用:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter-12/01-full-project/src/calc_console/bootstrap.cpp
@@ -321,9 +321,9 @@ int main(int argc, char** argv) {
 }
 \end{lstlisting}
 
-This short piece of code utilizes ftxui to create an interactive console screen that takes the Component object returned by getTui(), makes it visible to the user, and collects keyboard events in a loop, creating an interface, as shown in Figure 12.1. Again, understanding this in full isn't really crucial, as the main purpose of ftxui is to provide us with an external dependency that we can use to practice CMake techniques.
+这段简短的代码利用ftxui创建一个交互式控制台屏幕，该屏幕接受getTui()返回的Component对象，使其对用户可见，并在循环中收集键盘事件，创建一个界面，如图12.1所示。同样，理解这一点并不真正重要，因为ftxui的主要目的是为我们提供一个外部依赖项，重要的是其可以使用它来练习CMake技术。
 
-We've covered all the files in the src directory. Let's move on to the aforementioned topic of testing and analyzing the program.
+已经介绍了src目录中的所有文件。然后，测试和分析程序的话题。
 
 
 

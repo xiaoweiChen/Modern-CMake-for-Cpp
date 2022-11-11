@@ -1,28 +1,28 @@
 
-The final element of a professional project is, of course, the documentation. It comes in two categories:
+当然，专业项目的最后一个要素是文档。其分为两类:
 
 \begin{itemize}
 \item 
-Technical documentation (interfaces, designs, classes, and files)
+技术文档(接口、设计、类和文件)
 
 \item 
-General documentation (all other not-as-technical documents)
+一般文档(所有其他非技术文档)
 \end{itemize}
 
-As we saw in Chapter 10, Generating Documentation, a lot of technical documentation can be generated automatically with CMake by using Doxygen.
+正如我们在第10章中看到的，使用Doxygen可以使用CMake自动生成很多技术文档。
 
-\subsubsubsection{12.7.1\hspace{0.2cm}Automatic documentation generation}
+\subsubsubsection{12.7.1\hspace{0.2cm}自动生成文档}
 
-A thing to mention: some projects generate documentation during the build stage and package it with the rest of the project. It's a matter of preference. For this project, we have decided not to do so. You might have a good reason to choose otherwise (such as hosting the documentation online).
+需要提到的一点是:有些项目在构建阶段生成文档，并将其与项目的其余部分打包，这是个人喜好的问题。对于这个项目，不会这样做。您可能有很好的理由选择其他方式(例如在线托管文档)。
 
-Figure 12.7 shows the overview of the execution flow that is used in this process:
+图12.7展示了这个过程中使用的执行流的概述:
 
 \begin{center}
-\includegraphics[width=0.8\textwidth]{content/3/chapter12/images/7.jpg}\\
-Figure 12.7 – Files used to generate documentation
+\includegraphics[width=0.6\textwidth]{content/3/chapter12/images/7.jpg}\\
+图12.7 用于生成文档的文件
 \end{center}
 
-To generate documentation for our targets, we'll create another CMake utility module, Doxygen. We'll start by using the Doxygen find-module and downloading the doxygen-awesome-css project for themes:
+为了为我们的目标生成文档，将创建另一个CMake实用程序模块Doxygen。这里可以使用Doxygen查找模块，并下载Doxygen的-awesome-css主题:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/Doxygen.cmake (fragment)
@@ -38,7 +38,7 @@ FetchContent_Declare(doxygen-awesome-css
 FetchContent_MakeAvailable(doxygen-awesome-css)
 \end{lstlisting}
 
-Then, we'll need a function to create targets that generate documentation. We'll draw closely from code introduced in Chapter 10, Generating Documentation, and modify it to support many targets:
+然后，需要一个函数来创建生成文档的目标。这将借鉴第10章介绍的代码，并对其进行修改以支持多个目标。
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/Doxygen.cmake (continued)
@@ -61,7 +61,7 @@ function(Doxygen target input)
 endfunction()
 \end{lstlisting}
 
-Now, we need to use this function by calling it for the library target:
+现在，需要通过为库目标调用来使用这个函数:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/src/calc/CMakeLists.txt (continued)
@@ -72,7 +72,7 @@ include(Doxygen)
 Doxygen(calc src/calc)
 \end{lstlisting}
 
-And we call it for the console executable:
+我们为控制台可执行文件调用它:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/src/calc_console/CMakeLists.txt (continued)
@@ -86,39 +86,39 @@ add_executable(calc_console bootstrap.cpp)
 target_link_libraries(calc_console calc_console_static)
 \end{lstlisting}
 
-Two new targets are added to the project: doxygen-calc and doxygen-calc\_console, and technical documentation can be generated on demand.
+项目中添加了两个新目标: doxygen-calc和dooxygen-calc\_console，并且可以按需生成技术文档。
 
-What other documents should we provide?
+还需要提供其他什么文件么?
 
-\subsubsubsection{12.7.2\hspace{0.2cm}Not-so-technical documents of professional project}
+\subsubsubsection{12.7.2\hspace{0.2cm}非技术性文件}
 
-Professional projects should always include at least two documents that are stored in a top-level directory:
-
-\begin{itemize}
-\item 
-README – generally describes the project
-
-\item 
-LICENSE – specifies the legal characteristics of the project
-\end{itemize}
-
-You might also consider adding these:
+专业的项目应该始终包含至少两个存储在顶层目录中的文档:
 
 \begin{itemize}
 \item 
-INSTALL – describes the steps required for installation
+README – 项目概述
 
 \item 
-CHANGELOG – lists important changes that happened in different versions
-
-\item 
-AUTHORS – contains credits and contact information if a project has multiple contributors
-
-\item 
-BUGS – informs about known bugs and instructs how to report new ones
+LICENSE – 指定项目的法律条款
 \end{itemize}
 
-CMake as such doesn't play any role when it comes to these files – there's no automated behavior or scripts to use. However, these files are an essential part of C++ projects and should be covered for completeness. For reference, we'll provide a minimal set of exemplary files, starting with a short README file:
+也可以考虑添加以下内容:
+
+\begin{itemize}
+\item 
+INSTALL – 描述安装所需的步骤
+
+\item 
+CHANGELOG – 列出在不同版本中发生的重要更改
+
+\item 
+AUTHORS – 若项目有多个贡献者，则包含名单和联系信息
+
+\item 
+BUGS – 告知已知的错误，并指导如何报告新错误
+\end{itemize}
+
+当涉及到这些文件时，CMake本身并没有发挥声明作用——没有自动的行为或脚本可以使用。然而，这些文件是C++项目的重要组成部分，为了完整性，应该将其涵盖。作为参考，这里将提供一个最小的示例文件集，从一个简短的README文件开始:
 
 \begin{lstlisting}[style=stylePython]
 # chapter-12/01-full-project/README.md
@@ -135,9 +135,9 @@ This application is written in C++ and built with CMake.
 - License is in the LICENSE file
 \end{lstlisting}
 
-This is short and maybe a little silly. Note the .md extension – it stands for Markdown, which is a text-based formatting language that is easily readable. Websites such as GitHub and many text editors will render these files with rich formatting.
+这句话很短，可能有点傻。注意扩展名.md——代表Markdown，这是一种基于文本的格式化语言，易于阅读。像GitHub这样的网站和许多文本编辑器将以丰富的格式呈现这些文件。
 
-Our INSTALL file will look like this:
+INSTALL文件看起来像这样:
 
 \begin{lstlisting}[style=stylePython]
 # chapter-12/01-full-project/INSTALL
@@ -169,9 +169,9 @@ cmake --build <temporary-directory> -t doxygen-calc
 cmake --build <temporary-directory> -t doxygen-calc_console
 \end{lstlisting}
 
-This file turned out to be a bit longer, but it covers the most important requirements, steps, and commands, and it will work just fine for our needs.
+这个文件有点长，但涵盖了最重要的需求、步骤和命令，可以很好地满足我们的需求。
 
-The LICENSE file is a bit tricky, as it requires some expertise in copyright law (and otherwise). Instead of writing all clauses by ourselves, we can do what many other projects do and use a readily available software license. For this project, we'll go with the MIT License, which is extremely permissive. You might want to choose something else, depending on the needs of a specific project – check the Further reading section for some useful references:
+LICENSE文件有点棘手，因为它需要版权法方面的一些专业知识(或其他)。我们不需要自己编写所有的条款，而是可以像许多其他项目一样使用现成的软件许可。对于这个项目，我们将使用MIT许可证。根据具体项目的需要你可能想要选择其他的东西——查看扩展阅读部分，以获得一些有用的参考:
 
 \begin{lstlisting}[style=stylePython]
 # chapter-12/01-full-project/LICENSE
@@ -200,7 +200,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 \end{lstlisting}
 
-Lastly, we have the CHANGELOG. As suggested earlier, it's good to keep track of changes in a file so that developers using your project can easily find out which version supports the features they need. For example, it might be useful to say that a multiplication feature was added to the library in version 0.8.2. Something as simple as the following is already helpful:
+最后，是CHANGELOG，最好跟踪文件中的更改，以便使用项目的开发人员可以轻松地找到支持所需特性的版本。例如，在0.8.2版本中向库添加了乘法特性，这样说可能会很有用。像下面这样简单的方法已经很有帮助了:
 
 \begin{lstlisting}[style=stylePython]
 # chapter-12/01-full-project/CHANGELOG
@@ -211,7 +211,7 @@ Lastly, we have the CHANGELOG. As suggested earlier, it's good to keep track of 
 0.2.0 Basic Calc library with Sum function
 \end{lstlisting}
 
-Our professional project is now complete – we can build it, test it, generate packages, upload all sources to a repository, and release artifacts. Of course, it would be easier if this could happen automatically, perhaps with a CI/CD pipeline. But that's a story for another book.
+我们的项目现在已经完成了——可以构建它、测试它、生成包、将所有源代码上传到存储库，并发布工件。当然，若这可以自动发生，也许可以使用CI/CD流水，那就更容易了。但那是另一本书所要做的事情了。
 
 
 

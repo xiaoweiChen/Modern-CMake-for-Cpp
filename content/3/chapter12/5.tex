@@ -1,13 +1,13 @@
 
 
-Program analysis and testing go hand in hand to assure the quality of our solutions. For example, running Valgrind becomes more consistent when test code is used. For this reason, we'll configure those two things together. Figure 12.5 illustrates the execution flow and files needed to set them up (a few snippets will be added to the src directory):
+程序分析和测试一起进行，以确保解决方案的质量。例如，当使用测试代码时，运行Valgrind会变得更加一致。出于这个原因，可以将这两个东西配置在一起。图12.5演示了执行流程和设置它们所需的文件(一些代码片段将被添加到src目录):
 
 \begin{center}
-\includegraphics[width=0.8\textwidth]{content/3/chapter12/images/5.jpg}\\
-Figure 12.5 – Files used to enable testing and program analysis
+\includegraphics[width=0.6\textwidth]{content/3/chapter12/images/5.jpg}\\
+图12.5 启动测试和程序分析
 \end{center}
 
-As we already know, tests live in the test directory, and their listfile gets executed from the top-level listfile with the add\_subdirectory() command. Let's see what's inside:
+测试位于test目录中，其列表文件通过add\_subdirectory()指令从顶级列表文件中执行。来看看里面有什么:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/test/CMakeLists.txt
@@ -17,7 +17,7 @@ add_subdirectory(calc)
 add_subdirectory(calc_console)
 \end{lstlisting}
 
-Testing utilities defined in the Testing module are included at this level to allow both target groups (from the calc and the calc\_console directories) to use them:
+Testing模块中定义的测试实用程序包含在这个级别，以允许两个目标组(来自calc和calc\_console目录)使用它们:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/Testing.cmake (fragment)
@@ -38,9 +38,9 @@ FetchContent_MakeAvailable(googletest)
 ...
 \end{lstlisting}
 
-We enabled testing and included the FetchContent module to get GTest and GMock. We're not really using GMock in this project, but these two frameworks are bundled in a single repository, so we need to configure GMock as well. The highlighted part of this configuration disengages the installation of both frameworks from the installation of our project (by setting the appropriate option() to OFF).
+启用了测试并包含了FetchContent模块来获取GTest和GMock，这个项目中并没有真正使用GMock，但是这两个框架捆绑在一个存储库中，因此还需要配置GMock。该配置中突出显示的部分将这两个框架的安装从我们的项目安装中分离出来(通过将适当的option()设置为OFF)。
 
-Next, we need to create a function that enables the thorough testing of business targets. We'll keep it in the same file:
+接下来，需要创建一个功能，支持对业务目标进行彻底的测试。可以将它保存在同一个文件中:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/Testing.cmake (continued)
@@ -57,11 +57,11 @@ macro(AddTests target)
 endmacro()
 \end{lstlisting}
 
-Here, we first include the necessary modules: GoogleTest is bundled with CMake, but Coverage and Memcheck will be written by us. We then provide an AddTests macro, which will prepare a target for testing, instrument coverage, and memory checking. Let's see how it works in detail.
+这里，首先包含了必要的模块:GoogleTest与CMake捆绑在一起，但Coverage和Memcheck由我们编写。然后提供一个AddTests宏，其为测试、代码覆盖和内存检查准备一个目标。让我们详细看看它是如何工作的。
 
-\subsubsubsection{12.5.1\hspace{0.2cm}Preparing the coverage module}
+\subsubsubsection{12.5.1\hspace{0.2cm}准备覆盖率模块}
 
-Adding coverage to multiple targets is a little bit tricky, as it consists of a few steps. We start by introducing two functions that enable coverage tracking and clean stale tracking files between builds:
+添加覆盖多个目标有点棘手，因为它包含几个步骤。首先引入两个函数，用于在构建之间启用覆盖率跟踪和清理过时的跟踪文件:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/Coverage.cmake (fragment)
@@ -81,7 +81,7 @@ function(CleanCoverage target)
 endfunction()
 \end{lstlisting}
 
-The preceding functions will be used later, when we get to individual target configurations (calc\_... and calc\_console\_...). The Coverage module will also provide a function that generates the custom coverage target:
+当得到单独的目标配置(calc\_... 和calc\_console\_...)，前面的函数将在后面使用。Coverage模块会将提供一个生成自定义覆盖目标的函数:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/Coverage.cmake (continued)
@@ -103,20 +103,20 @@ function(AddCoverage target)
 endfunction()
 \end{lstlisting}
 
-AddCoverage() is called in the AddTests() function in the Testing module. It differs slightly from the one introduced in Chapter 8, Testing Frameworks, as it takes the name of the target into account and adds it to the output path to avoid any collisions.
+AddCoverage()在测试模块中的AddTests()函数中调用。它与第8章中介绍的略有不同，因为其考虑了目标的名称，并将其添加到输出路径，以避免冲突。
 
-To generate reports for both test targets, we simply need to run two cmake commands (after configuring the project with the Debug build type):
+要为两个测试目标生成报告，只需要运行两个cmake命令(在用Debug构建类型配置项目之后):
 
 \begin{tcblisting}{commandshell={}}
 cmake --build <build-tree> -t coverage-calc_test
 cmake --build <build-tree> -t coverage-calc_console_test
 \end{tcblisting}
 
-It's now time to modify the Memcheck module that we created earlier (in Chapter 9, Program Analysis Tools) to handle multiple targets.
+现在是时候修改我们前面创建的Memcheck模块了(第9章)，以处理多个目标。
 
-\subsubsubsection{12.5.2\hspace{0.2cm}Preparing the Memcheck module}
+\subsubsubsection{12.5.2\hspace{0.2cm}准备Memcheck模块}
 
-Generation of the Valgrind memory management report is called by AddTests(). We'll start this module with the general setup:
+AddTests()使用Valgrind内存管理报告的生成，这里将从这个模块设置开始:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/Memcheck.cmake (fragment)
@@ -130,7 +130,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(memcheck-cover)
 \end{lstlisting}
 
-We're familiar with this code already; let's look at the function that'll create appropriate targets for report generation:
+我们已经熟悉了这段代码，来看看如何为报表生成创建适当的目标函数:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/Memcheck.cmake (continued)
@@ -151,39 +151,39 @@ function(AddMemcheck target)
 endfunction()
 \end{lstlisting}
 
-To handle multiple targets, the REPORT\_PATH variable is set to store the path to a targetspecific report. This variable is then used in subsequent commands.
+为了处理多个目标，REPORT\_PATH变量可置为存储特定于目标的报表的路径。然后在后续的命令中使用该变量。
 
-Generation of Memcheck reports can be achieved with following commands (this works better in the Debug build type):
+生成Memcheck报告可以通过以下命令实现(Debug构建类型中可以工作得更好):
 
 \begin{tcblisting}{commandshell={}}
 cmake --build <build-tree> -t memcheck-calc_test
 cmake --build <build-tree> -t memcheck-calc_console_test
 \end{tcblisting}
 
-These are all modules used by the Testing module. Let's see how it is used.
+这些都是Testing模块使用的所有模块，来看看这是如何使用的。
 
-\subsubsubsection{12.5.3\hspace{0.2cm}Applying testing scenarios}
+\subsubsubsection{12.5.3\hspace{0.2cm}应用测试场景}
 
-A few things have to happen for the testing to work:
+要让测试起作用，需要做几件事:
 
 \begin{enumerate}
 \item 
-We need to create nested listfiles and define test targets for both directories.
+需要创建嵌套的列表文件，并为两个目录定义测试目标。
 
 \item 
-Unit tests need to be written and prepared as executable targets.
+单元测试需要编写并准备为可执行目标。
 
 \item 
-These targets need to have AddTests() called on them.
+需要对这些目标调用AddTests()。
 
 \item 
-Software Under Test (SUT) needs to be instrumented to enable coverage collection.
+测软件(SUT)需要启用覆盖收集。
 
 \item 
-Collected coverage should be cleaned between the builds to avoid segmentation faults.
+收集的覆盖率应该在构建之间进行清理，以避免段错误。
 \end{enumerate}
 
-As implied in test/CMakeLists.txt, we'll create two nested listfiles that configure our tests. Once more, we'll provide one for the library:
+正如test/CMakeLists.txt中所示，将创建两个嵌套的列表文件来配置我们的测试。再一次，将为库提供一个覆盖率测试:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/test/calc/CMakeLists.txt (fragment)
@@ -194,7 +194,7 @@ AddTests(calc_test)
 EnableCoverage(calc_obj)
 \end{lstlisting}
 
-We'll also provide one for the executable:
+还将为可执行文件提供一个覆盖率测试:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/test/calc_console/CMakeLists.txt (fragment)
@@ -205,7 +205,7 @@ AddTests(calc_console_test)
 EnableCoverage(calc_console_static)
 \end{lstlisting}
 
-To keep things brief, we'll provide as simple unit tests as possible. One file will cover the library:
+简单起见，将提供尽可能简单的单元测试。一个文件将覆盖这个库:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter-12/01-full-project/test/calc/calc_test.cpp
@@ -221,7 +221,7 @@ TEST(CalcTest, MultiplyMultipliesTwoInts) {
 }
 \end{lstlisting}
 
-And we'll have a second file to test the business code. For this purpose, we'll use the FXTUI library. Again, there's no expectation that you will understand this source code in every detail. Test listings are provided in this chapter merely for completeness:
+我们将有第二个文件来测试业务代码。为此，将使用FXTUI库。同样，并不期望您能够理解这段源代码的所有细节。本章提供测试清单只是为了项目的完整性:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter-12/01-full-project/test/calc_console/tui_test.cpp
@@ -242,11 +242,11 @@ TEST(ConsoleCalcTest, RunWorksWithDefaultValues) {
 }
 \end{lstlisting}
 
-This test code simply renders the textual UI in a default state to a static screen object, which then gets stored in a string. In order for the test to pass, the output needs to contain a substring with the default sum.
+这段测试代码只是将默认状态下的文本UI呈现给静态屏幕对象，然后将其存储在字符串中。为了让测试通过，输出需要包含一个带有默认和的子字符串。
 
-Now, we'll need to complete the remaining steps: after we have created test targets and prepared their source code, it's time to register them in CPack with the AddTests() function from the Testing module.
+现在，需要完成剩下的步骤:在创建测试目标并准备好它们的源代码之后，使用Testing模块中的AddTests()函数将它们注册到CTest中了。
 
-We do this for the library:
+我们对库这样做:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/test/calc/CMakeLists.txt (continued)
@@ -256,7 +256,7 @@ AddTests(calc_test)
 EnableCoverage(calc_obj)
 \end{lstlisting}
 
-We then do it for the executable:
+然后为可执行文件这样做:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/test/calc_console/CMakeLists.txt (continued)
@@ -266,13 +266,13 @@ AddTests(calc_console_test)
 EnableCoverage(calc_console_static)
 \end{lstlisting}
 
-Subsequently, we instruct the SUT to enable coverage instrumentation with EnableCoverage(). Note that in the case of the library, we had to add instrumentation to the object library rather than the static one. This is because the -{}-coverage flag has to be added to the compilation step, which happens when calc\_obj is being built. Unfortunately, we can't add cleaning of the coverage files here, as CMake requires add\_custom\_command hooks to be called in the same directory as the target definition.
+随后，SUT使用EnableCoverage()启用覆盖检测。注意，在库的情况下，必须向对象库添加工具，而不是静态库。这是因为-{}-coverage标志必须添加到编译步骤中，这是在构建calc\_obj时发生的。不过，我们不能在这里添加对覆盖文件的清理，因为CMake要求在与目标定义相同的目录中使用add\_custom\_command钩子。
 
-This brings us back to the src/calc and src/calc\_console listfiles that we didn't complete previously. We'll need to add CleanCoverage(calc\_static) and CleanCoverage(calc\_console\_static) respectively (we have to include the Coverage module first). What else needs to be added to these files? Instructions to enable static analysis!
+这将我们带回到之前没有完成的src/calc和src/calc\_console列表文件。需要添加CleanCoverage(calc\_static)和CleanCoverage(calc\_console\_static)(必须首先包含Coverage模块)。还需要向这些文件添加什么?说明启用静态分析!
 
-\subsubsubsection{12.5.4\hspace{0.2cm}Adding static analysis tools}
+\subsubsubsection{12.5.4\hspace{0.2cm}添加静态分析工具}
 
-We postponed the continuation of business code listfiles until now so that we can discuss added modules in the appropriate context. We can add a CleanCoverage function call and a few other things to the library listfile:
+我们将业务代码列表文件的延续推迟到现在，以便能够在适当的上下文中讨论添加的模块。可以在库列表文件中添加CleanCoverage函数调用和其他一些东西:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/src/calc/CMakeLists.txt (continued)
@@ -287,7 +287,7 @@ AddCppCheck(calc_obj)
 # ... documentation generation
 \end{lstlisting}
 
-We can also add them to the executable:
+我们还可以将它们添加到可执行文件中:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/src/calc_console/CMakeLists.cmake (continued)
@@ -305,9 +305,9 @@ AddCppCheck(calc_console_static)
 # ... calc_console bootstrap target definition
 \end{lstlisting}
 
-These files are almost complete now (as the second comment suggests, we still need to add the documentation code, which will happen in the Automatic documentation generation section).
+这些文件现在几乎已经完成了(正如第二条注释的建议，仍然需要添加文档代码，这将在自动文档生成部分进行)。
 
-Two new modules appear in the listings: Format and CppCheck. Let's dive into the first one:
+清单中出现了两个新模块:Format和CppCheck。来看看第一个问题:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/Format.cmake
@@ -325,9 +325,9 @@ function(Format target directory)
 endfunction()
 \end{lstlisting}
 
-The Format() function is an exact copy of the formatting function described in Chapter 9, Program Analysis Tools; we're simply reusing it here.
+Format()函数与第9章中描述的格式化函数完全相同，只是在这里重用它。
 
-Next up is a completely new CppCheck module:
+接下来是全新的CppCheck模块:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/CppCheck.cmake
@@ -341,19 +341,19 @@ function(AddCppCheck target)
 endfunction()
 \end{lstlisting}
 
-This is simple and convenient. You may see some resemblance to the Clang-Tidy module (from Chapter 9, Program Analysis Tools); this is CMake's strength – many concepts working the same way. Note the arguments passed to cppcheck:
+这既简单又方便，可能会看到一些类似于Clang-Tidy模块(第9章)的地方。这就是CMake的优势——许多概念以相同的方式工作。注意传递给cppcheck的参数:
 
 \begin{itemize}
 \item 
--{}-enable=warning – This specifies that we'd like to get warning messages. You can enable additional checks – refer to the Cppcheck manual for more details (the link can be found in the Further reading section).
+-{}-enable=warning – 指定我们希望获得警告消息，可以启用其他检查——更多详细信息请参阅Cppcheck手册(链接可在扩展阅读部分找到)。
 
 \item 
--{}-error-exitcode=10 – This specifies that we'd like to get an error code when cppcheck detects an issue. This can be any number from 1 to 255 (as 0 indicates success), although some numbers can be reserved by the system.
+-{}-error-exitcode=10 – 这指定当cppcheck检测到问题时，希望获得错误代码。这可以是从1到255的任何数字(0表示成功)，尽管有些数字可以由系统保留。
 \end{itemize}
 
-Usage is very convenient – calling AddCppCheck will inform CMake that it needs to run the checks automatically on the specified target.
+使用非常方便——使用AddCppCheck将通知CMake需要在指定的目标上自动运行检查。
 
-We have virtually created all files in the src and test subdirectories. Now, our solution builds and can be fully tested. It's finally time to move to installation and packaging.
+实际上已经在src和test子目录中创建了所有文件。现在，可以构建我们的解决方案并，对其进行全面测试。现在终于到了进行安装和打包的时候了。
 
 
 
