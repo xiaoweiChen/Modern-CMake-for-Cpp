@@ -1,5 +1,5 @@
 
-CMake使用相当多的文件来管理它的项目。修改文件内容之前，让我们尝试对每个文件的作用有一个大致的了解。重要的是，即使文件包含CMake语言命令，也不能确定它是为开发人员编辑而设计的。生成一些文件供后续工具使用，对这些文件所做的修改都将在某个阶段重写。高级用户根据自己的需要，使用其他文件对项目进行调整。最后，还有一些临时文件在特定的上下文中可以提供有价值的信息。本节还将说明它们中的哪些不应该位于版本控制系统中。
+CMake使用文件来管理项目。修改文件内容之前，尝试对每个文件的作用有一个大致的了解，即使文件包含CMake语言命令，也不能确定它是为开发人员编辑而设计的。生成一些文件供后续工具使用，对这些文件的修改都将在某个阶段重写。高级用户根据自己的需要，使用其他文件对项目进行调整。最后，还有一些临时文件在特定的上下文中可以提供有价值的信息。本节还将说明它们中的哪些不应该位于版本控制系统中。
 
 \subsubsubsection{1.5.1\hspace{0.2cm}源码树}
 
@@ -23,7 +23,7 @@ CMake使用相当多的文件来管理它的项目。修改文件内容之前，
 
 \subsubsubsection{1.5.2\hspace{0.2cm}构建树}
 
-CMake使用这个目录来存储构建过程中生成的所有内容:项目的构件、瞬态配置、缓存、构建日志，以及本地构建工具将创建的文件。此目录的可选名称包括构建树。
+CMake使用这个目录来存储构建过程中生成的所有内容:项目的构件、配置、缓存、构建日志，以及本地构建工具将创建的文件。此目录的可选名称包括构建树。
 
 以下是这个目录的几个关键点:
 
@@ -35,7 +35,7 @@ CMake使用这个目录来存储构建过程中生成的所有内容:项目的�
 不要将这个目录添加到VCS——其特定于系统。
 
 \item 
-CMake推荐源外构建或在与所有源文件分离的目录中生成工件的构建。通过这种方式，可以避免使用临时的、系统特定的文件(或源内构建)污染项目的源码树。
+CMake推荐源外构建或在与所有源文件分离的目录中生成工件的构建，可以避免使用临时的、系统特定的文件(或源内构建)污染项目的源码树。
 
 \item 
 可由-B指定，若提供了到源码的路径，则作为cmake命令的最后一个参数，例如，\texttt{cmake -S ../project ./.}
@@ -45,28 +45,28 @@ CMake推荐源外构建或在与所有源文件分离的目录中生成工件的
 \end{itemize}
 
 
-\subsubsubsection{1.5.3\hspace{0.2cm}listfiles}
+\subsubsubsection{1.5.3\hspace{0.2cm}文件列表}
 
-包含CMake语言的文件称为listfiles，可以通过使用include()和find\_package()，或间接使用add\_subdirectory()来将其包含在另一个文件中:
+包含CMake语言的文件称为文件列表，可以通过使用include()和find\_package()，或间接使用add\_subdirectory()来将其包含在另一个文件中:
 
 \begin{itemize}
 \item 
 CMake不会强制对这些文件进行一致的命名，通常的扩展名为.cmake。
 
 \item 
-主CMakeLists.txt的文件非常重要，它是在配置阶段执行的第一个文件，需要放在源树的顶层。
+主CMakeLists.txt的文件非常重要，在配置阶段执行的第一个文件，需要放在源树的顶层。
 
 \item 
-当CMake遍历源码树，并包含不同的listfiles时，内置了以下变量:CMAKE\_CURRENT\_LIST\_DIR、CMAKE\_CURRENT\_LIST\_FILE、CMAKE\_PARENT\_LIST\_FILE和CMAKE\_CURRENT\_LIST\_LINE。
+当CMake遍历源码树，并包含不同的文件列表时，内置了以下变量:CMAKE\_CURRENT\_LIST\_DIR、CMAKE\_CURRENT\_LIST\_FILE、CMAKE\_PARENT\_LIST\_FILE和CMAKE\_CURRENT\_LIST\_LINE。
 \end{itemize}
 
 \subsubsubsection{1.5.4\hspace{0.2cm}CMakeLists.txt}
 
-CMake项目配置为CMakeLists.txt列表文件，需要在源码树根部提供一个。这样的顶层文件是在配置阶段首先执行的，它应该至少包含两个命令:
+CMake项目配置为CMakeLists.txt列表文件，需要在源码树根部提供。这样的顶层文件是在配置阶段首先执行的，至要少包含两个命令:
 
 \begin{itemize}
 \item 
-cmake\_minimum\_required(VERSION <x.xx>): 设置CMake的期望版本(并隐式地告诉CMake要对遗留行为应用哪些策略)。
+cmake\_minimum\_required(VERSION <x.xx>): 设置CMake的期望版本(并隐式地告诉CMake要对遗留行为使用哪些策略)。
 
 \item 
 project(<name> <OPTIONS>): 这用于命名项目(提供的名称将存储在PROJECT\_NAME中)并指定配置它的选项(将在第2章中进一步讨论这个问题)。
@@ -81,7 +81,7 @@ api/api.h
 api/api.cpp
 \end{tcblisting}
 
-可以使用一个非常简单的CMakeLists.txt文件将它们组合在一起:
+可以使用简单的CMakeLists.txt文件将它们组合在一起:
 
 \begin{lstlisting}[style=styleCMake]
 cmake_minimum_required(VERSION 3.20)
@@ -90,7 +90,7 @@ message("Top level CMakeLists.txt")
 add_subdirectory(api)
 \end{lstlisting}
 
-项目的主要方面包含在顶层文件中:管理依赖项、声明需求和检测环境。这个文件中，还有一个add\_subdirectory(api)指令来包含另一个CMakeListst。执行特定于应用api部分的指令。
+项目的主要方面包含在顶层文件中:管理依赖项、声明需求和检测环境。文件中，还有一个add\_subdirectory(api)指令来包含另一个CMakeListsts.txt。执行特定于应用API部分的指令。
 
 \subsubsubsection{1.5.5\hspace{0.2cm}CMakeCache.txt}
 
@@ -127,26 +127,26 @@ CMAKE_CACHE_MINOR_VERSION:INTERNAL=19
 // ... more variables here ...
 \end{lstlisting}
 
-从标题中的注释中观察到的，这种格式不言自明。EXTERNAL部分中的缓存项是供用户修改的，而INTERNAL部分是由CMake管理的。注意，不建议手动更改它们。
+从注释中观察到的，EXTERNAL部分中的缓存项是供用户修改的，而INTERNAL部分是由CMake管理的。注意，不建议手动更改它们。
 
 以下是需要记住的几个要点:
 
 \begin{itemize}
 \item 
-可以通过调用cmake(请参阅掌握命令行部分中的缓存选项)或通过ccmake/cmakegui管理该文件。
+可以通过调用cmake(请参阅命令行部分中的缓存选项)或通过ccmake/cmake-gui管理该文件。
 
 \item 
-可以通过删除该文件将项目重置为默认配置，将从listfiles中重新生成。
+可以通过删除该文件将项目重置为默认配置，将从列表文件中重新生成。
 
 \item 
 缓存变量可以从列表文件中读写。有时候，变量参考的评估有点复杂，将在第2章中更详细地讨论它。
 \end{itemize}
 
-\subsubsubsection{1.5.6\hspace{0.2cm}包的config文件}
+\subsubsubsection{1.5.6\hspace{0.2cm}包配置文件}
 
 CMake生态系统包括项目可以依赖的外部包，允许开发人员以无缝的、跨平台的方式使用库和工具。支持CMake的包应该提供一个配置文件，以便CMake理解如何使用它们。
 
-我们将在第11章中学习如何编写这些文件。同时，这里有一些知识点需要记住:
+我们将在第11章中学习如何编写这些文件。同时，有一些知识点需要了解:
 
 \begin{itemize}
 \item 
@@ -170,13 +170,13 @@ CMake提供了包注册表，用于在系统范围内为每个用户存储包。
 
 \subsubsubsection{1.5.7\hspace{0.2cm}cmake\_install.cmake，CTestTestfile.cmake和CPackConfig.cmake}
 
-这些文件是由生成阶段的cmake可执行文件在构建树中生成的，它们不应该通过手动编辑。CMake使用它们作为CMake安装操作、CTest和CPack的配置。若正在实现一个内源代码构建(不推荐)，那么将它们添加到VCS的忽略文件中可能是个好主意。
+这些文件是由生成阶段的cmake可执行文件在构建树中生成的，不应该通过手动编辑。CMake使用它们作为CMake安装操作、CTest和CPack的配置。若正在实现一个内源代码构建(不推荐)，则将它们添加到VCS的忽略文件中可能是个好主意。
 
 \subsubsubsection{1.5.8\hspace{0.2cm}CMakePresets.json和CMakeUserPresets.json}
 
 当需要明确缓存变量、所选择的生成器、构建树的路径等时，项目的配置可能会成为一项相对繁忙的任务——特别是当有多种构建项目的方法时。这就处于预设的用武之地了。
 
-用户可以通过GUI选择预置，也可以使用命令行-{}-listpresets并使用-{}-preset=选项为构建系统选择预置。
+用户可以通过GUI选择预置，也可以使用命令行-{}-listpresets，并使用-{}-preset=选项为构建系统选择预置。
 
 预设值以相同的JSON格式存储在两个文件中:
 
@@ -185,10 +185,10 @@ CMake提供了包注册表，用于在系统范围内为每个用户存储包。
 CMakePresets.json: 项目作者提供的预设。
 
 \item 
-CMakeUserPresets.json: 这是为希望根据自己的偏好定制项目配置用户准备的(可以将其添加到VCS的忽略文件中)。
+CMakeUserPresets.json: 根据自己的偏好定制项目配置用户准备的(可以将其添加到VCS的忽略文件中)。
 \end{itemize}
 
-预设是项目文件，然而在项目中并不是必需的，只有当我们完成初始设置时，预设才会有用。所以，若需要的话，可以跳到下一节:
+预设是项目文件，在项目中并不是必需的，只有完成初始设置时，预设才会有用。所以，若不需要的话，可以跳到下一节:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-01/02-presets/CMakePresets.json
@@ -222,7 +222,7 @@ vendor: IDE可以使用这个可选字段来存储它的元数据，其是一个
 configurePresets: 一个可选的可用预设数组。
 \end{itemize}
 
-让我们在configurePresets数组中添加两个预设值:
+在configurePresets数组中添加两个预设值:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-01/02-presets/CMakePresets.json : my-preset
@@ -250,7 +250,7 @@ configurePresets: 一个可选的可用预设数组。
 },
 \end{lstlisting}
 
-该文件支持树状结构，其中子预设从多个父预设继承属性。所以可以创建前面预设的副本，并且只覆盖我们需要的字段。下面是一个子预设的例子:
+该文件支持树状结构，其中子预设从多个父预设继承属性。可以创建前面预设的副本，并且只覆盖我们需要的字段。下面是一个子预设的例子:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-01/02-presets/CMakePresets.json : my-preset-multi
@@ -264,7 +264,7 @@ configurePresets: 一个可选的可用预设数组。
 \end{lstlisting}
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-CMake文档只标记了一些明确需要的字段。但是，还有一些其他的字段标记为可选的，这些字段必须在预设中提供，或者从其父字段继承。
+CMake文档只标记了一些明确需要的字段，还有一些其他的字段标记为可选的，这些字段必须在预设中提供，或者从其父字段继承。
 \end{tcolorbox}
 
 预设定义为具有以下字段的映射:
@@ -274,73 +274,73 @@ CMake文档只标记了一些明确需要的字段。但是，还有一些其他
 name: 标识预设的必需字符串，必须是机器友好，并在两个文件中具有唯一名称。
 
 \item 
-Hidden: 这是一个可选的布尔值，从GUI和命令行列表中隐藏预设值。这样的预设可以是另一个的父级，只需要提供名称。
+Hidden: 一个可选的布尔值，从GUI和命令行列表中隐藏预设值。这样的预设可以是另一个的父级，只需要提供名称。
 
 \item 
-displayName: 这是一个可选的字符串，提供人类友好的名称。
+displayName: 一个可选的字符串，提供人类友好的名称。
 
 \item 
-description: 这是一个描述预设的可选字符串。
+description: 一个描述预设的可选字符串。
 
 \item 
 Inherits: 这是要继承的预置名称的可选字符串或数组。在冲突的情况下，来自之前预设的值将是首选，并且每个预设都可以覆盖继承的字段。此外，CMakeUserPresets.json可以从项目预设继承，但不能从项目预设继承。
 
 \item 
-Vendor: 这是特定于供应商的值的可选映射，遵循与根级别供应商字段相同的约定。
+Vendor: 这是特定于供应商的值，遵循与供应商字段相同的约定(可选)。
 
 \item 
-Generator: 这是一个必需的或继承的字符串，用于指定要用于预设的生成器。
+Generator: 一个必需的或继承的字符串，用于指定要用于预设的生成器。
 
 \item 
-architecture和toolset: 这些是用于配置支持这些选项的生成器的可选字段(在生成项目构建系统部分中提到)。每个字段可以只是一个字符串或带有值和策略字段的哈希，其中策略是设置的或外部的。配置为set的strategy字段将设置该值，若生成器不支持该字段，则会产生错误。配置外部意味着为外部IDE设置了字段值，CMake应该忽略它。
+architecture和toolset: 这些是用于配置支持这些选项的生成器的可选字段(在生成项目构建系统部分中提到)。每个字段可以只是一个字符串或带有值和策略字段的哈希，其中策略是设置的或外部的。配置为set的strategy字段将设置该值，若生成器不支持该字段，则会产生错误。配置为“外部”时，是为外部IDE设置了字段值，CMake应该忽略它。
 
 \item 
-binaryDir: 这是一个必需的或继承的字符串，提供到构建树目录的路径(该目录是绝对的或相对于源树的)，支持宏展开。
+binaryDir: 一个必需的或继承的字符串，提供到构建树目录的路径(该目录是绝对的或相对于源树的)，支持宏展开。
 
 \item 
-cacheVariables: 这是一个可选的缓存变量映射，其中键表示变量名。可接受的值包括null、"TRUE"、"FALSE"、字符串值或带有可选类型字段和必选值字段的哈希。value可以是“TRUE”或“FALSE”的字符串值。缓存变量是通过联合操作继承的，除非将值指定为null，否则将保持未设置。字符串值支持宏展开。
+cacheVariables: 一个可选的缓存变量映射，其中键表示变量名。可接受的值包括null、"TRUE"、"FALSE"、字符串值或带有可选类型字段和必选值字段的哈希。value可以是“TRUE”或“FALSE”的字符串值。缓存变量是通过联合操作继承的，除非将值指定为null，否则将保持未设置。字符串值支持宏展开。
 
 \item 
-Environment: 这是一个可选的环境变量映射，其中键表示变量名。接受的值包括空值或字符串值。除非将环境变量的值指定为null，否则将使用联合操作继承环境变量。字符串值支持宏展开，只要没有循环引用，变量可以以任何顺序相互引用。
+Environment: 一个可选的环境变量映射，其中键表示变量名。接受的值包括空值或字符串值。除非将环境变量的值指定为null，否则将使用联合操作继承环境变量。字符串值支持宏展开，只要没有循环引用，变量可以以任何顺序相互引用。
 \end{itemize}
 
 识别和展开下列宏:
 
 \begin{itemize}
 \item 
-\$\{sourceDir\}: 这是到源码树的路径。
+\$\{sourceDir\}: 源码树的路径。
 
 \item 
-\$\{sourceParentDir\}: 这是到源树的父目录的路径。
+\$\{sourceParentDir\}: 源树的父目录的路径。
 
 \item 
-\$\{sourceDirName\}: 这是\$\{sourceDir\}的最后一个文件名组件。
+\$\{sourceDirName\}: \$\{sourceDir\}的最后一个文件名组件。
 
 例如，对于/home/rafal/project，其将是project。
 
 \item 
-\$\{presetName\}: 这是预设名称字段的值。
+\$\{presetName\}: 预设名称字段的值。
 
 \item 
-\$\{generator\}: 这是预设的生成器字段的值。
+\$\{generator\}: 预设的生成器字段的值。
 
 \item 
-\$\{dollar\}: 这是一个美元符号(\$).
+\$\{dollar\}: 一个美元符号(\$).
 
 \item 
-\$env\{<variable-name>\}: 这是一个环境变量宏。若定义了，将从预设值返回变量的值;否则，将从父环境返回值。预设中的变量名是区分大小写的(与Windows环境不同)。
+\$env\{<variable-name>\}: 一个环境变量宏。若定义了，将从预设值返回变量的值;否则，将从父环境返回值。预设中的变量名是区分大小写的(与Windows环境不同)。
 
 \item 
 \$penv\{<variable-name>\}: 这个选项类似于\$env，但总是返回来自父环境的值。这可以解决在预设环境变量中不允许使用循环引用的问题。
 
 \item 
-\$vendor\{<macro-name>\}: 供应商能够插入他们自己的宏。
+\$vendor\{<macro-name>\}: 供应商自己的宏。
 \end{itemize}
 
 
 \subsubsubsection{1.5.9\hspace{0.2cm}设置Git忽略文件}
 
-目前有许多版本控制工具，其中最流行的一种是Git。每当我们开始一个新项目时，最好确保只签入需要存在的存储库文件。若只是向.gitignore文件中添加生成的、用户的或临时文件，那么保持项目健康就会更容易。通过这种方式，Git知道在构建新的提交时会自动跳过它们。以下是我在项目中使用的.gitignore文件:
+目前有许多版本控制工具，其中最流行的一种是Git。每当开始一个新项目时，最好确保只签入需要存在的存储库文件。若只是向.gitignore文件中添加生成的、用户的或临时文件，那么保持项目健康就会更容易，Git知道在构建新的提交时会自动跳过它们。以下是我在项目中使用的.gitignore文件:
 
 \begin{lstlisting}[style=styleCMake]	
 # chapter-01/01-hello/.gitignore
@@ -361,7 +361,7 @@ build_release/
 
 项目中使用上述文件将为您和其他贡献者和用户提供更大的灵活性。
 
-项目文件的未知领域现在已经逐渐显露。有了这个映射，就以编写自己的listfiles、配置缓存、准备预置等等。在开始项目编写之前，来看看还可以用CMake创建哪些其他类型的自包含单元。
+项目文件的未知领域现在已经逐渐显露。有了这个映射，就以编写自己的列表文件、配置缓存、准备预置等等。开始项目编写之前，来看看还可以用CMake创建哪些其他类型的自包含单元。
 
 
 

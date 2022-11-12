@@ -1,19 +1,19 @@
 
-CMake是用C++编写的跨平台开源软件，所以可以自行编译它，但不推荐这样做。可以从官方网页下载预编译的二进制文件，网址是\url{https://cmake.org/download/}。
+CMake是用C++编写的跨平台开源软件，可以自行编译它，但不推荐这样做。可以从官方网页下载预编译的二进制文件，网址是\url{https://cmake.org/download/}。
 
 基于Unix的系统可以直接使用命令行进行安装。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-记住，CMake并不附带编译器。如果系统中还没有安装编译器，那么需要在使用CMake之前安装或提供它们的路径。确保将可执行文件的路径添加到PATH环境变量中，以便CMake能够找到它们。
+CMake并不附带编译器。若系统中还没有安装编译器，需要在使用CMake之前安装或提供它们的路径。确保将可执行文件的路径添加到PATH环境变量中，以便CMake能够找到它们。
 
-为了避免在阅读本书时遇到的工具和依赖问题，建议选择第一种安装方法:Docker。
+为了避免在阅读本书时遇到的工具和依赖问题，建议使用Docker。
 \end{tcolorbox}
 
-让我们来了解一下可以使用CMake的环境。
+来了解一下可以使用CMake的环境。
 
 \subsubsubsection{1.3.1\hspace{0.2cm}Docker}
 
-Docker (\url{https://www.docker.com/})是一个跨平台工具，提供操作系统级虚拟化，允许应用程序以完整(称为容器)的形式发布。这些是自给自足的捆绑包，包含软件及其运行所需的所有库、依赖项和工具。Docker在彼此隔离的轻量级环境中运行容器。
+Docker (\url{https://www.docker.com/})是一个跨平台工具，提供操作系统级虚拟化，允许应用程序以完整(称为容器)的形式发布。这些是捆绑包，包含软件及其运行所需的所有库、依赖项和工具。Docker可在隔离的轻量级环境中运行容器。
 
 这个概念使得共享工具链非常方便，这些工具链是必需的，并且是配置好的。
 
@@ -52,20 +52,20 @@ Windows上安装很简单——只需下载32位或64位的版本，可以为Win
 operable program or batch file.
 \end{tcblisting}
 
-如果更喜欢方便的方式，那就使用MSI安装程序:
+若更喜欢简单的方式，就使用MSI安装:
 
 \begin{center}
 \includegraphics[width=0.6\textwidth]{content/1/chapter1/images/2.jpg}\\
-图1.2 安装向导可以为设置PATH环境变量
+图1.2 安装向导可以设置PATH环境变量
 \end{center}
 
-正如我前面提到的，这是一个开源软件，所以可以自己构建CMake。但首先，必须在系统上获得CMake的二进制副本。那么，如果有自己的构建工具，为什么还要使用其他构建工具呢?CMake的代码贡献者可以使用此方式生成新版本的CMake。
+这是一个开源软件，所以可以自己构建CMake。首先，必须在系统上获得CMake的二进制副本。那么，若有自己的构建工具，为什么还要使用其他构建工具呢?CMake的代码贡献者可以使用此方式生成新版本的CMake。
 
 在Windows上，还需要一个构建工具来完成由CMake启动的构建过程。这里的选择是Visual Studio，社区版可以从微软的网站上免费获得:\url{https://visualstudio.microsoft.com/downloads/}。
 
 \subsubsubsection{1.3.3\hspace{0.2cm}Linux}
 
-在Linux上获得CMake与获得其他包一样，只需在终端使用包管理器即可。软件包的版本不保证是最新，若想要最新版本，可以下载安装脚本:
+Linux上获得CMake与获得其他包一样，只需在终端使用包管理器即可。软件包的版本不保证是最新，若想要最新版本，可以下载安装脚本:
 
 \hspace*{\fill} \\ %插入空行
 \noindent
@@ -117,7 +117,7 @@ $ brew install cmake
 
 \subsubsubsection{1.3.5\hspace{0.2cm}使用源码构建}
 
-若以上方法都失败了——或者是在一个特殊的平台上——可以从官方网站下载源代码，自行编译:
+若以上方法都失败了——或者是在特殊的平台上——可以从官方网站下载源代码，自行编译:
 
 \begin{tcblisting}{commandshell={}}
 $ wget https://github.com/Kitware/CMake/releases/download/
@@ -131,7 +131,7 @@ $ make install
 
 从源码构建相对较慢，需要更多步骤。但通过这种方式，可以保证使用最新版本的CMake。与Linux可用的包相比，这一点尤其明显:系统版本越老，得到的更新就越少。
 
-我们已经安装了CMake，来了解如何使用它吧!
+我们已经安装了CMake，现在来了解如何使用它吧!
 
 
 
