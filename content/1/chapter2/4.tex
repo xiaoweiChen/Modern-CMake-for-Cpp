@@ -1,6 +1,6 @@
-要存储一个列表，CMake将所有元素连接成一个字符串，使用分号(;)作为分隔符:a;list;of;5;elements。可以用反斜杠转义元素中的分号，像这样: a\verb|\|;single\verb|\|;element.
+要存储列表，CMake会将所有元素连接成一个字符串，使用分号(;)分隔:a;list;of;5;elements。可以用反斜杠转义元素中的分号，像这样: a\verb|\|;single\verb|\|;element.
 
-要创建一个列表，可以使用set()指令:set(myList一个包含五个元素的列表)。由于列表的存储方式不同，下面的命令将具有完全相同的效果:
+要创建一个列表，可以使用set()指令:set(myList 一个包含五个元素的列表)。由于列表的存储方式不同，下面的命令将具有完全相同的效果:
 
 \begin{itemize}
 \item 
@@ -10,7 +10,7 @@ set(myList "a;list;of;five;elements")
 set(myList a list "of;five;elements")
 \end{itemize}
 
-CMak会e自动解包未加引号的参数中的列表。通过传递一个不加引号的myList引用，可以有效地向指令传递更多的参数:
+CMake会自动解包未加引号的参数中的列表。通过传递一个不加引号的myList引用，可以有效地向指令传递更多的参数:
 
 \begin{lstlisting}[style=styleCMake]
 message("the list is:" ${myList})
@@ -22,9 +22,9 @@ message()指令将在这里接收6个参数:“list is:”，“a”，“list�
 the list is:alistoffiveelements
 \end{tcblisting}
 
-这是一个非常简单的机制，应该谨慎使用。
+这是一个非常简单的机制，请谨慎使用。
 
-CMake提供了一个list()指令，该指令提供了大量子命令来读取、搜索、修改和排序列表。下面是其中一部分:
+CMake提供了一个list()指令，提供了大量子命令来读取、搜索、修改和排序列表。下面是其中一部分:
 
 \begin{lstlisting}[style=styleCMake]
 list(LENGTH <list> <out-var>)
@@ -46,9 +46,9 @@ list(REVERSE <list>)
 list(SORT <list> [...])
 \end{lstlisting}
 
-大多数时候，我们并不需要在项目中使用列表。但会发现在极少数情况下这个概念是方便的，可以在附录部分中找到list()指令的更多信息。
+大多数时候，并不需要在项目中使用列表。但会发现在极少数情况下这个概念是方便的，可以在附录部分中找到list()指令的更多信息。
 
-现在已经知道了如何使用各种类型的列表和变量，让我们将注意力转移到控制执行流上，并学习CMake中可用的控制结构。
+现在已经知道了如何使用各种类型的列表和变量，我们将注意力转移到控制执行流上，并学习CMake中可用的控制结构。
 
 
 

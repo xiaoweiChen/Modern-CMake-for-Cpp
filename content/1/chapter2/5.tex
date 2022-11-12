@@ -1,9 +1,9 @@
 
-若没有控制结构，CMake语言就不完整!和其他所有东西一样，它们以命令的形式提供，它们分为三类:条件块、循环和定义指令。控制结构在脚本中执行，并在项目的构建系统生成过程中执行。
+若没有控制结构，CMake语言就不完整!和其他所有东西一样，以命令的形式提供，分为三类:条件块、循环和定义指令。控制结构在脚本中执行，并在项目的构建系统生成过程中执行。
 
 \subsubsubsection{2.5.1\hspace{0.2cm}条件块}
 
-CMake中支持的条件块是不起眼的if()命令。所有条件块必须用endif()关闭，可能有任意数量的elseif()和一个可选的else()，顺序如下:
+CMake中支持的条件块是不起眼的if()指令。所有条件块必须用endif()关闭，可以有任意数量的elseif()和一个可选的else()，顺序如下:
 
 \begin{lstlisting}[style=styleCMake]
 if(<condition>)
@@ -19,7 +19,7 @@ endif()
 
 \begin{itemize}
 \item 
-如果满足If()命令中指定的<condition>表达式，则执行第一部分。
+若满足if()指令中指定的<condition>表达式，则执行第一部分。
 
 \item 
 否则，CMake将在属于该块中满足条件的第一个elseif()指令节中执行命令。
@@ -54,7 +54,7 @@ NOT <condition>
 <condition> OR <condition>
 \end{itemize}
 
-同样，条件的嵌套也可以通过匹配的括号(())来实现。和所有体面的语言一样，CMake语言尊重求值的顺序，从最里面的括号开始:
+条件的嵌套也可以通过匹配的括号(())来实现。和所有体面的语言一样，CMake语言尊重求值的顺序，从最里面的括号开始:
 
 \begin{itemize}
 \item 
@@ -65,7 +65,7 @@ NOT <condition>
 \noindent
 \textbf{字符串和变量的求值}
 
-由于历史原因(因为变量引用(\$\{\})语法并不总是存在)，CMake将尝试计算未加引号的参数，就像它们是变量引用一样。换句话说，在条件中使用普通变量名(例如VAR)等于写入\$\{VAR\}。这里有一个例子:
+由于历史原因(因为变量引用(\$\{\})语法并不总是存在)，CMake将尝试计算未加引号的参数，就像是变量引用一样。换句话说，在条件中使用普通变量名(例如VAR)等于写入\$\{VAR\}。这里有一个例子:
 
 \begin{lstlisting}[style=styleCMake]
 set(VAR1 FALSE)
@@ -73,7 +73,7 @@ set(VAR2 "VAR1")
 if(${VAR2})
 \end{lstlisting}
 
-if()条件在这里的工作方式有点复杂——首先，将把\$\{VAR2\}求值为VAR1, VAR1是一个可识别的变量，而这个变量的值为FALSE字符串。只有当字符串等于以下任何一个常量时(这些比较不区分大小写)，才认为是布尔值true:
+if()条件在这里的工作方式有点复杂——首先，\$\{VAR2\}求值为VAR1。VAR1是一个可识别的变量，而这个变量的值为FALSE字符串。只有当字符串等于以下任何一个常量时(这些比较不区分大小写)，才认为是布尔值true:
 
 \begin{itemize}
 \item 
@@ -85,7 +85,7 @@ ON, Y, YES或TRUE
 
 我们得出结论，上例中的条件将计算为false。
 
-然而，这里还有另一个问题——若条件的参数没有加引号，且变量的名称包含一个值，如BAR，那么该如何求值呢?考虑下面的代码示例:
+这里还有另一个问题——若条件的参数没有加引号，且变量的名称包含一个值，如BAR，那么该如何求值呢?考虑下面的代码示例:
 
 \begin{lstlisting}[style=styleCMake]
 set(FOO BAR)
@@ -108,13 +108,13 @@ OFF, NO, FALSE, N, IGNORE, NOTFOUND
 零
 \end{itemize}
 
-因此，简单地请求一个未定义的变量将赋值为false:
+因此，未定义的变量将赋值为false:
 
 \begin{lstlisting}[style=styleCMake]
 if (FOO)
 \end{lstlisting}
 
-但是，预先定义一个变量会改变这种情况，并且计算为true:
+但先定义一个变量会改变这种情况，并且计算为true:
 
 \begin{lstlisting}[style=styleCMake]
 set(FOO "FOO")
@@ -122,10 +122,10 @@ if (FOO)
 \end{lstlisting}
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-若认为不加引号的参数的行为令人困惑，请将变量引用包装在加引号的参数中:If ("\$\{FOO\}")。这将导致在提供的参数传递到if()命令之前进行参数求值，并且行为将与字符串的求值一致。
+若认为不加引号的参数的行为令人困惑，请将变量引用包装在加引号的参数中:if ("\$\{FOO\}")。这将导致在提供的参数传递到if()指令之前进行参数求值，并且行为将与字符串的求值一致。
 \end{tcolorbox}
 
-换句话说，CMake假设用户正在询问是否定义了变量(并且不显式为false)。我们可以显式检查这个事实(而不用担心里面的值):
+所以，CMake假设用户正在询问是否定义了变量(并且不显式为false)。可以显式检查这个事实(而不用担心值):
 
 \begin{lstlisting}[style=styleCMake]
 if(DEFINED <name>)
@@ -148,10 +148,10 @@ if (1 LESS 2)
 \end{lstlisting}
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-CMake文档声明，若其中一个操作数不是数字，则该值将为false。但实际实验表明，以数字开头的字符串的比较是正确的:if (20 EQUALS "20 GB")。
+CMake文档声明，若其中一个操作数不是数字，则该值将为false。实际实验表明，以数字开头的字符串的比较是正确的:if (20 EQUALS "20 GB")。
 \end{tcolorbox}
 
-可以比较[main.[.minor[.patch]]]之后的软件版本。在任何操作符前添加一个VERSION\_前缀来调整格式:
+可以比较[main.[.minor[.patch]]]之后的版本，可以在操作符前添加一个VERSION\_前缀来调整格式:
 
 \begin{lstlisting}[style=styleCMake]
 if (1.3.4 VERSION_LESS_EQUAL 1.4)
@@ -159,7 +159,7 @@ if (1.3.4 VERSION_LESS_EQUAL 1.4)
 
 省略的组件视为零，非整数版本的组件在该点截断比较字符串。
 
-对于字典字符串比较，我们需要在操作符前加上STR前缀(注意没有下划线):
+对于字典字符串比较，需要在操作符前加上STR前缀(注意没有下划线):
 
 \begin{lstlisting}[style=styleCMake]
 if ("A" STREQUAL "${B}")
@@ -169,7 +169,7 @@ if ("A" STREQUAL "${B}")
 
 CMake还支持POSIX正则表达式匹配(CMake文档暗示了ERE风格，但没有提到对特定正则表达式字符类的支持).
 
-可以这样使用MATCHES操作符:<variable|string> MATCHES <regex>任何匹配的组都在CMAKE\_MATCH\_<n>变量中捕获。
+可以这样使用MATCHES操作符:<variable|string> MATCHES <regex>匹配的组都在CMAKE\_MATCH\_<n>变量中。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
@@ -184,7 +184,7 @@ CMake还支持POSIX正则表达式匹配(CMake文档暗示了ERE风格，但没�
 若值在列表中:<variable|string> in \_LIST <variable>
 
 \item 
-若一个指令可用:command <command-name>
+若指令可用:command <command-name>
 
 \item 
 若CMake策略存在:POLICY <policy-id>(这将在第3章中介绍)
@@ -193,16 +193,16 @@ CMake还支持POSIX正则表达式匹配(CMake文档暗示了ERE风格，但没�
 若使用add\_test()添加CTest测试:test <test-name>
 
 \item 
-若定义了一个构建目标:target <target-name>
+若定义了构建目标:target <target-name>
 \end{itemize}
 
-我们将在第4章中了解构建目标。现在，我们只说目标是项目中构建过程的逻辑单元，该项目使用add\_executable()、add\_library()或add\_custom\_target()指令创建，这些指令我们已经使用过了。
+我们将在第4章中了解构建目标。现在，只说目标是项目中构建过程的逻辑单元，该项目使用add\_executable()、add\_library()或add\_custom\_target()指令创建，这些指令我们已经使用过了。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{检查文件系统}
+\textbf{文件系统检查}
 
-CMake提供了许多处理文件的方法。我们很少需要直接操作它们，通常我们宁愿使用高级方法。作为参考，本书将在附录部分提供与文件相关的命令的简短列表。但大多数情况下，只需要以下操作符(行为只对绝对路径有很好的定义):
+CMake提供了许多处理文件的方法。很少需要直接操作它们，通常会使用高级方法，本书将在附录部分提供与文件相关的命令的简短列表。大多数情况下，只需要以下操作符(行为只对绝对路径有很好的定义):
 
 \begin{itemize}
 \item 
@@ -227,7 +227,7 @@ IS\_ABSOLUTE path: 检查路径是否为绝对路径
 
 \subsubsubsection{2.5.3\hspace{0.2cm}循环}
 
-CMake中的循环相当简单——我们可以使用while()或foreach()重复执行同一组命令。这两个命令都支持循环控制机制:
+CMake中的循环相当简单——可以使用while()或foreach()重复执行同一组命令。这两个命令都支持循环控制机制:
 
 \begin{itemize}
 \item 
@@ -241,7 +241,7 @@ continue()循环停止当前迭代的执行，并开启下一个迭代。
 \noindent
 \textbf{While}
 
-循环块用while()指令创建，用endwhile()关闭。只要while()中提供的<condition>表达式为真，任何附带的命令都将执行。条件语句的语法与if()命令相同:
+循环块用while()指令创建，用endwhile()关闭。只要while()中提供的<condition>表达式为true，其后续的指令都会执行。条件语句的语法与if()指令相同:
 
 \begin{lstlisting}[style=styleCMake]
 while(<condition>)
@@ -249,13 +249,13 @@ while(<condition>)
 endwhile()
 \end{lstlisting}
 
-可能已经猜到了——通过一些额外的变量——while循环可以替换for循环。实际上，使用foreach()循环要容易得多——让我们看一看。
+通过一些额外的变量——while循环可以替换for循环。实际上，使用foreach()循环要容易得多。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{Foreach}
 
-foreach块有几个变体，为每个值执行附带的命令。像其他块一样，它有打开和关闭指令:foreach()和endforeach()。
+foreach块有几个变体，为每个值执行附带的指令，它有打开和关闭指令:foreach()和endforeach()。
 
 foreach()最简单的形式是为了提供C++风格的for循环:
 
@@ -277,7 +277,7 @@ foreach(<loop_var> RANGE <min> <max> [<step>])
 foreach(<loop_variable> IN [LISTS <lists>] [ITEMS <items>])
 \end{lstlisting}
 
-CMake将从所有提供的<lists>列表变量中获取元素，然后是所有显式声明的<items>值，并将它们存储在<loop variable>中，对每个项逐个执行<commands>。可以选择只提供列表，只提供值，或者两者都提供:
+CMake将从所有提供的<lists>列表变量中获取元素，然后是所有显式声明的<items>值，并将它们存储在<loop\_variable>中，对每个项逐个执行<commands>。可以选择只提供列表，只提供值，或者两者都提供:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter02/06-loops/foreach.cmake
@@ -298,7 +298,7 @@ e
 f
 \end{tcblisting}
 
-或者，可以使用一个简短的版本(跳过IN关键字)来获得相同的结果:
+或者，使用一个简短的版本(跳过IN关键字)来获得相同的结果:
 
 \begin{lstlisting}[style=styleCMake]
 foreach(VAR 1 2 3 e f)
@@ -310,7 +310,7 @@ foreach(VAR 1 2 3 e f)
 foreach(<loop_var>... IN ZIP_LISTS <lists>)
 \end{lstlisting}
 
-压缩列表可以遍历多个列表并处理具有相同索引的各自项。让我们看一个例子:
+压缩列表可以遍历多个列表并处理具有相同索引的各自项:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter02/06-loops/foreach.cmake
@@ -322,7 +322,7 @@ foreach(num IN ZIP_LISTS L1 L2)
 endforeach()
 \end{lstlisting}
 
-CMake将为每个提供的列表创建一个num\_<N>变量，它将用每个列表中的项填充该变量。可以传递多个<loop\_var>变量名(每个列表一个)，每个列表将使用单独的变量来存储:
+CMake将为每个提供的列表创建一个num\_<N>变量，用每个列表中的项填充该变量。可以传递多个<loop\_var>变量名(每个列表一个)，每个列表将使用单独的变量来存储:
 
 \begin{lstlisting}[style=styleCMake]
 foreach(word num IN ZIP_LISTS L1 L2)
@@ -335,7 +335,7 @@ foreach(word num IN ZIP_LISTS L1 L2)
 
 \subsubsubsection{2.5.4\hspace{0.2cm}定义指令}
 
-有两种方法可以定义自己的命令:可以使用macro()或function()。要解释这两个指令间的区别，最简单的方法是将它们与C风格的预处理器宏和实际的C++函数进行比较:
+有两种方法可以定义自己的命令:可以使用macro()或function()。要解释这两个指令间的区别，最简单的方法是将它们与C风格的宏和实际的C++函数进行比较:
 
 \begin{itemize}
 \item 
@@ -355,15 +355,15 @@ function()为本地变量创建一个单独的作用域，这与macro()命令不
 \$\{ARGV\}: 所有参数的列表
 
 \item 
-\$\{ARG0\}, \$\{ARG1\}, \$\{ARG2\}: 在特定索引处的实参值
+\$\{ARG0\}, \$\{ARG1\}, \$\{ARG2\}: 特定索引处的实参值
 
 \item 
-\$\{ARGN\}: 在最后一个预期参数之后由调用者传递的匿名参数列表
+\$\{ARGN\}: 最后一个预期参数之后，由调用者传递的匿名参数列表
 \end{itemize}
 
 使用ARGC边界外的索引访问数值参数会产生未定义行为。
 
-若确定需要定义一个带有命名参数的指令，那么每次调用都必须传递所有这些参数，否则将无效。
+若确定需要定义一个带有命名参数的指令，则每次调用都必须传递所有这些参数，否则将无效。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
@@ -404,17 +404,17 @@ argument: called value
 myVar is now: new value
 \end{tcblisting}
 
-发生了什么事?尽管显式地将myVar设置为新值，但它并不影响message("argument:\$\{myVar\}")!这是因为传递给宏的参数没有视为真正的变量，而是作为常量查找并替换指令。
+发生了什么事?尽管显式地将myVar设置为新值，但并不影响message("argument:\$\{myVar\}")!这是因为传递给宏的参数没有视为真正的变量，而是作为常量查找并替换指令。
 
-另一方面，全局作用域中的myVar变量从第一个值更改为新值。这种行为称为副作用，是一种糟糕的实践，因为在不阅读宏的情况下，很难判断哪些变量可能会受到这种宏的影响。
+另一方面，全局作用域中的myVar变量从第一个值更改为新值。这种行为称为副作用，是一种糟糕的实践，因为在不了解宏的情况下，很难判断哪些变量可能会受到这种宏的影响。
 
-我建议尽可能使用函数，因为它可能会为避免许多令人头疼的事情。
+建议尽可能使用函数，可以避免许多令人头疼的事情。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{函数}
 
-要将命令声明为函数，可以使用以下语法:
+将指令声明为函数，可以使用以下语法:
 
 \begin{lstlisting}[style=styleCMake]
 function(<name> [<argument>…])
@@ -489,7 +489,7 @@ FirstArg in global scope: first value
 图2.3 调用图
 \end{center}
 
-CMake中，用这种过程风格编写代码有点麻烦——需要提前提供计划使用的命令定义。代码看起来像这样:
+CMake中，用这种过程风格编写代码有点麻烦——需要提前提供计划使用的命令定义:
 
 \begin{lstlisting}[style=styleCMake]
 cmake_minimum_required(...)
@@ -505,7 +505,7 @@ setup_second_target()
 setup_tests()
 \end{lstlisting}
 
-真是恶梦一场!这段代码非常难以阅读，因为最微小的细节都在文件的顶部。一段结构正确的代码在第一个子例程中列出最通用的步骤，在此之后，提供稍微详细一些的子例程，并将最详细的步骤推到文件的最后。
+真是恶梦一场!这段代码非常难以阅读，因为最微小的细节都在文件的顶部。一段结构正确的代码在第一个子例程中列出最通用的步骤，之后提供稍微详细一些的子例程，并将最详细的步骤推到文件的最后。
 
 对于这个问题有一些解决方案:将命令定义移动到其他文件和跨目录分区作用域(作用域目录将在第3章中详细解释)。但也有一个简单而优雅的解决方案:在文件的顶部声明一个入口点宏，并在文件的最后调用它:
 
@@ -519,7 +519,7 @@ main()
 
 通过这种方法，代码的编写范围逐渐缩小，因为直到最后我们才真正调用main()宏，CMake不会抱怨未定义命令的执行!
 
-最后一个问题仍然存在——为什么在推荐的函数上使用宏?可以无限制地访问全局变量，因为没有向main()传递任何参数，所以通常不需要担心这里的警告。
+最后一个问题仍然存在——为什么在推荐的函数上使用宏?可以无限制地访问全局变量，因为没有向main()传递参数，所以通常不需要担心这里的警告。
 
 可以在本书的GitHub存储库中的chapter-02/09-procedural/CMakeLists.txt列表文件中找到这个简单例子。
 
@@ -527,7 +527,7 @@ main()
 \noindent
 \textbf{关于命名约定}
 
-软件开发中，命名非常困难。但无论如何，维护易于阅读和理解的解决方案非常重要。当涉及到CMake脚本和项目时，应该遵循干净代码方法的规则，就像对待软件开发解决方案一样:
+软件开发中，命名非常困难，但维护易于阅读和理解的解决方案非常重要。当涉及到CMake脚本和项目时，应该遵循干净代码方法的规则，就像对待软件开发解决方案一样:
 
 \begin{itemize}
 \item 
@@ -540,10 +540,10 @@ main()
 避免双关语和难懂的命名。
 
 \item 
-使用容易发音、容易搜索的名字，不需要在人为的映射。
+使用容易发音、容易搜索的名字，不需要人为映射。
 \end{itemize}
 
-现在已经知道了如何使用正确的语法正确地调用指令，让我们从哪些指令开始研究对我们最有好处的指令。
+现在已经知道了如何使用正确的语法正确地调用指令，让我们从使用指令开始研究。
 
 
 

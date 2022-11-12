@@ -3,16 +3,16 @@ CMake提供了许多脚本命令，允许使用变量和环境。其中一些在
 
 \subsubsubsection{2.6.1\hspace{0.2cm}message()指令}
 
-我们已经了解message()指令，它其将文本打印到标准输出。然而，这其中的奥秘远比我们看到的要多得多。通过提供MODE参数，您可以自定义输出的样式，并且在出现错误的情况下，可以停止代码:message(<mode> "text")的执行。
+我们已经了解message()指令，将文本打印到标准输出，这其中的奥秘远比我们看到的要多得多。通过提供MODE参数，可以自定义输出的样式，并且在出现错误的情况下，可以停止代码:message(<mode> "text")的执行。
 
 可选的模式如下:
 
 \begin{itemize}
 \item 
-FATAL\_ERROR: 这将停止处理和生成。
+FATAL\_ERROR: 将停止处理和生成。
 
 \item 
-SEND\_ERROR: 这将继续处理，但跳过生成。
+SEND\_ERROR: 将继续处理，但跳过生成。
 
 \item 
 WARNING: 继续处理。
@@ -21,22 +21,22 @@ WARNING: 继续处理。
 AUTHOR\_WARNING: CMake警告。继续处理。
 
 \item 
-DEPRECATION: 若启用了CMAKE\_ERROR\_DEPRECATED或CMAKE\_WARN\_DEPRECATED变量中的任何一个，将做出相应处理。
+DEPRECATION: 若启用了CMAKE\_ERROR\_DEPRECATED或CMAKE\_WARN\_DEPRECATED变量，将做出相应处理。
 
 \item 
-NOTICE或省略模式(默认): 这将向stderr输出一条消息，以吸引用户的注意。
+NOTICE或省略模式(默认): 将向stderr输出一条消息，以吸引用户的注意。
 
 \item 
-STATUS: 这将继续处理，建议用于用户的主要消息。
+STATUS: 将继续处理，建议用于用户的主要消息。
 
 \item 
-VERBOSE: 这将继续处理，应该用于通常不是很有必要的更详细的信息。
+VERBOSE: 将继续处理，用于通常不是很有必要的更详细的信息。
 
 \item 
-DEBUG: 这将继续处理，并应该包含在项目出现问题时可能有用的详细信息。
+DEBUG: 将继续处理，并包含在项目出现问题时可能有用的详细信息。
 
 \item 
-TRACE: 这将继续处理，并建议在项目开发期间打印消息。通常，在发布项目之前，将这些类型的消息删除。
+TRACE: 将继续处理，并建议在项目开发期间打印消息。通常，在发布项目之前，将这些类型的消息删除。
 \end{itemize}
 
 下面的例子在第一条消息之后停止执行:
@@ -48,7 +48,7 @@ message(FATAL_ERROR "Stop processing")
 message("Won't print this.")
 \end{lstlisting}
 
-根据当前日志级别(默认为STATUS)打印消息，在前一章的调试和跟踪选项部分讨论了如何更改这一点。这里就使用CMAKE\_MESSAGE\_CONTEXT进行调试，所以让我们开始吧。我们已经了解了调试的三个重要部分:列表、作用域和函数。
+根据当前日志级别(默认为STATUS)打印消息，在前一章的调试和跟踪选项部分讨论了如何更改这一点，这里就使用CMAKE\_MESSAGE\_CONTEXT进行调试。我们已经了解了调试的三个重要部分:列表、作用域和函数。
 
 当启用命令行标志cmake -{}-log-context时，消息将装饰为点分隔的上下文，并存储在CMAKE\_MESSAGE\_CONTEXT列表中。考虑下面的例子:
 
@@ -77,7 +77,7 @@ $ cmake -P message_context.cmake --log-context
 
 函数的初始作用域是从父作用域复制的，foo中的第一个命令在CMAKE\_MESSAGE\_CONTEXT中添加了一个foo函数名的新项。打印消息，函数作用域结束，丢弃本地复制的变量，并恢复之前的作用域(不含foo)。
 
-这种方法对于复杂的目中的嵌套函数非常有用。希望永远都不需要它，但我认为这是一个很好的例子，说明了函数作用域在实践中是如何工作的。
+这种方法对于复杂的目中的嵌套函数非常有用。希望永远都不需要它，但这的确是一个好例子，说明了函数作用域在实践中是如何工作的。
 
 message()的另一个很酷的技巧是在CMAKE\_MESSAGE\_INDENT列表中添加缩进(与CMAKE\_MESSAGE\_CONTEXT的方法完全相同):
 
@@ -97,15 +97,15 @@ After `foo`
 
 \subsubsubsection{2.6.2\hspace{0.2cm}include()指令}
 
-我们可以将CMake代码划分到单独的文件中，以保持内容的有序和独立性。然后，可以通过include()从父列表文件引用:
+可以将CMake代码划分到单独的文件中，以保持内容的有序和独立性。然后，可以通过include()从父列表文件引用:
 
 \begin{lstlisting}[style=styleCMake]
 include(<file|module> [OPTIONAL] [RESULT_VARIABLE <var>])
 \end{lstlisting}
 
-若提供文件名(一个扩展名为.cmake)，CMake将尝试打开并执行它。注意，不会创建嵌套的、单独的作用域，因此对该文件中变量的任何更改都会影响调用作用域。
+若提供文件名(一个扩展名为.cmake)，CMake将尝试打开并执行它。这里不会创建嵌套的、单独的作用域，因此对该文件中变量的修改会影响调用作用域。
 
-若文件不存在，CMake将抛出一个错误，除非我们用optional关键字指定是可选的。若需要知道include()是否成功，可以提供一个带有变量名的RESULT\_VARIABLE关键字。若成功，则用包含的文件的完整路径填充，失败则用未找到(NOTFOUND)填充。
+若文件不存在，CMake将抛出一个错误，除非用optional关键字指定为可选。若需要知道include()是否成功，可以提供一个带有变量名的RESULT\_VARIABLE关键字。若成功，则用包含的文件的完整路径填充，失败则用未找到(NOTFOUND)填充。
 
 脚本模式下运行时，将从当前工作目录解析相对路径。要强制搜索与脚本本身相关的内容，请提供绝对路径:
 
@@ -137,21 +137,21 @@ file(DOWNLOAD <url> [<file>] [...])
 
 \subsubsubsection{2.6.5\hspace{0.2cm}execute\_process()指令}
 
-有时，需要使用系统中可用的工具(毕竟，CMake主要是一个构建系统生成器)。CMake为此提供了一个命令:可以使用execute\_process()来运行其他进程并收集它们的输出。这个命令非常适合脚本，也可以在配置阶段的项目中使用。下面是命令的一般形式:
+有时需要使用系统中可用的工具(毕竟，CMake主要是一个构建系统生成器)，CMake为此提供了指令:execute\_process()可以用来运行其他进程，并收集它们的输出。这个命令非常适合脚本，也可以在配置阶段的项目中使用。下面是命令的一般形式:
 
 \begin{lstlisting}[style=styleCMake]
 execute_process(COMMAND <cmd1> [<arguments>]… [OPTIONS])
 \end{lstlisting}
 
-CMake将使用操作系统的API来创建子进程(因此，诸如\&\&、||和>等shell操作符将不起作用)。但是，可以通过不止一次地提供COMMAND <cmd> <arguments>参数来连接命令，并将一个命令的输出传递给另一个命令。
+CMake将使用操作系统的API来创建子进程(因此，诸如\&\&、||和>等shell操作符将不起作用)。可以通过不止一次地提供COMMAND <cmd> <arguments>参数来连接命令，并将一个命令的输出传递给另一个命令。
 
 若进程没有在要求的限制内完成任务，可以选择使用TIMEOUT <seconds>参数来终止进程，并且可以根据需要设置WORKING\_DIRECTORY <directory>。
 
-通过RESULTS\_VARIABLE <variable>参数，可以在列表中收集所有任务的退出代码。若只对最后执行命令的结果感兴趣，请使用单数形式:result \_VARIABLE <variable>。
+通过RESULTS\_VARIABLE <variable>参数，可以在列表中收集所有任务的退出代码。若只对最后执行命令的结果感兴趣，请使用单数形式:RESULT\_VARIABLE <variable>。
 
 为了收集输出，CMake提供了两个参数:OUTPUT\_VARIABLE和ERROR\_VARIABLE(以类似的方式使用)。若想合并stdout和stderr，请对两个参数使用相同的变量。
 
-记住，在为其他用户编写项目时，应该确保计划使用的命令在平台上可用。
+记住，在为其他用户编写项目时，应该确保命令在相应的平台上可用。
 
 
 
