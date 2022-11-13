@@ -1,5 +1,5 @@
 
-在第1章中，我们已经了解了一个简单的项目定义。它是一个包含CMakeLists.txt文件的目录，其中包含一些配置语言处理器的命令:
+第1章中，已经了解了简单的项目定义。它是一个包含CMakeLists.txt文件的目录，其中包含一些配置语言处理器的命令:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter01/01-hello/CMakeLists.txt: Hello world in CMake language
@@ -11,19 +11,19 @@ add_executable(Hello hello.cpp)
 
 \subsubsubsection{3.2.1\hspace{0.2cm}指定最低的CMake版本 —— cmake\_minimum\_required()}
 
-这不是严格意义上的特定于项目的命令，因为它也应该用于脚本。cmake\_minimum\_required()将检查系统是否有正确的cmake版本，它还将隐式调用另一个指令cmake\_policy(version)，该指令告诉cmake该项目使用什么正确的策略。这些策略是什么?
+这不是严格意义上特定于项目的指令，因为它也应该用于脚本。cmake\_minimum\_required()将检查系统是否有正确的cmake版本，还将隐式调用另一个指令cmake\_policy(version)，告诉cmake该项目使用什么正确的策略。这些策略是什么?
 
 在过去20年的CMake开发过程中，指令的行为方式发生了许多变化，CMake支持的语言也在不断发展。为了保持语法的干净和简单，CMake的团队决定引入一些策略来反映这些变化。每当引入一个向后不兼容的更改时，都会附带一个启用新行为的策略。
 
-通过调用cmake\_minimum\_required()，告诉cmake需要将策略应用到参数中提供的版本为止。当CMake使用新策略进行升级时，因为新策略不会被启用，所以我们不需要担心我们的项目会破坏。用最新版本测试项目，若对结果满意，就可以将更新后的项目发送给用户。
+通过调用cmake\_minimum\_required()，告诉cmake需要将策略应用到参数中提供的版本为止。当CMake使用新策略进行升级时，因为新策略不会启用，所以不需要担心破坏项目。用最新版本测试项目，若对结果满意，就可以将更新后的项目发送给用户了。
 
 策略可以影响CMake的每一个方面，包括其他重要的指令，如project()。因此，通过设置正在使用的版本来启动CMakeLists.txt文件是很重要的。否则，将得到警告和错误。
 
-每个版本都引入了相当多的策略——描述它们没有实际价值，除非将遗留项目升级到最新的CMake版本时遇到了问题。这种情况下，请参考关于策略的官方文档:\url{https://cmake.org/cmake/help/latest/manual/cmake-policies.7.html}。
+每个版本都引入了相当多的策略——描述它们没有实际价值，除非将遗留项目升级到最新的CMake版本时遇到了问题，请参考关于策略的官方文档获得更多信息:\url{https://cmake.org/cmake/help/latest/manual/cmake-policies.7.html}。
 
 \subsubsubsection{3.2.2\hspace{0.2cm}定义语言和元数据 – project()}
 
-从技术上讲，CMake不需要project()，包含CMakeLists.txt文件的目录都将在项目模式下进行解析。CMake隐式地将该命令添加到文件的顶部。但已知我们需要从指定最低版本开始，所以最好不要忘记使用project()。我们可以用它的两种形式之一:
+CMake不需要project()，包含CMakeLists.txt文件的目录都将在项目模式下进行解析。CMake隐式地将该指令添加到文件的顶部。但我们需要从指定最低版本开始，所以最好不要忘记使用project()。我们可以使用的两种形式之一:
 
 \begin{lstlisting}[style=styleCMake]
 project(<PROJECT-NAME> [<language-name>...])
@@ -34,7 +34,7 @@ project(<PROJECT-NAME>
 		[LANGUAGES <language-name>...])
 \end{lstlisting}
 
-我们需要指定<PROJECT-NAME>，但其他参数是可选的。调用此命令将隐式设置以下变量:
+需要指定<PROJECT-NAME>，其他参数可选。调用此指令将隐式设置以下变量:
 
 \begin{itemize}
 \item 
@@ -50,11 +50,11 @@ PROJECT\_SOURCE\_DIR, <PROJECT-NAME>\_SOURCE\_DIR
 PROJECT\_BINARY\_DIR, <PROJECT-NAME>\_BINARY\_DIR
 \end{itemize}
 
-支持哪些语言?不少。这里有一个语言关键字列表，你可以用来配置你的项目:C，CXX(C++)，CUDA，OBJC(Objective-C)，OBJCXX (Objective-C++)，Fortran，ISPC，ASM，以及CSharp(C\#)和Java。
+支持哪些语言?不少。这里有一个语言关键字列表，可以用来配置项目:C，CXX(C++)，CUDA，OBJC(Objective-C)，OBJCXX (Objective-C++)，Fortran，ISPC，ASM，以及CSharp(C\#)和Java。
 
-CMake默认启用C和C++，因此可能希望为C++项目显式地仅指定CXX。为什么?project()将为所选语言检测和测试可用的编译器，因此选择正确的编译器将允许您在配置阶段跳过对未使用语言的任何检查，从而节省时间。
+CMake默认启用C和C++，因此可能希望为C++项目显式地仅指定CXX。为什么?project()将为所选语言检测和测试可用的编译器，因此选择正确的编译器，可以在配置阶段跳过对未使用语言的任何检查，从而节省时间。
 
-指定VERSION将使以下变量可用:
+指定VERSION会自动定义以下变量:
 
 \begin{itemize}
 \item 
@@ -77,13 +77,11 @@ PROJECT\_VERSION\_TWEAK, <PROJECT-NAME>\_VERSION\_TWEAK
 \end{itemize}
 
 
-上述变量对于配置包或传递到已编译文件，在可执行文件中提供版本非常有用。
+上述变量对于配置包或传递到已编译文件，在可执行文件中提供版本非常有用。可以以同样的方式设置DESCRIPTION和HOMEPAGE\_URL。
 
-按照这个原则，可以设置DESCRIPTION和HOMEPAGE\_URL，这将以同样的方式设置变量。
+CMake还可以使用enable\_language(<lang>)来修改所使用的语言，这将不会创建元数据。
 
-CMake还允许使用enable\_language(<lang>)来规范所使用的语言，这将不会创建元数据。
-
-上面的命令允许我们创建一个基本的列表文件，并初始化一个空项目。现在，可以开始添加要构建的东西。到目前为止，对于我们在示例中使用的小型单文件项目，结构并不重要。但当代码更多时会发生什么呢?
+上面的命令可以创建一个基本的列表文件，并初始化一个空项目。现在，可以开始添加要构建的东西。对于我们在示例中使用的小型单文件项目，结构并不重要。但当代码更多时会发生什么呢?
 
 
 

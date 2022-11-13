@@ -1,13 +1,13 @@
 
-CMake通过CMAKE\_变量、ENV变量和特殊命令提供了多种查询环境的方法。例如，收集的信息可以用于支持跨平台脚本。这些机制允许我们避免使用特定于平台的shell命令，这些命令可能不容易移植，或者在不同的环境中命名不同。
+CMake通过CMAKE\_变量、ENV变量和特殊命令提供了多种查询环境的方法。例如，收集的信息可以用于支持跨平台脚本。这些机制可避免使用特定于平台的shell命令，这些命令可能不容易移植，或者在不同的环境中命名不同。
 
-对于性能关键型应用程序，了解目标平台的所有特性(例如，指令集、CPU核心数等)将非常有用。然后，可以将此信息传递给已编译的二进制文件，以便对它们进行优化(将在下一章学习如何做到这一点)。先来看看原生CMake中有哪些信息可用。
+对于性能关键型应用程序，了解目标平台的所有特性(例如，指令集、CPU核心数等)将非常有用。然后，可以将此信息传递给已编译的二进制文件，以便对期进行优化(将在下一章学习如何做到这一点)。先来看看原生CMake中有哪些信息可用。
 
 \subsubsubsection{3.5.1\hspace{0.2cm}识别操作系统}
 
-很多情况下，了解目标操作系统是很有用的。即使是像文件系统这样普通的东西，Windows和Unix在大小写敏感、文件路径结构、扩展名、特权等方面也有很大的不同。一个系统上的大多数命令在另一个系统上是不可用的，或者它们可以以不同的方式命名(即使是用一个字母命名——例如，ifconfig和ipconfig命令)。
+很多情况下，了解目标操作系统是很有用的。即使是像文件系统这样普通的东西，Windows和Unix在大小写敏感、文件路径结构、扩展名、特权等方面也有很大的不同。系统上的大多数命令在另一个系统上是不可用的，或者可以以不同的方式命名(即使是用一个字母命名——例如，ifconfig和ipconfig命令)。
 
-若曾经需要用一个CMake脚本支持多个目标操作系统，只要检查CMAKE\_SYSTEM\_NAME变量，就可以采取相应的行动。这里有一个简单的例子:
+若需要用一个CMake脚本支持多个目标操作系统，只要检查CMAKE\_SYSTEM\_NAME变量，就可以采取相应的行动。这里有一个简单的例子:
 
 \begin{lstlisting}[style=styleCMake]
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -23,23 +23,23 @@ else()
 endif()
 \end{lstlisting}
 
-有一个包含操作系统版本的变量:CMAKE\_SYSTEM\_VERSION。然而，我的建议是尽量使解决方案与系统无关，并使用内置的CMake跨平台功能。特别是对于文件系统上的操作，应该使用file()指令。
+有一个包含操作系统版本的变量:CMAKE\_SYSTEM\_VERSION。然而，建议是尽量使解决方案与系统无关，并使用内置的CMake跨平台功能。特别是对于文件系统上的操作，应该使用file()指令。
 
 \subsubsubsection{3.5.2\hspace{0.2cm}交叉编译——主机系统和目标系统?}
 
 在一台机器上编译要在另一台机器上运行的代码，称为交叉编译。可以(使用正确的工具集)通过在Windows机器上运行CMake来编译Android应用程序。交叉编译不在本书的讨论范围内，但是理解它如何影响CMake的某些部分是很重要的。
 
-允许交叉编译的必要步骤之一是将CMAKE\_SYSTEM\_NAME和CMAKE\_SYSTEM\_VERSION变量设置为适合您为目标编译的操作系统的值(CMAKE文档将其称为目标系统)。用于执行构建的操作系统称为主机系统。
+允许交叉编译的必要步骤之一是将CMAKE\_SYSTEM\_NAME和CMAKE\_SYSTEM\_VERSION变量设置为适合为目标编译的操作系统的值(CMAKE文档将其称为目标系统)。用于执行构建的操作系统称为主机系统。
 
 无论如何配置，主机系统上的信息总是可以在名称中带有HOST关键字的变量中访问:CMAKE\_HOST\_SYSTEM\_NAME、CMAKE\_HOST\_SYSTEM\_PROCESSOR和CMAKE\_HOST\_SYSTEM\_VERSION。
 
 还有一些变量的名称中带有HOST关键字，因此请记住它们显式引用主机系统。否则，所有变量都引用目标系统(通常是宿主系统，除非交叉编译)。
 
-如果您有兴趣阅读更多关于交叉编译的内容，我建议您参考CMake文档：\url{https://cmake.org/cmake/help/latest/manual/ cmake-toolchains.7.html}。
+若有兴趣阅读更多关于交叉编译的内容，建议您参考CMake文档：\url{https://cmake.org/cmake/help/latest/manual/ cmake-toolchains.7.html}。
 
 \subsubsubsection{3.5.3\hspace{0.2cm}简化变量}
 
-CMake将预定义一些变量，这些变量将提供关于主机和目标系统的信息。如果使用特定的系统，则将适当的变量设置为非false值(即1或true):
+CMake将预定义一些变量，这些变量将提供关于主机和目标系统的信息。若使用特定的系统，则将适当的变量设置为非false值(即1或true):
 
 \begin{itemize}
 \item 
@@ -53,13 +53,13 @@ CMAKE\_HOST\_APPLE, CMAKE\_HOST\_SOLARIS, CMAKE\_HOST\_UNIX, CMAKE\_HOST\_WIN32
 
 \subsubsubsection{3.5.4\hspace{0.2cm}主机系统信息}
 
-CMake可以提供更多变量，但为了节省时间，不会查询环境中很少需要的信息，比如处理器是否支持MMX或总物理内存是多少。这并不意味着这个信息不可用——只需要用下面的命令显式地请求它:
+CMake可以提供更多变量，但为了节省时间，不会查询环境中很少需要的信息，比如处理器是否支持MMX或总物理内存是多少。这并不意味着这个信息不可用——只需要用下面的命令显式地进行:
 
 \begin{lstlisting}[style=styleCMake]
 cmake_host_system_information(RESULT <VARIABLE> QUERY <KEY>…)
 \end{lstlisting}
 
-需要提供一个目标变量和感兴趣的键的列表。如果只提供一个键，则变量将只包含一个值;否则，它将是一个值列表。我们可以询问很多关于环境和操作系统的细节:
+需要提供一个目标变量和感兴趣的键的列表。若只提供一个键，则变量将只包含一个值;否则，它将是一个值列表。可以询问很多关于环境和操作系统的细节:
 
 \begin{table}[H]
 	\begin{tabular}{|l|l|}
@@ -72,7 +72,7 @@ cmake_host_system_information(RESULT <VARIABLE> QUERY <KEY>…)
 		TOTAL\_PHYSICAL\_MEMORY     & 总物理内存(MiB)                   \\ \hline
 		AVAILABLE\_PHYSICAL\_MEMORY & 可用的物理内存(MiB)               \\ \hline
 		OS\_NAME &
-		\begin{tabular}[c]{@{}l@{}}如果该命令存在，则uname -s的输出;如果没有，\\ 则uname -s是Windows、Linux或Darwin中的一个\end{tabular} \\ \hline
+		\begin{tabular}[c]{@{}l@{}}如果该命令存在，则uname -s的输出;若没有，\\ 则uname -s是Windows、Linux或Darwin中的一个\end{tabular} \\ \hline
 		OS\_RELEASE                 & OS子类型，例如Windows Professional \\ \hline
 		OS\_VERSION                 & 操作系统构建ID                                    \\ \hline
 		OS\_PLATFORM &
@@ -80,7 +80,7 @@ cmake_host_system_information(RESULT <VARIABLE> QUERY <KEY>…)
 	\end{tabular}
 \end{table}
 
-若需要，可以查询特定于处理器的信息:
+可以查询特定于处理器的信息:
 
 \begin{table}[H]
 	\begin{tabular}{|l|l|}
@@ -108,9 +108,9 @@ cmake_host_system_information(RESULT <VARIABLE> QUERY <KEY>…)
 
 \subsubsubsection{3.5.5\hspace{0.2cm}平台是32位还是64位架构?}
 
-64位架构中，内存地址、处理器寄存器、处理器指令、地址总线和数据总线都是64位宽的。虽然这是一个简化的定义，但它大致说明了64位平台与32位平台的不同之处。
+64位架构中，内存地址、处理器寄存器、处理器指令、地址总线和数据总线都是64位宽的。虽然这是一个简化的定义，但说明了64位平台与32位平台的不同之处。
 
-C++中，不同的体系结构意味着一些基本数据类型(int和long)和指针的位宽不同。CMake利用指针的大小来收集关于目标计算机的信息。这个信息可以通过CMAKE\_SIZEOF\_VOID\_P变量获得，它将包含64位的值8(因为指针是8字节宽的)和32位的值4(4字节):
+C++中，不同的架构意味着一些基本数据类型(int和long)和指针的位宽不同。CMake利用指针的大小来收集关于目标计算机的信息。这个信息可以通过CMAKE\_SIZEOF\_VOID\_P变量获得，它将包含64位的值8(因为指针是8字节宽的)和32位的值4(4字节):
 
 \begin{lstlisting}[style=styleCMake]
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
