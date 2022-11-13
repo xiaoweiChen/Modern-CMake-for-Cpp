@@ -97,11 +97,11 @@ add_custom_target(checksum ALL
 )
 \end{lstlisting}
 
-们使用target\_link\_libraries()指令将库与可执行文件连接起来。若没有它，可执行文件的编译将会因为未定义的符号而失败。我们在实际声明库之前调用了这个命令。当CMake配置项目时，其会收集关于目标，及其属性的信息——名称、依赖项、源文件和其他信息。
+使用target\_link\_libraries()指令将库与可执行文件连接起来。若没有它，可执行文件的编译将会因为未定义的符号而失败。我们在实际声明库之前调用了这个命令。当CMake配置项目时，其会收集关于目标，及其属性的信息——名称、依赖项、源文件和其他信息。
 
 解析所有文件之后，CMake将尝试构建一个依赖图。和所有有效的依赖图一样，它们是有向无环图。有着一个明确的方向，确定哪个目标依赖于哪个目标，不过这样的依赖不能形成环。
 
-当在构建模式下执行cmake时，生成的构建系统将检查我们已经定义的顶级目标并递归构建它们的依赖项。考虑一下图4.1中的例子:
+当在构建模式下执行cmake时，生成的构建系统将检查已经定义的顶级目标并递归构建它们的依赖项。考虑一下图4.1中的例子:
 
 \begin{enumerate}
 \item 
@@ -111,10 +111,10 @@ add_custom_target(checksum ALL
 计算和绘图库完成后，构建组2 - GuiApp和TerminalApp。
 
 \item 
-构建一个校验和目标;运行指定的命令行生成校验和(cksum是一个Unix校验和工具)。
+构建一个校验和目标，运行指定的命令行生成校验和(cksum是一个Unix校验和工具)。
 \end{enumerate}
 
-有一个小问题——前面的解决方案并不能保证在可执行文件之后构建校验和目标。CMake不知道校验和依赖于当前的可执行二进制文件，所以可以自由地先开始构建它。为了解决这个问题，可以把add\_dependencies()指令放在文件的末尾:
+有一个小问题——前面的解决方案并不能保证在可执行文件之后构建校验和目标。CMake不知道校验和依赖于当前的可执行二进制文件，所以可以自由地开始构建。为了解决这个问题，可以把add\_dependencies()指令放在文件的末尾:
 
 \begin{lstlisting}[style=styleCMake]
 add_dependencies(checksum terminal_app gui_app)
@@ -122,13 +122,13 @@ add_dependencies(checksum terminal_app gui_app)
 
 这将确保CMake理解Checksum目标和可执行程序之间的关系。
 
-这很好，不过target\_link\_libraries()和add\_dependencies()之间有什么区别呢?第一个用于与实际库一起使用，并允许控制属性传播。第二种方法只能用于顶层目标，以设置它们的构建顺序。
+不过target\_link\_libraries()和add\_dependencies()之间有什么区别呢?第一个用于与实际库一起使用，并允许控制属性传播。第二种方法只能用于顶层目标，以设置它们的构建顺序。
 
 随着项目变得越来越复杂，依赖树变得越来越难以理解。如何简化这个过程?
 
 \subsubsubsection{4.2.2\hspace{0.2cm}可视化的依赖性}
 
-即使是小项目也很有难和与其他开发人员直接分享。最简单的方法是通过一个漂亮的图表。毕竟，一张图片胜过千言万语。我们可以自己做这个工作并画一个图表，就像我在图4.1中所做的那样。但这很没意思，而且需要不断更新。幸运的是，CMake有一个很好的模块来生成点/graphviz格式的依赖关系图。它支持内部和外部依赖关系!
+即使是小项目也很有难和与其他开发人员直接分享。最简单的方法是通过一个漂亮的图表。毕竟，一张图片胜过千言万语。我们可以自己做这个工作并画一个图表，就像图4.1中所做的那样。但这很没意思，而且需要不断更新。幸运的是，CMake有一个很好的模块来生成点/graphviz格式的依赖关系图。它支持内部和外部依赖关系!
 
 要使用它，可以简单地执行以下命令:
 
@@ -138,12 +138,12 @@ cmake --graphviz=test.dot .
 
 该模块将生成一个文本文件，可以将该文本文件导入Graphviz可视化软件，该软件可以渲染图像或生成PDF或SVG文件，这些文件可以作为软件文档的一部分存储。每个人都喜欢好的文档，但是几乎没有人喜欢创建文档——现在，不需要自己来做了!
 
-如果你赶时间，甚至可以直接从浏览器运行Graphviz，地址如下:
+若赶时间，甚至可以直接从浏览器运行Graphviz，地址如下:
 
 \url{https://dreampuf.github.io/GraphvizOnline/}
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=重要的Note]
-自定义目标在默认情况下是不可见的，需要创建一个特殊的配置文件CMakeGraphVizOptions.cmake，它允许自定义图形。设置了一个方便的定制命令(GRAPHVIZ\_CUSTOM\_TARGETS TRUE);将其添加到特殊的配置文件中，以支持报告图中的自定义目标。可以在该模块的文档中找到更多选项。
+自定义目标在默认情况下是不可见的，需要创建一个特殊的配置文件CMakeGraphVizOptions.cmake，可以自定义图形。设置了一个方便的定制命令(GRAPHVIZ\_CUSTOM\_TARGETS TRUE);将其添加到特殊的配置文件中，以支持报告图中的自定义目标。可以在该模块的文档中找到更多选项。
 \end{tcolorbox}
 
 所需要做的就是复制和粘贴测试的内容。点文件到左边的窗口，项目将会可视化。很方便，不是吗?
@@ -159,7 +159,7 @@ cmake --graphviz=test.dot .
  
 \subsubsubsection{4.2.3\hspace{0.2cm}目标属性}
 
-目标具有类似于C++对象字段的工作方式的属性。可以修改其中一些属性，而其他属性是只读的。CMake定义了一个很大的“已知属性”列表(参见扩展阅读部分)，这些属性取决于目标的类型(可执行、库或自定义)，还可以添加自己的属性。使用以下命令操作目标器的属性:
+目标具有类似于C++对象字段的工作方式的属性。可以修改其中一些属性，而其他属性只读。CMake定义了一个很大的“已知属性”列表(参见扩展阅读部分)，这些属性取决于目标的类型(可执行、库或自定义)，还可以添加自己的属性。使用以下命令操作目标器的属性:
 
 \begin{lstlisting}[style=styleCMake]
 get_target_property(<var> <target> <property-name>)
@@ -168,25 +168,25 @@ set_target_properties(<target1> <target2> ...
 						<prop2-name> <value2> ...)
 \end{lstlisting}
 
-要在屏幕上打印目标属性，需要将其存储在<var>变量中，然后message()将其发送给用户，需要一个个地读取。另一方面，在目标上设置属性可以在多个目标上同时指定多个属性。
+要在屏幕上打印目标属性，需要将其存储在<var>变量中，然后message()将其发送给用户，需要一个个地读取。另外面，在目标上设置属性可以在多个目标上同时指定多个属性。
 
 属性的概念并非目标所独有。CMake还支持设置其他作用域的属性:GLOBAL、DIRECTORY、SOURCE、INSTALL、TEST和CACHE。
 
-要操作所有类型的属性，有get\_property()和set\_property()指令。可以使用这些低层命令来做set\_target\_properties()指令所做的事情:
+要操作所有类型的属性，有get\_property()和set\_property()指令。可以使用这些低层指令来做set\_target\_properties()指令所做的事情:
 
 \begin{lstlisting}[style=styleCMake]
 set_property(TARGET <target> PROPERTY <name> <value>)
 \end{lstlisting}
 
-最好尽可能多地使用高级命令。CMake提供了更多这样的功能，范围甚至更窄，比如在目标上设置特定的属性。例如，add\_dependencies(<target> <dep>)将依赖项附加到MANUALLY\_ADDED\_DEPENDENCIES目标属性中。本例中，可以使用get\_target\_property()查询，就像使用其他属性一样。然而，不能使用set\_target\_property()来更改(是只读的)，CMake中使用add\_dependencies()指令只能进行追加操作。
+最好尽可能多地使用高级命令。CMake提供了更多这样的功能，范围甚至更窄，比如在目标上设置特定的属性。例如，add\_dependencies(<target> <dep>)将依赖项附加到MANUALLY\_ADDED\_DEPENDENCIES目标属性中。可以使用get\_target\_property()查询，就像使用其他属性一样。然而，不能使用set\_target\_property()来更改(只读)，CMake中使用add\_dependencies()指令只能进行追加操作。
 
 接下来的章节中讨论编译和链接时，将介绍更多的属性设置命令。同时，我们会了解到一个目标的属性如何转换到另一个目标。
 
 \subsubsubsection{4.2.4\hspace{0.2cm}可传递需求}
 
-命名真的很难，有时会得到一个很难理解的结果。不幸的是，“传递性使用需求”是在线CMake文档中遇到的神秘的主题之一。让我们来了解一下这个奇怪的名字，也许可以想出一个更容易理解的术语。
+命名真的很难，有时会得到一个很难理解的结果。不幸的是，“传递性使用需求”是CMake文档中的神秘的主题之一。让我们来了解一下这个奇怪的名字，也许可以想出一个更容易理解的术语。
 
-我将从解释这个谜题的中间部分开始。正如我们前面讨论的，一个目标可能依赖于另一个目标。CMake文档有时将这种依赖关系称为“使用”，例如在一个目标中使用另一个目标。这个很简单，我们继续下一个。
+我将从解释这个谜题的中间部分开始，一个目标可能依赖于另一个目标。CMake文档有时将这种依赖关系称为“使用”，例如在一个目标中使用另一个目标。这个很简单，我们继续下一个。
 
 某些情况下，这样的已用目标具有使用目标必须满足的特定需求:链接一些库，包含一个目录，或要求特定的编译特性。这些实际上都是需求，因此文档在某种意义上是正确的。问题是在文档的其他上下文中都不称其为需求。当为单个目标指定相同的需求时，可以设置属性或依赖项。因此，名称的最后一部分可能应该简单地称为“属性”。
 
@@ -194,14 +194,14 @@ set_property(TARGET <target> PROPERTY <name> <value>)
 
 简化整个概念，将其视为源目标(使用的目标)和目标目标(使用其他目标的目标)之间的传播属性。
 
-来看一个具体的例子，来理解其为什么会存在，以及如何工作:
+来看一个具体的例子，来理解其为什么会存在，以及如何工作的:
 
 \begin{lstlisting}[style=styleCMake]
 target_compile_definitions(<source> <INTERFACE|PUBLIC|PRIVATE> 
 	[items1...])
 \end{lstlisting}
 
-这个目标命令将填充<source>目标的COMPILE\_DEFINITIONS属性。编译定义只是传递给配置C++预处理器定义的编译器的-Dname=定义标志(我们将在第5章中讨论)。有趣的是第二个论点，需要指定三个值INTERFACE、PUBLIC或PRIVATE中的一个，以控制应该将属性传递给哪个目标。现在，不要将这些与C++访问说明符混淆——这是另一回事。
+这个目标命令将填充<source>目标的COMPILE\_DEFINITIONS属性。编译定义只是传递给配置C++预处理器定义的编译器的-Dname=定义标志(我们将在第5章中讨论)。有趣的是第二个论点，需要指定三个值INTERFACE、PUBLIC或PRIVATE中的一个，以控制应该将属性传递给哪个目标。现在，不要将这些与C++访问说明符混淆。
 
 传递关键字的工作原理如下:
 
@@ -216,11 +216,11 @@ INTERFACE设置相关目标的属性。
 PUBLIC设置源和相关目标的属性。
 \end{itemize}
 
-当不将属性传递到任何目标时，将其设置为PRIVATE。
+当不将属性传递到其他目标时，可以将其设置为PRIVATE。
 
 当需要这样的传递时，使用PUBLIC。若源目标在其实现(.cpp文件)中不使用该属性，而只在头文件中使用该属性，这些属性会传递给消费者目标，那么就使用INTERFACE。
 
-这些是如何工作的?为了管理这些属性，CMake提供了一些指令，比如前面提到的target\_compile\_definitions()。当指定PRIVATE或PUBLIC关键字时，CMake将在与指令匹配的目标的属性中存储提供的值——本例中是COMPILE\_DEFINITIONS。此外，若关键字是INTERFACE或PUBLIC，它将用INTERFACE\_前缀——INTERFACE\_COMPILE\_DEFINITIONS将值存储在属性中。在配置阶段，CMake将读取源目标的接口属性，并将其内容附加到目标目标。就传播属性，或传递了使用需求。
+这些是如何工作的?为了管理这些属性，CMake提供了一些指令，比如前面提到的target\_compile\_definitions()。当指定PRIVATE或PUBLIC关键字时，CMake将在与指令匹配的目标的属性中存储提供的值——本例中是COMPILE\_DEFINITIONS。此外，若关键字是INTERFACE或PUBLIC，将用INTERFACE\_前缀——INTERFACE\_COMPILE\_DEFINITIONS将值存储在属性中。在配置阶段，CMake将读取源目标的接口属性，并将其内容附加到目标目标。就传播属性，或传递了使用需求。
 
 在CMake 3.20中，可以使用target\_link\_options()或直接使用set\_target\_properties()指令管理12个这样的属性:
 
@@ -262,7 +262,7 @@ PRECOMPILE\_HEADERS
 SOURCES
 \end{itemize}
 
-我们将在下面的页面中讨论这些选项中，但所有这些选项当然都在CMake手册中进行了描述。可以在URL下找到它们的页面(可以用感兴趣的属性替换<PROPERTY>):
+我们将在下面的页面中讨论这些选项中，但这些选项都在CMake手册中进行了描述。可以在URL下找到它们的页面(可以用感兴趣的属性替换<PROPERTY>):
 
 \url{https://cmake.org/cmake/help/latest/prop_tgt/<PROPERTY>.html}
 
@@ -312,11 +312,11 @@ of "source_target2" does not agree with the value of POSITION_
 INDEPENDENT_CODE already determined for "destination_target".
 \end{tcblisting}
 
-接收这样的消息很有用，因为明确地知道我们引入了这个冲突，并且需要解决它。CMake有它自己的属性，这些属性必须在源目标和目标目标之间“一致”。
+接收这样的消息很有用，因为明确地知道引入了这个冲突，并且需要解决它。CMake有它自己的属性，这些属性必须在源目标和目标目标之间“一致”。
 
 极少数情况下，这可能会变得很重要——例如，若在多个目标中使用相同的库构建软件，然后链接到单个可执行文件。若这些源目标使用同一个库的不同版本，可能会遇到问题。
 
-为了确保我们只使用相同的特定版本，可以创建一个自定义接口属性INTERFACE\_LIB\_VERSION，并将版本存储在那里。这还不足以解决问题，因为CMake在默认情况下不会传播自定义属性，必须显式地将自定义属性添加到“兼容”属性列表中。
+为了确保只使用相同的特定版本，可以创建一个自定义接口属性INTERFACE\_LIB\_VERSION，并将版本存储在那里。这还不足以解决问题，因为CMake在默认情况下不会传播自定义属性，必须显式地将自定义属性添加到“兼容”属性列表中。
 
 每个目标都有4个这样的列表:
 
@@ -334,7 +334,7 @@ COMPATIBLE\_INTERFACE\_NUMBER\_MAX
 COMPATIBLE\_INTERFACE\_NUMBER\_MIN
 \end{itemize}
 
-将属性附加到其中一个，将触发传播和兼容性检查。BOOL列表将检查传播到目标目标的所有属性是否计算为相同的布尔值。类似地，STRING将求值为字符串。NUMBER\_MAX和NUMBER\_MIN有点不同——传播的值不需要匹配，但目标只会接收最高或最低的值。
+将属性附加到其中一个，将触发传播和兼容性检查。BOOL列表将检查传播到目标目标的所有属性是否计算为相同的布尔值。类似地，STRING将求值为字符串。NUMBER\_MAX和NUMBER\_MIN有点不同——传播值不需要匹配，但目标只会接收最高或最低的值。
 
 这个例子将帮助我们理解如何在实践中应用:
 
@@ -376,13 +376,13 @@ CMake将这个自定义属性传播到目标目标，并检查所有源目标的
 
 可以调整这样一个目标的目标属性:编译定义、编译选项、包含目录等——甚至将支持可传递的使用需求。但应该将它们视为不可变的，不要改变它们的来源或依赖关系。
 
-导入目标的定义范围可以是全局的，也可以是定义它的目录的本地目录(在子目录中可见，但在父目录中不可见)。
+导入目标的范围可以是全局的，也可以是本地目录(在子目录中可见，但在父目录中不可见)。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{别名目标}
 
-别名目标完全符合期望——在不同的名称下创建对目标的另一个引用。可以使用以下指令为可执行文件和库创建别名目标:
+别名目标完全符合期望——不同的名称下创建对目标的另一个引用。可以使用以下指令为可执行文件和库创建别名目标:
 
 \begin{lstlisting}[style=styleCMake]
 add_executable(<name> ALIAS <target>)
@@ -397,7 +397,7 @@ add_library(<name> ALIAS <target>)
 \noindent
 \textbf{接口库}
 
-这是一个有趣的构造——一个库不编译任何东西，而是作为一个实用工具目标。它的整个概念是围绕传播属性(传递使用需求)构建的。
+这是一个有趣的构造——一个库不编译任何东西，而是作为一个实用工具目标。其整个概念是围绕传播属性(传递使用需求)构建的。
 
 接口库有两个主要用途——纯头文件库和将一堆传播的属性捆绑到一个逻辑单元中。
 
@@ -433,15 +433,15 @@ target_compile_options(warning_props INTERFACE
 target_link_libraries(executable warning_props)
 \end{lstlisting}
 
-add\_library(INTERFACE)指令创建一个逻辑warning\_props目标，用于在可执行目标上设置第二个命令中指定的编译选项。推荐使用这些INTERFACE目标，它们提高了代码的可读性和可重用性。可以把它看作是将一堆神奇的值重构为一个命名良好的变量，还建议使用\_props后缀将接口库与常规库区分开来。
+add\_library(INTERFACE)指令创建一个逻辑warning\_props目标，用于在可执行目标上设置第二个命令中指定的编译选项。推荐使用这些INTERFACE目标，这提高了代码的可读性和可重用性。可以把它看作是将一堆神奇的值重构为一个命名良好的变量，还建议使用\_props后缀将接口库与常规库区分开来。
 
 伪目标是否耗尽了目标的概念?当然不是!我们仍然需要理解，如何将这些目标转化为生成的构建系统。
 
 \subsubsubsection{4.2.7\hspace{0.2cm}构建目标}
 
-目标这个词有点夸张，在项目的上下文中和生成的构建系统的上下文中意味着不同的东西。当CMake生成一个构建系统时，会将CMake语言中的列表文件“编译”为所选构建工具的语言;也许它为GNU Make创建了一个Makefile。这样的Makefile有它们自己的目标——其中一些是列表文件目标的直接转换，另一些是隐式创建的。
+目标这个词有点夸张，在项目的上下文中和生成的构建系统的上下文中意味着不同的东西。当CMake生成一个构建系统时，会将CMake语言中的列表文件“编译”为所选构建工具的语言，也许为GNU Make创建了一个Makefile。这样的Makefile有它们自己的目标——其中一些是列表文件目标的直接转换，另一些是隐式创建的。
 
-这样的构建系统目标是ALL, CMake在默认情况下生成它来包含所有顶层列表文件目标，比如可执行文件和库(不一定是自定义目标)。ALL是在运行cmake -{}-build <build tree>而不选择具体目标时生成的，可以通过向前面的命令添加-{}-target <name>参数来选择一个。
+这样的构建系统目标是ALL，CMake在默认情况下生成它来包含所有顶层列表文件目标，比如可执行文件和库(不一定是自定义目标)。ALL是在运行cmake -{}-build <build tree>而不选择具体目标时生成的，可以通过向前面的命令添加-{}-target <name>参数来选择一个。
 
 有些可执行程序或库可能不是在每个构建中都需要，但希望将它们作为项目的一部分，以便在有用的时候使用。为了优化默认构建，可以像这样从ALL目标中排除它们:
 
@@ -452,7 +452,7 @@ add_library(<name> EXCLUDE_FROM_ALL [<source>...])
 
 自定义目标则相反——默认情况下，排除在ALL目标之外，除非使用ALL关键字显式地定义它们，就像BankApp示例中那样。
 
-另一个隐式定义的构建目标是干净的，它只是从构建树中删除所生成的工件。用它来清除所有旧文件，从头开始构建一切。重要的是要理解它并不是简单地删除构建目录中的所有内容。所以要使clean正确工作，需要手动指定自定义目标可能创建为副产品的文件(请参阅BankApp示例)。
+另一个隐式定义的构建目标是干净的，只是从构建树中删除所生成的工件。用它来清除所有旧文件，从头开始构建一切。重要的是要理解它并不是简单地删除构建目录中的所有内容。所以要使clean正确工作，需要手动指定自定义目标可能创建为副产品的文件(请参阅BankApp示例)。
 
 还有一种有趣的非目标机制可以创建可在所有实际目标中使用的自定义工件——自定义命令。
 

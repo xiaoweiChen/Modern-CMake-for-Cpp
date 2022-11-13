@@ -1,14 +1,14 @@
 
-CMake通过三个阶段构建解决方案——配置、生成和运行构建工具。通常，在配置阶段就有了所有所需的数据。但每隔一段时间，我们就会遇到先有鸡还是先有蛋的问题。举一个前一节的例子——一个目标需要知道另一个目标的二进制工件的路径。但是，只有在解析所有列表文件并完成配置阶段之后，这些信息才可用。
+CMake通过三个阶段构建解决方案——配置、生成和运行构建工具，在配置阶段就有了所有所需的数据。但每隔一段时间，就会遇到“先有鸡，还是先有蛋”的问题。举一个前一节的例子——一个目标需要知道另一个目标的二进制工件的路径。但是，只有在解析所有列表文件并完成配置阶段之后，这些信息才可用。
 
 该如何处理这种问题呢?可以为该信息创建一个占位符，并将其评估推迟到下一个阶段——生成阶段。
 
-这就是生成器表达式(有时称为genexes)所做的事，其是围绕目标属性构建的，如LINK\_LIBRARIES、INCLUDE\_DIRECTORIES、COMPILE\_DEFINITIONS、传播属性和许多其他属性，但不是全部。遵循类似条件语句和变量求值的规则。
+这就是生成器表达式(有时称为genex)所做的事，其是围绕目标属性构建的，如LINK\_LIBRARIES、INCLUDE\_DIRECTORIES、COMPILE\_DEFINITIONS、传播属性和其他属性，但不是全部。遵循类似条件语句和变量求值的规则。
 
 值得注意的是，表达式通常是在使用的目标上下文中求值的(除非另有明确说明)。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=重要的Note]
-生成器表达式将在生成阶段计算(当配置完成并创建构建系统时)，所以不能将其输出捕获到变量中，并打印到控制台。要调试它们，可以使用以下方法中的任何一种:
+生成器表达式将在生成阶段计算(当配置完成并创建构建系统时)，所以不能将其输出捕获到变量中，并打印到控制台。要调试可以使用以下方法:
 
 \begin{itemize}
 \item 
@@ -18,7 +18,7 @@ file(GENERATE OUTPUT filename CONTENT "$<...>")
 \end{lstlisting}
 
 \item 
-添加一个自定义目标，并从命令行显式地构建它:
+添加一个自定义目标，并根据命令行显式构建:
 \begin{lstlisting}[style=styleCMake]
 custom_target(gendbg COMMAND ${CMAKE_COMMAND} -E echo "$<...>")
 \end{lstlisting}
@@ -53,7 +53,7 @@ target_compile_definitions(foo PUBLIC
 添加EXPRESSION名称
 
 \item 
-如果表达式需要参数，则添加冒号(:)并提供arg1、arg2和arg3值，用逗号分隔。
+若表达式需要参数，则添加冒号(:)并提供arg1、arg2和arg3值，用逗号分隔。
 
 \item 
 用>关闭表达式。
@@ -65,7 +65,7 @@ target_compile_definitions(foo PUBLIC
 \noindent
 \textbf{嵌套}
 
-将通用表达式作为参数传递给另一个表达式的能力开始，换句话说，通用表达式嵌套:
+将通用表达式作为参数传递给另一个表达式的能力开始。换句话说，就是通用表达式的嵌套:
 
 \begin{lstlisting}[style=styleCMake]
 $<UPPER_CASE:$<PLATFORM_ID>>
@@ -79,19 +79,19 @@ $<UPPER_CASE:$<PLATFORM_ID>>
 $<UPPER_CASE:${my_variable}>
 \end{lstlisting}
 
-在配置阶段将展开一个变量，生成阶段将展开一个生成表达式。这个功能有一些罕见的用法，但强烈建议别去使用。
+在配置阶段将展开一个变量，生成阶段将展开一个生成表达式。这个功能有一些罕见的用法，但不建议使用。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{条件表达式}
 
-生成器表达式支持布尔逻辑。这是一个很好的特性，但是由于历史原因，它的语法不一致，很难阅读。它有两种形式。第一种形式支持成功和失败的路径:
+生成器表达式支持布尔逻辑，但是由于历史原因，它的语法不一致，很难阅读。它有两种形式。第一种形式支持成功和失败的路径:
 
 \begin{lstlisting}[style=styleCMake]
 $<IF:condition,true_string,false_string>
 \end{lstlisting}
 
-这里的语法与所有其他表达式对齐，并且与所有表达式一样，允许嵌套。因此，可以用另一个表达式替换任何参数，并生成一些非常复杂的计算——甚至可以将一个条件嵌套在另一个条件中。这种形式恰好需要三个参数，因此不能省略任何内容。在未满足条件的情况下，跳过值的最佳选项如下:
+这里的语法与所有其他表达式对齐，并且与所有表达式一样，允许嵌套。因此，可以用另一个表达式替换任何参数，并生成一些非常复杂的计算——甚至可以将一个条件嵌套在另一个条件中。这种形式恰好需要三个参数，因此不能省略任何内容。未满足条件的情况下，跳过值的最佳选项:
 
 \begin{lstlisting}[style=styleCMake]
 $<IF:condition,true_string,>
@@ -103,7 +103,7 @@ $<IF:condition,true_string,>
 $<condition:true_string >
 \end{lstlisting}
 
-这打破了提供EXPRESSION名称作为第一个标记的惯例。我认为这里的意图是缩短表达并跳过这三个宝贵的字符，但结果真的很难合理解释。下面是CMake文档中的一个例子:
+这打破了提供EXPRESSION名称作为第一个标记的惯例。这里的意图是缩短表达并跳过这三个宝贵的字符，但结果真的很难合理解释。下面是CMake文档中的一个例子:
 
 \begin{lstlisting}[style=styleCMake]
 $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:AppleClan
@@ -116,11 +116,11 @@ $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:AppleClan
 
 生成器表达式可以计算成两种类型——布尔或字符串。布尔值由1(真)和0(假)表示。其他的都只是一个字符串。
 
-在条件表达式中作为条件传递的嵌套表达式，显式为布尔值。
+条件表达式中作为条件传递的嵌套表达式，显式为布尔值。
 
-有一个显式逻辑运算符可以将字符串转换为布尔类型，但布尔类型可以隐式转换为字符串。
+显式逻辑运算符可以将字符串转换为布尔类型，但布尔类型可以隐式转换为字符串。
 
-现在我们知道了基本的语法，来看看能用它做什么。
+现在知道了基本的语法，来看看能用来做什么。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
@@ -154,6 +154,8 @@ $<AND:arg1,arg2,arg3...>
 $<OR:arg1,arg2,arg3...> 
 # returns 1 if any of the arguments is 1.
 \end{lstlisting}
+
+若所有参数有1，则返回1。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
@@ -210,14 +212,14 @@ $<VERSION_EQUAL:v1,v2>, $<VERSION_LESS:v1,v2>,
 $<VERSION_GREATER:v1,v2>, $<VERSION_LESS_EQUAL:v1,v2>,
 $<VERSION_GREATER_EQUAL:v1,v2> 
 \end{lstlisting}
-版本组件的比较。
+版本的比较。
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{查询变量}
 
-有许多变量包含布尔类型的值。如果满足条件，则求值为1，否则为0。
+有许多变量包含布尔类型的值。若满足条件，则求值为1，否则为0。
 
 简单的查询:
 
@@ -236,7 +238,7 @@ arg目标是否存在?
 \begin{lstlisting}[style=styleCMake]
 $<CONFIG:args>
 \end{lstlisting}
-是args中的当前配置(Debug, Release，等等)(不区分大小写)。
+是args中的当前配置(Debug, Release等)(不区分大小写)。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
@@ -266,7 +268,7 @@ $<COMPILE_FEATURES:features>
 \begin{lstlisting}[style=styleCMake]
 $<COMPILE_LANG_AND_ID:lang,compiler_id1,compiler_id2...>
 \end{lstlisting}
-是这个lang目标的语言，是在compiler\_ids列表中为这个目标使用的编译器。这个表达式对于指定特定编译器的配置细节很有用:
+这个LANG是目标的语言，在compiler\_ids列表中为这个目标使用的编译器。这个表达式对于指定特定编译器的配置很有用:
 
 \begin{lstlisting}[style=styleCMake]
 target_compile_definitions(myapp PRIVATE
@@ -276,7 +278,7 @@ target_compile_definitions(myapp PRIVATE
 )
 \end{lstlisting}
 
-在前面的例子中，若用AppleClang或Clang编译CXX编译器，则会设置-DCXX\_CLANG定义。对于来自Intel的CXX编译器，将设置-DCXX\_INTEL标志。最后，对于C和Clang编译器，我们将得到-DC\_CLANG定义。
+在前面的例子中，若用AppleClang或Clang编译CXX编译器，则会设置-DCXX\_CLANG定义。对于来自Intel的CXX编译器，将设置-DCXX\_INTEL标志。最后，对于C和Clang编译器，将得到-DC\_CLANG的定义。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
@@ -310,9 +312,9 @@ args中用于链接步骤的语言。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{字符串的求值}
+\textbf{字符串求值}
 
-有很多表达式最后求值为字符串。可以将它们直接输出到目标的占位符，也可以将它们作为另一个表达式的参数使用。我们已经了解了单条件表达式的计算结果是字符串。还有什么可选的?
+有很多表达式最后求值为字符串。可以直接输出到目标的占位符，也可以作为另一个表达式的参数使用。我们已经了解了单条件表达式的计算结果是字符串。还有什么可选的?
 
 \hspace*{\fill} \\ %插入空行
 \noindent
@@ -482,7 +484,14 @@ $<TARGET_PDB_FILE_DIR:target>
 $<TARGET_BUNDLE_DIR:target> 
 \end{lstlisting}
 
-bundle(apple特定的包)目录的完整路径(my.app, my.framework或my.bundle)为目标。
+BUNDLE(Apple特定的包)目录的完整路径(my.app, my.framework或my.bundle)。
+
+\item 
+\begin{lstlisting}[style=styleCMake]
+$<TARGET_BUNDLE_CONTENT_DIR:target>
+\end{lstlisting}
+
+目标的包内容目录的完整路径。在macOS上，它是my.app/Contents, my.framework或my.bundle/Contents。其他软件开发包(SDK)(如iOS)的包结构是扁平的——my.app, my.framework或my.bundle。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
@@ -496,14 +505,14 @@ $<TARGET_PROPERTY:target,prop>
 $<TARGET_PROPERTY:prop>
 \end{lstlisting}
 
-要对表达式求值的目标的prop值。
+要对表达式求值目标的prop值。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<INSTALL_PREFIX> 
 \end{lstlisting}
 
-当目标用install(EXPORT)导出时，或者当在install \_NAME\_DIR中求值时，安装前缀;否则，它为空。
+当目标用install(EXPORT)导出，或者当在INSTALL\_NAME\_DIR中求值时的安装目录，若不存在为空。
 
 \end{itemize}
 
@@ -511,7 +520,7 @@ $<INSTALL_PREFIX>
 \noindent
 \textbf{特殊用法}
 
-极少数情况下，可能需要将一个字符传递给具有特殊含义的生成器表达式。要避免此行为，使用以下表达式:
+极少数情况下，需要将一个字符传递给具有特殊含义的生成器表达式。要避免此行为，使用以下表达式:
 
 \begin{itemize}
 \item 
@@ -533,14 +542,14 @@ $<COMMA>
 $<SEMICOLON>
 \end{lstlisting}
 
-字面值，符号(防止对参数进行列表展开)
+字面值，符号(避免对参数进行展开)
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{字符串转换}
 
-使用以下表达式可以在生成器阶段处理字符串:
+使用表达式可以在生成器阶段处理字符串:
 
 \begin{itemize}
 \item 
@@ -555,7 +564,7 @@ $<JOIN:list,d>
 $<REMOVE_DUPLICATES:list>
 \end{lstlisting}
 
-在没有排序列表的情况下删除副本。
+对没有排序列表的删除重复的元素。
 
 \item 
 \begin{lstlisting}[style=styleCMake]
@@ -583,18 +592,18 @@ $<GENEX_EVAL:expr>
 $<TARGET_GENEX_EVAL:target,expr>
 \end{lstlisting}
 
-与GENEX\_EVAL转换类似，但是在目标的上下文中。
+与GENEX\_EVAL转换类似，但这是在目标的上下文中。
 \end{itemize}
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{输出相关的表达式}
 
-CMake文档未能很好地解释什么是“与输出相关的表达式”。这让我们有点困惑，其与产出有什么关系?
+CMake文档未能很好地解释什么是“与输出相关的表达式”。这会让我们有点困惑，其与产出有什么关系?
 
 根据v3.13文档(在更新的版本中删除了)，“这些表达式生成输出，在某些情况下取决于输入。” 
 
-有些是简易条件表达式的遗留版本。其他的只是一个字符串转换表达式，它还没有进入其他部分。
+有些是简易条件表达式的历史版本，其他的只是一个字符串转换表达式。
 
 若满足特定条件，以下表达式将返回它们的第一个参数，否则返回空字符串:
 
@@ -604,14 +613,14 @@ CMake文档未能很好地解释什么是“与输出相关的表达式”。这
 $<LINK_ONLY:deps>
 \end{lstlisting}
 
-使用target\_link\_libraries()隐式设置以存储PRIVATE deps链接依赖，这不会作为使用需求传播
+使用target\_link\_libraries()隐式设置以存储PRIVATE deps链接依赖，这不会作为使用需求进行传播
 
 \item 
 \begin{lstlisting}[style=styleCMake]
 $<INSTALL_INTERFACE:content>
 \end{lstlisting}
 
-若与install(EXPORT)一起使用，则返回内容
+若与install(EXPORT)一起使用，则返回相应的内容
 
 \item 
 \begin{lstlisting}[style=styleCMake]
@@ -621,7 +630,7 @@ $<BUILD_INTERFACE:content>
 若与export()一起使用或由同一构建系统中的另一个目标使用，则返回内容
 \end{itemize}
 
-以下输出表达式将对它们的参数执行字符串转换:
+以下输出表达式将对其参数的执行字符串进行转换:
 
 \begin{itemize}
 \item 
@@ -639,7 +648,7 @@ $<SHELL_PATH:input>
 将绝对路径(或路径列表)转换为与目标操作系统匹配的shell路径样式。在Windows shell中斜杠转换为反斜杠，在MSYS shell中驱动器号转换为POSIX路径。
 \end{itemize}
 
-最后，有一个杂散变量查询表达式:
+最后，有一个变量中查询表达式:
 
 \begin{itemize}
 \item 
@@ -652,25 +661,25 @@ $<TARGET_OBJECTS:target>
 
 \subsubsubsection{4.4.3\hspace{0.2cm}可以尝试的例子}
 
-当有一个很好的实际例子来支持理论时，一切都更容易理解。下面是生成器表达式的一些用法:
+有一个很好的实际例子来支持理论时，一切都更容易理解。下面是生成器表达式的一些用法:
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{构建配置}
 
-第1章中，讨论了构建类型，以指定要构建的配置——Debug、Release等。在某些情况下，可能会根据你所创造的构建类型而采取不同的行动。一个简单易行的方法是使用\$<config>生成器表达式:
+第1章中，讨论了构建类型，以指定要构建的配置——Debug、Release等。某些情况下，可能会根据所创造的构建类型而采取不同的行动。一个简单易行的方法是使用\$<CONFIG>生成器表达式:
 
 \begin{lstlisting}[style=styleCMake]
 target_compile_options(tgt $<$<CONFIG:DEBUG>:-ginlinepoints>)
 \end{lstlisting}
 
-上面的例子检查config是否等于DEBUG;若是这种情况，嵌套表达式的值为1。外部的简写IF表达式变成true，-ginline-points调试标志将添加到选项中。
+上面的例子检查CONFIG是否等于DEBUG;若是这种情况，嵌套表达式的值为1。外部的简写IF表达式变成true，-ginline-points调试标志将添加到选项中。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
 \textbf{特定于系统的单行代码}
 
-生成器表达式还可以将冗长的IF命令压缩成简洁的一行程序。假设有以下代码:
+生成器表达式还可以将冗长的IF命令压缩成简洁的一行:
 
 \begin{lstlisting}[style=styleCMake]
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -678,14 +687,14 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 endif()
 \end{lstlisting}
 
-若这是目标系统，其告诉编译器在参数中添加-DLINUX=1。虽然这不是很长，但它可以很容易地替换为一个优雅的表达式:
+若这是目标系统，其告诉编译器在参数中添加-DLINUX=1。虽然这不是很长，但可以很容易地替换为一个优雅的表达式:
 
 \begin{lstlisting}[style=styleCMake]
 target_compile_definitions(myProject PRIVATE
 	$<$<CMAKE_SYSTEM_NAME:LINUX>:LINUX=1>)
 \end{lstlisting}
 
-这样的代码工作得很好，但是在生成器表达式变得难以阅读之前，可以将多少内容放入生成器表达式中是有限制的。这种情况下，最好坚持使用长条件块。
+这样的代码工作得很好，但是在生成器表达式变得难以阅读之前，可以将多少内容放入生成器表达式中是有限制的。这种情况下，最好坚持使用条件块。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
@@ -700,14 +709,14 @@ target_compile_options(enable_rtti INTERFACE
 )
 \end{lstlisting}
 
-即使在这样一个简单的例子中，我们已经可以看到嵌套过多生成器表达式时会发生什么，但有时这是达到预期效果的唯一方法。发生了什么:
+即使在这样一个简单的例子中，已经可以看到嵌套过多生成器表达式时会发生什么，有时这是达到预期效果的唯一方法:
 
 \begin{itemize}
 \item 
-检查COMPILER\_ID是否为GNU;若是这样，求OR = 1。
+检查COMPILER\_ID是否为GNU;若是这样，OR值为1。
 
 \item 
-若不是，就检查COMPILER\_ID是否为Clang，并将OR计算为1。否则，将OR求值为0
+若不是，就检查COMPILER\_ID是否为Clang，并将OR计算为1。否则，OR值为0
 
 \item 
 若OR赋值为1，在enable\_rtti编译选项中添加-rtti。否则，什么都不做。
@@ -719,7 +728,7 @@ target_compile_options(enable_rtti INTERFACE
 \noindent
 \textbf{嵌套生成器表达式}
 
-有时，在试图在生成器表达式中嵌套元素时，会发生什么并不明显。可以通过向调试文件生成测试输出来调试表达式。
+在生成器表达式中嵌套元素时，会发生什么并不明显。可以通过向调试文件生成测试输出来调试表达式。
 
 下面的例子，看看会发生什么:
 
@@ -768,11 +777,11 @@ PLATFORM\_ID的输出值是普通情况下Linux。
 变量首先进行插值，右尖括号(>)将解释为生成器表达式的一部分，因为只有字符串的一部分大写。
 \end{enumerate}
 
-换句话说，要注意变量的内容可能会影响基因扩展的行为。若需要在变量中使用尖括号，请使用\$<ANGLE-R>。
+注意变量的内容可能会影响基因扩展的行为。若需要在变量中使用尖括号，请使用\$<ANGLE-R>。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
-\textbf{条件表达式与BOOL运算符求值之间的区别}
+\textbf{条件表达式与BOOL运算符求值的区别}
 
 计算布尔类型到字符串的值时，生成器表达式可能有点令人困惑。重要的是要了解它们与常规条件表达式的区别，首先是IF关键字:
 
@@ -803,7 +812,7 @@ file(GENERATE OUTPUT boolean CONTENT
 
 \begin{enumerate}
 \item 
-这是一个布尔展开，其中BOOL为0;因此，TRUE字符串不会被写入。
+这是一个布尔展开，其中BOOL为0;因此，TRUE字符串不会写入。
 
 \item 
 这是一个典型的错误——作者打算根据BOOL值打印TRUE或FALSE，但由于它也是一个布尔值的假展开，两个参数会视为一个，并且而不打印。
@@ -815,10 +824,10 @@ file(GENERATE OUTPUT boolean CONTENT
 以IF开头的适当条件表达式，输出FALSE，因为第一个参数是0。
 
 \item 
-条件表达式的错误用法——当不需要为布尔值false赋值时，应该使用第一种形式。
+条件表达式的错误用法——当不需要为布尔值FALSE赋值时，应该使用第一种形式。
 \end{enumerate}
 
-生成器表达式以其复杂的语法而闻名。本例中提到的差异甚至会让有经验的开发者感到困惑。若有疑问，将这样的表达式复制到另一个文件中，并使用添加的缩进和空格将其拆分，以便更好地进行理解。
+生成器表达式以其复杂的语法而闻名。本例中提到的差异甚至会让有经验的开发者感到困惑。可以将这样的表达式复制到另一个文件中，并使用添加的缩进和空格将其拆分，以便更好地进行理解。
 
 
 

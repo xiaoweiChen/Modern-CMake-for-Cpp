@@ -1,5 +1,5 @@
 
-预处理器在构建过程中起着巨大的作用，但它的功能却又如此简单和有限。在接下来的小节中，将介绍如何提供包含文件的路径，以及如何使用预处理器定义。还将解释如何使用CMake配置包含的头文件。
+预处理器在构建过程中起着巨大的作用，但其功能却又如此简单和有限。在接下来的小节中，将介绍如何提供包含文件的路径，以及如何使用预处理器定义。还将解释如何使用CMake配置包含的头文件。
 
 \subsubsubsection{5.3.1\hspace{0.2cm}提供包含文件的路径}
 
@@ -13,7 +13,7 @@
 \#include "path-spec": 引号式
 \end{itemize}
 
-预处理器将用path-spec中指定的文件内容替换这些指令。找到这些文件可能是个问题。我们按什么顺序搜索哪些目录?但C++标准并没有明确规定这一点，这需要查看编译器的手册。
+预处理器将用指定路径中的文件内容替换这些指令。找到这些文件可能是个问题。我们按什么顺序搜索哪些目录?但C++标准并没有明确规定这一点，这需要查看编译器的手册。
 
 通常，尖括号形式将检查标准包含目录，包括标准C++库和标准C库头文件存储在系统中的目录。
 
@@ -27,7 +27,7 @@ target_include_directories(<target> [SYSTEM] [AFTER|BEFORE]
 	[<INTERFACE|PUBLIC|PRIVATE> [item2...] ...])
 \end{lstlisting}
 
-可以添加希望编译器检查的自定义路径，CMake会将它们添加到生成的构建系统中的编译器调用中。它们将提供一个特定于编译器的标志(通常是-I)。
+可以添加希望编译器检查的自定义路径，CMake会将它们添加到生成的构建系统中的编译器调用中，这将提供一个特定于编译器的标志(通常是-I)。
 
 使用BEFORE或AFTER确定路径是应该添加到目标INCLUDE\_DIRECTORIES属性的前面还是后面，这仍然由编译器决定是在默认目录之前还是之后检查这里提供的目录(通常是在之前)。
 
@@ -130,7 +130,7 @@ target_compile_definitions(print_commit PRIVATE
 	"SHA=${SHA}")
 \end{lstlisting}  
 
-然后可以在应用中使用，像这样:
+然后可以在应用中使用:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter05/03-git/print_commit.cpp
@@ -191,7 +191,7 @@ target_include_directories(configure PRIVATE
 /* #undef FOO_UNDEFINED "@FOO_UNDEFINED@" */
 \end{lstlisting}  
 
-@VAR@和\$\{VAR\}变量占位符被CMake列表文件中的值所替换。此外，对于已定义的变量，\#cmakedefine替换为\#define，而对于未定义的变量使用/* \#undef VAR */替换。
+@VAR@和\$\{VAR\}变量占位符被CMake列表文件中的值所替换。对于已定义的变量，\#cmakedefine替换为\#define，而对于未定义的变量使用/* \#undef VAR */替换。
 
 若需要显式的\#define 1或\#define 0为\# If块，可以使用\#cmakedefine01代替。
 
@@ -227,9 +227,9 @@ FOO_ENABLE2: FOO_ENABLE2
 FOO_UNDEFINED: FOO_UNDEFINED
 \end{tcblisting}
 
-configure\_file()指令还有许多格式化和文件权限选项。若感兴趣，请查看在线文档以获取详细信息(链接在扩展阅读部分)。
+configure\_file()指令还有许多格式化和文件权限选项。若感兴趣请查看在线文档以获取详细信息(链接在扩展阅读部分)。
 
-准备好头文件和源文件的完整组合之后，就可以讨论在接下来的步骤中如何形成输出代码。由于我们不能直接影响语言分析或汇编(这些步骤遵循严格的标准)，所以肯定可以访问优化器的配置。让我们来学习其是如何影响最终结果的吧。
+准备好头文件和源文件的完整组合之后，就可以讨论在接下来的步骤中如何形成输出代码。由于不能直接影响语言分析或汇编(这些步骤遵循严格的标准)，所以肯定可以访问优化器的配置。让我们来学习这是如何影响最终结果的吧。
 
 
 
