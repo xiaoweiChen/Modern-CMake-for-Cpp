@@ -12,13 +12,13 @@ pkg-config正慢慢被其他更现代的解决方案淘汰。这里出现了一�
 
 许多(若不是大多数的话)库都采用了CMake，并在当前版本中提供了一个包配置文件。若不需要发布解决方案，并且可以控制环境，请使用find\_package()，不要担心遗留版本的问题。
 
-遗憾的是，并不是所有的环境都可以快速更新到库的最新版本。许多公司仍然在生产中使用遗留系统，这些系统不再获得最新的软件包。这种情况下，用户可能只能使用旧版本(但希望兼容)。通常，它会提供一个.pc文件。
+遗憾的是，并不是所有的环境都可以快速更新到库的最新版本。许多公司仍然在生产中使用遗留系统，这些系统不再获得最新的软件包，用户可能只能使用旧版本(但希望兼容)。通常，会提供一个.pc文件。
 
-此外，若项目能够为大多数用户提供开箱即用的服务，支持较老的PkgConfig格式可能是值得的。
+此外，若项目能够为大多数用户提供开箱即用的服务，支持较老的PkgConfig格式可能值得。
 
-开始使用find\_package()，若\_FOUND为false，退回到PkgConfig。通过这种方式，我们将介绍一个环境升级的场景，可以只使用主方法，而不更改代码。
+开始使用find\_package()，若\_FOUND为false，退回到PkgConfig。通过这种方式，可以使用一种环境升级的方式，可以只使用主方法，而不更改代码。
 
-这个助手工具的概念非常简单——库的作者提供了一个包含编译和链接所需细节的小的.pc文件，比如下面这个:
+这个助手工具的概念非常简单——库的作者提供了一个包含编译和链接所需细节的小的.pc文件:
 
 \begin{lstlisting}[style=styleCMake]
 prefix=/usr/local
@@ -33,7 +33,7 @@ Cflags: -I${includedir}/foobar
 Libs: -L${libdir} -lfoobar
 \end{lstlisting}
 
-该格式非常简单、轻量级，甚至支持基本的变量展开。这就是为什么许多开发人员更喜欢它，而不是像CMake这样复杂、健壮的解决方案。虽然PkgConfig非常容易使用，但它的功能非常有限:
+该格式非常简单、轻量级，甚至支持基本的变量展开。这就是为什么许多开发人员更喜欢它，而不是像CMake这样复杂、健壮的解决方案。虽然PkgConfig非常容易使用，但功能非常有限:
 
 \begin{itemize}
 \item 
@@ -49,7 +49,7 @@ Libs: -L${libdir} -lfoobar
 获取库的包含目录(该字段在技术上可以包含其他编译器标志) ——  pkg-config -{}-cflags libfoo
 \end{itemize}
 
-要在构建场景中正确使用PkgConfig，构建系统必须在操作系统中找到pkg-config可执行文件，运行几次并提供适当的参数，并将响应存储在变量中，以便稍后将它们传递给编译器。我们已经知道如何在CMake中做到这一点——扫描已知的用于存储帮助工具的路径来检查PkgConfig是否已安装，然后使用一些exec\_program()指令来发现如何链接依赖项。尽管这些步骤是有限的，但当我们想要使用PkgConfig时，每次都这样做似乎有点不妥。
+要在构建场景中正确使用PkgConfig，构建系统必须在操作系统中找到pkg-config可执行文件，运行几次并提供适当的参数，并将响应存储在变量中，以便稍后将它们传递给编译器。已经知道如何在CMake中做到这一点——扫描已知的用于存储帮助工具的路径来检查PkgConfig是否已安装，然后使用一些exec\_program()指令来发现如何链接依赖项。尽管这些步骤是有限的，但当想要使用PkgConfig时，每次都这样做似乎有点不妥。
 
 CMake提供了一个方便的内置查找模块——FindPkgConfig。它遵循了常规查找模块的大多数规则，但没有提供PKG\_CONFIG\_INCLUDE\_DIRS或PKG\_CONFIG\_LIBS变量，而是设置了一个直接指向二进制文件的变量——PKG\_CONFIG\_EXECUTABLE。意料之中的是，PKG\_CONFIG\_FOUND变量也设置了——我们将使用它来确认该工具在系统中是可用的，然后用模块中定义的pkg\_check\_modules()帮助命令扫描包。
 
@@ -61,7 +61,7 @@ CMake提供了一个方便的内置查找模块——FindPkgConfig。它遵循�
 apt-get install libpqxx-dev
 \end{tcblisting}
 
-我们将创建main.cpp文件，它利用了一个虚拟连接类:
+创建main.cpp文件，使用虚拟连接类:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter07/02-find-pkg-config/main.cpp
@@ -91,14 +91,14 @@ add_executable(main main.cpp)
 target_link_libraries(main PRIVATE PkgConfig::PQXX)
 \end{lstlisting}
 
-让我们分析一波
+让我们分析一波：
 
 \begin{itemize}
 \item 
-我们要求CMake使用find\_package()指令查找PkgConfig可执行文件。若由于REQUIRED关键字而不存在pkg-config，则会失败。
+要求CMake使用find\_package()指令查找PkgConfig可执行文件。若由于REQUIRED关键字而不存在pkg-config，则会失败。
 
 \item 
-调用FindPkgConfig查找模块中定义的pkg\_check\_modules()自定义宏，以PQXX作为所选名称创建一个新的导入目标。查找模块将搜索名为libpxx的依赖项，若库因为REQUIRED关键字而不可用，将再次失败。注意IMPORTED\_TARGET关键字——若没有它，就不会自动创建目标，必须用宏创建的变量手动定义它。
+调用FindPkgConfig查找模块中定义的pkg\_check\_modules()自定义宏，以PQXX作为所选名称创建一个新的导入目标。查找模块将搜索名为libpxx的依赖项，若库因为REQUIRED关键字而不可用，将再次失败。注意IMPORTED\_TARGET关键字——若没有它，就不会自动创建目标，必须用宏手动定义它。
 
 
 \item 
@@ -111,7 +111,7 @@ target_link_libraries(main PRIVATE PkgConfig::PQXX)
 链接由pkg\_check\_modules()创建的PkgConfig::PQXX导入目标。注意，PkgConfig::是一个常量前缀，PQXX来自传递给该命令的第一个参数。
 \end{itemize}
 
-这是引入尚不支持CMake的依赖项的一种相当方便的方法。这个查找模块有一些其他的方法和选项;若有兴趣了解更多，建议参考官方文档:\url{https://cmake.org/ cmake/help/latest/module/FindPkgConfig.html}。
+这是引入尚不支持CMake的依赖项的一种相当方便的方法。这个查找模块有一些其他的方法和选项，若有兴趣了解更多，建议参考官方文档:\url{https://cmake.org/ cmake/help/latest/module/FindPkgConfig.html}。
 
 查找模块是为CMake提供关于已安装依赖项的一种方式。CMake在所有主要平台上都广泛支持大多数流行的库，但当我们想要使用一个还没有专门的查找模块的第三方库时，该怎么办呢?
 

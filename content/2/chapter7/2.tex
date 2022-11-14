@@ -1,4 +1,4 @@
-好吧，假设已经决定通过网络通信或静态存储数据来提高你的游戏水平。纯文本文件、JSON，甚至是老式的XML都不行。所以希望将数据直接序列化为二进制格式，最好使用业界非常熟悉的库——例如，Google的协议缓冲区(Protobuf)。找到文档，在系统中安装依赖项，然后呢?如何让CMake找到并引入的这个外部依赖呢?幸运的是，有一个find\_package()指令。这在大多数情况下都很有效。
+假设已经决定通过网络通信或静态存储数据来提高你的游戏水平，纯文本文件、JSON，甚至老式的XML都不行。所以希望将数据直接序列化为二进制格式，最好使用业界非常熟悉的库——例如，Google的协议缓冲区(Protobuf)。找到文档，在系统中安装依赖项，然后呢?如何让CMake找到并引入的这个外部依赖呢?幸运的是，有一个find\_package()指令。
 
 让我们倒回去，从设置场景开始——必须安装要使用的依赖项，因为是find\_package()嘛，顾名思义，只是关于在系统中发现包。假设已经安装了依赖项，或者解决方案的用户知道如何在提示时安装特定的、必要的依赖项。为了涵盖其他场景，需要提供一个备份计划(在后面的章节中可以找到更多关于备份计划的信息)。
 
@@ -9,13 +9,13 @@ $ apt update
 $ apt install protobuf-compiler libprotobuf-dev
 \end{tcblisting}
 
-每个系统都有自己的安装和管理包的方法。寻找包所在的路径可能是棘手和耗时的，特别是希望支持当前使用的大多数操作系统时。幸运的是，find\_package()通常可以帮你做到这一点，若有关的包提供了一个适当的配置文件，允许CMake确定支持包所需的变量。
+每个系统都有自己的安装和管理包的方法。寻找包所在的路径可能是棘手和耗时的，特别是希望支持当前使用的大多数操作系统时。find\_package()通常可以帮你做到这一点，若有关的包提供了一个适当的配置文件，允许CMake确定支持包所需的变量。
 
-现在，许多项目都与此需求兼容，并在安装过程中为CMake提供此文件。若计划使用一些不提供此功能的流行库，请先不要担心。很有可能CMake作者已经将该文件与CMake本身捆绑在一起(这些称为查找模块，以区别于config-files)。若情况并非如此，我们仍然有一些其他选择:
+现在，许多项目都与此需求兼容，并在安装过程中为CMake提供此文件。若计划使用一些不提供此功能的流行库，请先不要担心。很有可能CMake作者已经将该文件与CMake本身捆绑在一起(这些称为查找模块，以区别配置文件)。若情况并非如此，仍然其他选择:
 
 \begin{itemize}
 \item 
-为特定的包提供我们自己的查找模块，并将其捆绑到我们的项目中。
+为特定的包提供查找模块，并将其捆绑到我们的项目中。
 
 \item 
 编写一个配置文件，并要求包维护人员将包一起发布。
@@ -23,7 +23,7 @@ $ apt install protobuf-compiler libprotobuf-dev
 
 可能还没有完全准备好自己创建这样的合并请求，没关系，因为不需要这样做。CMake附带超过150个查找模块，可以找到诸如Boost、bzip2、curl、curses、GIF、GTK、iconv、ImageMagick、JPEG、Lua、OpenGL、OpenSSL、PNG、PostgreSQL、Qt、SDL、Threads、XML-RPC、X11和zlib等库，还可以找到我们将在本例中使用的Protobuf文件。完整的列表可以在CMake文档中找到:\url{https://cmake.org/cmake/help/latest/manual/cmake-modules.7.html\#find_modules}。
 
-find-modules和config-files都可以用一个find\_package()指令在CMake项目中使用。CMake查找匹配的查找模块，若找不到，就会查找配置文件。搜索将从存储在CMAKE\_MODULE\_PATH变量(默认为空)中的路径开始。当项目想要添加和使用外部find-modules时，可以配置此变量。接下来，CMake将扫描已安装版本中可用的内置查找模块列表。
+查找模块和配置文件都可以用find\_package()指令在CMake项目中使用。CMake查找匹配的查找模块，若找不到，就会查找配置文件。搜索将从存储在CMAKE\_MODULE\_PATH变量(默认为空)中的路径开始。当项目想要添加和使用外部查找模块时，可以配置此变量。接下来，CMake将扫描已安装版本中可用的内置查找模块列表。
 
 若没有找到适用的模块，就应该搜索相应的包配置文件。CMake有一长串适合主机操作系统的路径，可以查找到符合以下模式的文件名:
 
@@ -35,7 +35,7 @@ find-modules和config-files都可以用一个find\_package()指令在CMake项目
 <kebab-case-package-name>-config.cmake
 \end{itemize}
 
-让我们来聊聊项目文件。本例中，并不打算设计一个具有远程过程调用和基于网络的解决方案。相反，只是想证明我可以构建和运行一个依赖于Protobuf的项目。为此，将创建一个.proto文件，其中包含尽可能小的契约。若不是很熟悉Protobuf，只需要知道这个库提供了一种以二进制形式序列化结构化数据的机制。为此，我们需要提供这种结构的模式，它将用于从二进制形式向C++对象进行读写。
+接下来，来聊聊项目文件。本例中，并不打算设计一个具有远程过程调用和基于网络的解决方案。相反，只是想证明我可以构建和运行一个依赖于Protobuf的项目。为此，将创建一个.proto文件，其中包含尽可能小的契约。若不是很熟悉Protobuf，只需要知道这个库提供了一种以二进制形式序列化结构化数据的机制。为此，需要提供这种结构的模式，用于从二进制形式向C++对象进行读写。
 
 这是我想到的:
 
@@ -97,16 +97,16 @@ target_include_directories(main PRIVATE
 前两行我们已经知道了，创建项目并声明其语言
 
 \item 
-find\_package(Protobuf REQUIRED)要求CMake运行绑定的FindProtobuf.cmake为我们建立了Protobuf库。该查找模块将扫描常用路径，若没有找到库，则终止(因为提供了REQUIRED关键字)。其还将指定有用的变量和函数(例如下一行中的函数)
+find\_package(Protobuf REQUIRED)要求CMake运行绑定的FindProtobuf.cmake建立了Protobuf库。该查找模块将扫描常用路径，若没有找到库，则终止(因为提供了REQUIRED关键字)。其还将指定有用的变量和函数(例如下一行中的函数)
 
 \item 
-protobuf\_generate\_cpp是在protobuf findmodule中定义的自定义函数。在底层调用add\_custom\_command()，后者使用适当的参数调用协议编译器。可以通过提供两个变量来使用这个函数，将生成的源文件(GENERATED\_SRC)和头文件(GENERATED\_HEADER)的路径，以及要编译的文件列表(message.proto)。
+protobuf\_generate\_cpp是在protobuf查找模块中定义的自定义函数。在底层调用add\_custom\_command()，后者使用适当的参数调用协议编译器。可以通过提供两个变量来使用这个函数，将生成的源文件(GENERATED\_SRC)和头文件(GENERATED\_HEADER)的路径，以及要编译的文件列表(message.proto)。
 
 \item 
-add\_executable，将使用main.cpp和前面命令中配置的Protobuf文件创建可执行文件。
+add\_executable，将使用main.cpp和前面指令中配置的Protobuf文件创建可执行文件。
 
 \item 
-target\_link\_libraries会将find\_package()找到的库(静态或动态)添加到主目标的链接命令中。
+target\_link\_libraries会将find\_package()找到的库(静态或动态)添加到主目标的链接指令中。
 
 \item 
 target\_include\_directories()添加包提供的必要的INCLUDE\_DIRS和CMAKE\_CURRENT\_BINARY\_DIR。这里需要后者，这样编译器才能找到生成的message.pb.h头文件。
@@ -125,7 +125,7 @@ target\_include\_directories()添加包提供的必要的INCLUDE\_DIRS和CMAKE\_
 添加包含包含和链接所需路径的变量
 \end{itemize}
 
-大多数情况下，当使用find\_package()时，可以预期会设置一些变量，无论使用的是内置的查找模块，还是与包绑定的包配置文件(假设找到了包):
+当使用find\_package()时，可以预期会设置一些变量，无论使用的是内置的查找模块，还是与包绑定的包配置文件(假设找到了包):
 
 \begin{itemize}
 \item 
@@ -146,7 +146,7 @@ IMPORTED由查找模块或配置文件指定的目标
 
 最后一点非常有趣——若包支持所谓的“现代CMake”(围绕目标构建)，其将提供那些导入的目标来代替(或伴随)这些变量，这允许更干净、更简单的代码。建议优先考虑目标而不是变量。
 
-Protobuf是一个很好的例子，因为提供了变量和导入的目标(自CMake 3.10以来):protobuf::libprotobuf，protobuf::libprotobuf-lite，protobuf::libprotoc和protobuf::protoc。就可以编写更简洁的代码:
+Protobuf是一个很好的例子，因为提供了变量和导入的目标(自CMake 3.10以来):protobuf::libprotobuf，protobuf::libprotobuf-lite，protobuf::libprotoc和protobuf::protoc。这样，就可以编写更简洁的代码:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter07/02-find-package-targets/CMakeLists.txt
@@ -168,13 +168,13 @@ ${CMAKE_CURRENT_BINARY_DIR})
 
 导入的目标protobuf::libprotobuf隐式指定包含目录，并且由于传递依赖项(我称之为传播属性)，它们与我们的主目标共享。同样的过程也发生在链接器和编译器标志上。
 
-若需要知道特定的查找模块具体提供了什么，最好访问它的在线文档。一个Protobuf可以在这里找到: \url{https://cmake.org/ cmake/help/latest/module/FindProtobuf.html}。
+若知道特定的查找模块具体提供了什么，最好访问其在线文档。Protobuf的文档可以在这里找到: \url{https://cmake.org/ cmake/help/latest/module/FindProtobuf.html}。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=重要的Note]
-简单起见，若在用户系统中找不到protobuf库(或其编译器)，本节中的示例将会失败。但是一个真正健壮的解决方案应该通过检查Protobuf\_FOUND变量并进行相应的操作来验证这一点，或者为用户打印一个明确的诊断消息(这样用户就可以安装它)，或者自动执行安装。
+简单起见，若在用户系统中找不到protobuf库(或其编译器)，本节中的示例将会失败。但是真正健壮的解决方案应该通过检查Protobuf\_FOUND变量并进行相应的操作来验证，或者为用户打印明确的诊断消息(这样用户就可以安装它)，或者自动执行安装。
 \end{tcolorbox}
 
-find\_package()指令最后要提到的是其选项。完整的列表有点冗长，所以这里只关注基本签名。它看起来像这样:
+find\_package()指令最后要提到的是其选项。完整的列表有点冗长，所以这里只关注基本签名。看起来像这样:
 
 \begin{lstlisting}[style=styleCMake]
 find_package(<Name> [version] [EXACT] [QUIET] [REQUIRED])

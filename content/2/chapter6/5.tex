@@ -1,12 +1,12 @@
-链接器经常会异想天开，毫无理由地抱怨事情。对于刚开始使用这个工具的开发者来说，这是一项考验。这并不奇怪，因为他们通常尽可能地避免接触构建配置。最终，他们会在可执行文件中更改某些内容(可能添加他们正在处理的库)，然后一切就失控了。
+链接器经常会异想天开，毫无理由地抱怨事情。对于刚开始使用这个工具的开发者来说，这是一项考验。这并不奇怪，因为他们通常尽可能地避免接触构建配置。最终，会在可执行文件中更改某些内容(可能添加他们正在处理的库)，然后一切就失控了。
 
-让我们考虑一个相当简单的依赖链——主可执行程序依赖于外部库，而外部库依赖于嵌套库(包含必要的int b变量)。突然，开发者的屏幕上出现了一条不显眼的消息:
+考虑一个相当简单的依赖链——主可执行程序依赖于外部库，而外部库依赖于嵌套库(包含必要的int b变量)。突然，开发者的屏幕上出现了一条不显眼的消息:
 
 \begin{tcblisting}{commandshell={}}
 outer.cpp:(.text+0x1f): undefined reference to 'b'
 \end{tcblisting}
 
-这并不是一个罕见的问题——通常，这是忘记向链接器添加必要的库。但在本例中，库实际上已经正确地添加到target\_link\_libraries()中:
+这并不是一个罕见的问题，这是忘记向链接器添加必要的库。但在本例中，库实际上已经正确地添加到target\_link\_libraries()中:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter06/06-order/CMakeLists.txt
@@ -33,7 +33,7 @@ int main() {
 }
 \end{lstlisting}
 
-前面的代码看起来很简单——我们将打印一个外部变量，可以在外部库中找到。我们提前用extern关键字声明了它。下面是该库的源代码:
+前面的代码看起来很简单——打印一个外部变量，可以在外部库中找到，提前用extern关键字声明了它。下面是该库的源代码:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter06/06-order/outer.cpp
@@ -50,7 +50,7 @@ int a = b;
 int b = 123;
 \end{lstlisting}
 
-实际上，我们已经为b提供了定义，由于它没有使用static关键字标记为本地，因此它从嵌套目标正确导出。正如之前看到的，这个目标与CMakeLists.txt中的主要可执行文件相链接:
+实际上，已经为b提供了定义，由于它没有使用static关键字标记为本地，因此它从嵌套目标正确导出。正如之前看到的，这个目标与CMakeLists.txt中的主要可执行文件相链接:
 
 \begin{lstlisting}[style=styleCMake]
 target_link_libraries(main nested outer)
@@ -71,7 +71,7 @@ target_link_libraries(main nested outer)
 对下一个二进制文件重复此过程
 \end{enumerate}
 
-若在整个操作完成后，任何符号仍未定义，则链接失败。
+若在整个操作完成后，若有符号仍未定义，则链接失败。
 
 我们的例子中就是这样(CMake把可执行目标的目标文件放在库之前):
 
@@ -86,7 +86,7 @@ target_link_libraries(main nested outer)
 处理libouter.a，得到了对b的未定义引用，并解析了对A的引用。
 \end{enumerate}
 
-我们确实正确地解析了对a变量的引用，但对b没有。我们需要做的是颠倒链接的顺序，使nested排在outer之后:
+我们确实正确地解析了对a变量的引用，但对b没有。需要做的是颠倒链接的顺序，使nested排在outer之后:
 
 \begin{lstlisting}[style=styleCMake]
 target_link_libraries(main outer nested)
@@ -100,7 +100,7 @@ target_link_libraries(main nested outer nested)
 
 最后，可以尝试使用特定于链接器的标志，如-{}-start-group或-{}-end-group。详细信息请参阅链接器的文档，这些细节超出了本书的范围。
 
-现在我们知道了如何解决常见的问题后，再来看看如何利用链接器。
+现在我们知道了如何解决常见的问题后，再来看看如何使用链接器。
 
 
 
