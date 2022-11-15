@@ -1,9 +1,9 @@
 
-静态程序分析是在不实际运行编译版本的情况下检查源代码的过程。静态检查器的严格应用极大地提高了代码的质量，更加一致，更不容易出现错误。引入已知安全漏洞的机会也减少了。C++社区已经创建了几十个静态检查器:Astrée、Clang-Tidy、clay、CMetrics、Cppcheck、Cpplint、CQMetrics、ESBMC、FlawFinder、Flint、IKOS、Joern、PC-Lint、Scan-Build、Vera++等。
+静态程序分析是在不运行编译版本的情况下检查源代码的过程。静态检查器的严格应用极大地提高了代码的质量，更加一致，更不容易出现错误。引入已知安全漏洞的机会也减少了。C++社区已经创建了几十个静态检查器:Astrée、Clang-Tidy、clay、CMetrics、Cppcheck、Cpplint、CQMetrics、ESBMC、FlawFinder、Flint、IKOS、Joern、PC-Lint、Scan-Build、Vera++等。
 
-其中的许多都承认CMake是行业标准，并将提供开箱即用的支持(或集成教程)。一些构建工程师不想去写CMake代码，他们通过在线可用的外部模块来添加静态检查器，比如Lars Bilke在他的GitHub仓库:\url{https://github.com/bilke/cmake-modules}中收集的那些模块。
+其中的许多都承认CMake是行业标准，并将提供开箱即用的支持(或集成教程)。一些构建工程师不想去写CMake代码，可以通过在线可用的外部模块来添加静态检查器，比如Lars Bilke在他的GitHub仓库:\url{https://github.com/bilke/cmake-modules}中收集的那些模块。
 
-这并不奇怪，因为普遍的误解是，需要通过许多步骤来检查代码。这种复杂性的原因在于静态检查器的本质:经常模仿真正编译器的行为来理解代码中发生的事情。
+这并不奇怪，普遍的误解是需要通过许多步骤来检查代码。这种复杂性的原因在于静态检查器:经常模仿真正编译器的行为，来理解代码中发生的事情。
 
 Cppcheck在其手册中推荐以下步骤:
 
@@ -19,14 +19,14 @@ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
 \end{tcblisting}
 
 \item 
-在生成的JSON文件上运行检查器:
+生成的JSON文件上运行检查器:
 
 \begin{tcblisting}{commandshell={}}
 <path-to-cppcheck> --project=compile_commands.json
 \end{tcblisting}
 \end{enumerate}
 
-所有这些都应该作为构建的一部分进行，这样就不会遗忘。
+这些都应该作为构建的一部分进行，这样就不会遗忘。
 
 既然CMake完全理解如何构建目标，就不能支持其中一些工具吗?至少是最受欢迎的?当然可以!尽管使用起来很简单，但这个功能在网上很难找到。CMake支持在每个目标的基础上为以下工具启用检查器:
 
@@ -38,7 +38,7 @@ include-what-you-use (\url{https://include-what-you-use.org})
 Clang-Tidy (\url{https://clang.llvm.org/extra/clang-tidy})
 
 \item 
-link what you use (a built-in CMake checker)
+link what you use (一个CMake内置检查器)
 
 \item 
 cpplint (\url{https://github.com/cpplint/cpplint})
@@ -47,7 +47,7 @@ cpplint (\url{https://github.com/cpplint/cpplint})
 Cppchecker (\url{https://cppcheck.sourceforge.io})
 \end{itemize}
 
-我们需要做的是设置一个适当的目标属性为一个分号分隔的列表，其中包含到检查器可执行文件的路径，后面跟着应该转发给检查器的命令行选项:
+需要做的是设置一个适当的目标属性为一个分号分隔的列表，其中包含到检查器可执行文件的路径，后面跟着应该转发给检查器的命令行选项:
 
 \begin{itemize}
 \item 
@@ -66,15 +66,15 @@ Cppchecker (\url{https://cppcheck.sourceforge.io})
 LINK\_WHAT\_YOU\_USE
 \end{itemize}
 
-<LANG>需要替换为所使用的语言，因此对于C源代码使用C，对于C++使用CXX。若不需要在每个目标的基础上控制检查器，可以为项目中的所有目标指定一个默认值，通过设置一个适当的全局变量前缀CMAKE\_，例如:
+<LANG>需要替换为所使用的语言，因此对于C源代码使用C，对于C++使用CXX。若不需要在每个目标的基础上控制检查器，可以为项目中的所有目标指定一个默认值，通过设置适当的全局变量前缀CMAKE\_:
 
 \begin{lstlisting}[style=styleCMake]
 set(CMAKE_CXX_CLANG_TIDY /usr/bin/clang-tidy-3.9;-checks=*)
 \end{lstlisting}
 
-在这之后定义的任何目标，都将以同样的方式设置其CXX\_CLANG\_TIDY属性，这将把分析过程添加到常规构建中。
+之后定义的目标，都将以同样的方式设置其CXX\_CLANG\_TIDY属性，这将把分析过程添加到常规构建中。
 
-另外，对检查者应该如何测试目标进行更细粒度的控制也有一些价值。可以写一个简单的函数来解决这个问题:
+另外，对检查器应该如何测试目标进行更细粒度的控制也是有价值的。可以写一个简单的函数来解决这个问题:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter09/02-clang-tidy/cmake/ClangTidy.cmake
@@ -139,17 +139,17 @@ warning: initializing non-owner 'Calc *' with a newly created
 
 注意，除非将-{}-warnings-as-errors=*选项添加到命令行参数中，否则构建将会成功。建议将执行的规则和破坏这些规则的构建失败一视同仁;通过这种方式，就可以防止不兼容的代码污染存储库。
 
-Clang-tidy还提供了一个有趣的-{}-fix选项，可以自动纠正代码。这绝对是一个很好的节省时间的方法，可以在需要多次检查时使用。与格式化一样，在将静态分析工具生成的任何更改引入到遗留代码库时，请确保避免合并冲突。
+Clang-Tidy还提供了一个有趣的-{}-fix选项，可以自动纠正代码。这绝对是一个节省时间的方法，可以在需要多次检查时使用。与格式化一样，在将静态分析工具生成的更改引入到历史代码库时，请确保避免合并冲突。
 
-根据用例、存储库的大小和团队偏好，可能应该选择一些非常匹配的检查器。添加太多会成为麻烦。下面是CMake支持检查器的简介。
+根据用例、存储库的大小和团队偏好，可能应该选择一些匹配的检查器，添加太多也会成为麻烦。下面是CMake支持检查器的简介。
 
 \subsubsubsection{9.3.1\hspace{0.2cm}Clang-Tidy}
 
 以下是官方网站对Clang-Tidy的描述:
 
-clang-tidy是一个基于clang的C++的“linter”工具。目的是提供一个可扩展的框架，用于诊断和修复典型的编程错误，如样式违反、接口滥用或通过静态分析可以推断出的错误。Clang-tidy是模块化的，为写新检查提供了方便的接口。
+Clang-Tidy是一个基于clang的C++的“linter”工具。目的是提供一个可扩展的框架，用于诊断和修复常见的编程错误，如样式违反、接口滥用或通过静态分析可以推断出的错误。Clang-T]idy是模块化的，为编写新检查提供了方便的接口。
 
-这个工具的多功能性真的令人印象深刻，提供了超过400个检查。与ClangFormat配合使用效果很好，因为自动应用的补丁(超过150个可用补丁)可以遵循相同的格式文件。提供的检查包括性能、可读性、现代化、cpp-core-guidelines和改进容易出现bug命名空间。
+这个工具的多功能性真的令人印象深刻，提供了超过400个检查。与ClangFormat配合使用效果很好，因为自动应用的补丁(超过150个可用补丁)可以遵循相同的格式文件。提供的检查包括性能、可读性、现代化、cpp-core-guidelines和改进容易出现bug的命名空间。
 
 
 \subsubsubsection{9.3.2\hspace{0.2cm}Cpplint}
@@ -158,35 +158,35 @@ clang-tidy是一个基于clang的C++的“linter”工具。目的是提供一�
 
 Cpplint是一个命令行工具，根据谷歌的C++样式指南检查C/C++文件的样式问题。Cpplint由Google公司在Google/styleguide上开发和维护。
 
-这个linter是为了使您的代码与前面提到的谷歌风格保持一致。它是用Python编写的，这可能是某些项目不需要的依赖项。这些修复以Emacs、Eclipse、VS7、Junit可使用的格式提供，也可以作为sed命令提供。
+这个linter是为了使代码与前面提到的Google编码风格保持一致。它用Python编写的，这可能是某些项目不需要的依赖项。这些修复以Emacs、Eclipse、VS7、Junit可使用的格式提供，也可以作为sed命令提供。
 
 \subsubsubsection{9.3.3\hspace{0.2cm}Cppcheck}
 
 以下是官方网站对Cppcheck的描述:
 
-Cppcheck是C/C++代码的静态分析工具，提供了独特的代码分析来检测错误，并专注于检测未定义的行为和危险的编码结构，目标是尽量少出现假阳性。Cppcheck旨在分析C/C++代码，即使它具有非标准语法(在嵌入式项目中常见)。
+Cppcheck是C/C++代码的静态分析工具，提供了独特的代码分析来检测错误，并专注于检测未定义的行为和危险的编码结构，目标是尽量少出现假阳性。Cppcheck旨在分析C/C++代码，可以检测非标准语法(在嵌入式项目中常见)。
 
-当涉及到避免误报所产生的不必要杂音时，这个工具值得推荐。其已经建立得很好(超过14年的制作过程)，而且仍然非常积极地维护着。另外，若代码不使用Clang编译，可能会发现它很有用。
+当涉及到避免误报所产生的不必要杂音时，这个工具值得推荐。其已经建立得很好(超过14年的制作过程)，而且仍然非常积极地维护着。另外，若代码不使用Clang编译，会发现它很有用。
 
 
 \subsubsubsection{9.3.4\hspace{0.2cm}include-what-you-use}
 
 以下是官方网站对include-what-you-use的描述:
 
-include-what-you-use的主要目标是删除多余的\#include，通过找出这个文件(对于.cc和.h文件)实际上不需要的\#includes来实现这一点，并在可能的情况下用forwarddeclarations替换\#includes。
+include-what-you-use的主要目标是删除多余的\#include，通过找出这个文件(对于.cc和.h文件)实际上不需要的\#include来实现，并在可能的情况下用前置声明替换\#include。
 
-若代码库很小，那么包含太多的头文件似乎不是一个真正的大问题。在较大的项目中，避免不必要的头文件编译所节省的时间很快就会增加。
+若代码库很小，那么包含太多的头文件似乎不是一个问题。在较大的项目中，避免不必要的头文件编译可以节省很多的时间。
 
 \subsubsubsection{9.3.5\hspace{0.2cm}link-what-you-use}
 
 以下是CMake博客上对link-what-you-use的描述:
 
-这是CMake中内置的特性，它使用ld和ldd选项来打印可执行程序链接的库比实际需要的多。
+这是CMake中内置的特性，使用ld和ldd选项来打印可执行程序链接的库比实际需要的多。
 
 这也加快了构建时间。只是在这种情况下，关注的是不需要的二进制工件。
 
-当软件错误可能影响人们的安全时，静态分析是至关重要的，特别是在医疗、核能、航空、汽车和机械行业。聪明的开发人员知道，在要求较低的环境中遵循类似的实践是没有坏处的，尤其是在采用成本很低的情况下。在构建过程中使用静态分析器，不仅比手动查找和修复bug方便得多，也可以使用CMake启用。对于质量敏感的软件(除了开发者之外还有其他人参与的所有软件)中，几乎没有理由跳过这些检查。
+当软件错误可能影响人们的安全时，静态分析就至关重要，特别是在医疗、核能、航空、汽车和机械行业。聪明的开发人员知道，在要求较低的环境中遵循类似的实践没有坏处，尤其是在成本很低的情况下。构建过程中使用静态分析器，不仅比手动查找和修复bug方便得多，也可以使用CMake启用。对于质量敏感的软件(除了开发者之外还有其他人参与的所有软件)中，几乎没有理由跳过这些检查。
 
-不幸的是，并不是所有的错误都能在程序执行之前捕获。做些什么可以让检查器更好地了解我们的项目?
+不幸的是，并不是所有的错误都能在程序执行之前捕获。做些什么可以让检查器更好地了解我们的项目呢?
 
 

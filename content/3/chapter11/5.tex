@@ -8,13 +8,13 @@ find_package(<PackageName> [version] [EXACT] [QUIET] [MODULE]
 	[NO_POLICY_SCOPE])
 \end{lstlisting}
 
-这里提到的组件不应该与install()指令中使用的COMPONENT关键字合并。它们是不同的概念，尽管名称相同，但必须分开理解。我们将在下面的小节中更详细地讨论这一点。
+这里的组件不应该与install()指令中使用的COMPONENT关键字混淆。尽管名称相同，但它们是不同的概念，必须分开理解。我们将在下面的小节中更详细地讨论。
 
 \subsubsubsection{11.5.1\hspace{0.2cm}在find\_package()中使用组件}
 
-当使用带有组件列表的find\_package()或OPTIONAL\_COMPONENTS时，我们只对提供这些组件的包感兴趣。然而，重要的是要认识到由包来验证这个需求，若包供应商没有向创建高级配置文件一节中提到的配置文件添加必要的检查，那么什么也不会发生。
+当使用带有组件列表的find\_package()或OPTIONAL\_COMPONENTS时，我们只对提供这些组件的包感兴趣。然而，要了解包需要验证的需求，若包供应商没有向创建高级配置文件一节中提到的配置文件添加必要的检查，那么什么也不会发生。
 
-请求的组件传递到<package>\_FIND\_COMPONENTS变量中的配置文件(可选和不可选)。此外，对于每个非可选组件，将设置一个<package>\_FIND\_REQUIRED\_<component>。作为包的作者，可以编写一个宏来扫描这个列表，并检查是否已经提供了所有必需的组件。但这里不需要这样做——这是check\_required\_components()完成的工作。配置文件应该在找到必要的组件时设置<Package>\_<Component>\_FOUND变量，文件末尾的宏将检查是否设置了所有必需的变量。
+请求的组件传递到<package>\_FIND\_COMPONENTS变量中的配置文件(可选和不可选)。此外，对于每个非可选组件，将设置一个<package>\_FIND\_REQUIRED\_<component>。作为包的作者，可以编写一个宏来扫描这个列表，并检查是否已经提供了所有必需的组件。但这里不需要这样做——这是check\_required\_components()的工作。配置文件应该在找到必要的组件时设置<Package>\_<Component>\_FOUND变量，文件末尾的宏将检查是否设置了所有必需的变量。
 
 \subsubsubsection{11.5.2\hspace{0.2cm}在install()指令中使用组件}
 
@@ -80,7 +80,7 @@ cmake -{}-install -{}-component extra将打印一个无法访问的消息(因为
 若没有为安装的工件指定COMPONENT关键字，将从CMAKE\_INSTALL\_DEFAULT\_COMPONENT\_NAME变量中获得一个未指定的默认值。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-因为没有简单的方法列出cmake命令行中可用的所有组件，所以包的用户将从列出包组件的详尽文档中受益，也许INSTALL文件是说明这些的好地方。
+因为没有简单的方法列出cmake命令行中可用的所有组件，所以包的用户将从列出包组件的文档中受益，也许INSTALL文件是说明这些的好地方。
 \end{tcolorbox}
 
 若对不存在的组件使用-{}-component参数调用cmake，则该命令将成功执行，而不会出现任何警告或错误，就是不会安装任何东西。

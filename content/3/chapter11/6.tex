@@ -1,4 +1,4 @@
-从源代码构建项目有它的好处，但会花费很长时间并引入很多复杂性。对于只想使用包的最终用户来说，这不是最好的体验，特别是不是开发人员的情况下。软件分发的一种更方便的形式是使用二进制包，其中包含已编译的工件和运行时需要的其他静态文件。CMake支持通过名为cpack的命令行工具生成多种类型的包。
+从源码构建项目有它的好处，但会花费很长时间。对于只想使用包的最终用户来说，这不是最好的体验，特别是不是开发人员的情况下。软件分发的一种更方便的形式是使用二进制包，其中包含已编译的工件和运行时需要的其他静态文件。CMake支持通过名为cpack的命令行工具生成多种类型的包。
 
 下表列出了可用的包生成器:
 
@@ -13,7 +13,7 @@
 		Bundle        & Bundle(.bundle)     & macOS                                     \\ \hline
 		DEB           & DEB(.deb)           & Linux                                     \\ \hline
 		DragNDrop     & DMG(.dmg)           & macOS                                     \\ \hline
-		External      & JSON(.json)         & Integration with external packaging tools \\ \hline
+		External      & JSON(.json)         & 与外部打包工具集成 \\ \hline
 		FreeBSD       & PKG(pkg)            & *BSD，Linux, OSX                           \\ \hline
 		IFW           & Binary              & Linux, Windows, macOS                     \\ \hline
 		NSIS          & Binary(.exe)        & Windows                                   \\ \hline
@@ -24,13 +24,13 @@
 	\end{tabular}
 \end{table}
 
-大多数生成器都具有丰富的配置。深入研究它们的所有细节超出了本书的范围，所以一定要查看完整的文档，可以在扩展阅读部分找到。相反，我们将关注一般用例。
+大多数生成器都具有丰富的配置。深入研究其细节会超出了本书的范围，所以一定要查看完整的文档，可以在扩展阅读部分找到。相反，我们会关注一般用例。
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Note]
-包生成器不应该与构建系统生成器(Unix Makefiles, Visual Studio等等)混淆。
+包生成器不应该与构建系统生成器(Unix Makefiles, Visual Studio等)混淆。
 \end{tcolorbox}
 
-要使用CPack，需要使用必要的install()指令正确配置项目的安装，并构建项目。cpack将使用在构建树中生成的生成的cmake\_install.cmake，再基于配置文件(CPackConfig.cmake)准备二进制包。虽然可以手动创建该文件，但使用include(CPack)将实用程序模块包含到项目的列表文件中更容易。其将在项目的构建树中生成配置，并在需要的地方提供所有默认值。
+要使用CPack，需要使用必要的install()指令正确配置项目的安装，并构建项目。cpack将使用在构建树中生成的生成的cmake\_install.cmake，再基于配置文件(CPackConfig.cmake)准备二进制包。可以手动创建该文件，但使用include(CPack)将实用程序模块包含到项目的列表文件中更容易。其将在项目的构建树中生成配置，并在需要的地方提供所有默认值。
 
 来看看如何扩展示例中的11个组件，使其能够与CPack一起工作:
 
@@ -52,7 +52,7 @@ set(CPACK_PACKAGE_DESCRIPTION "Simple Calculator")
 include(CPack)
 \end{lstlisting}
 
-代码不难，所以不会过多地讨论它(请参考模块文档，可以在扩展阅读部分找到)。CPack模块将从project()指令中推断出一些值:
+代码不难，所以不会过多地讨论(请参考模块文档，可以在扩展阅读部分找到)。CPack模块将从project()指令中推断出一些值:
 
 \begin{itemize}
 \item 
@@ -71,7 +71,7 @@ CPACK\_PACKAGE\_FILE\_NAME
 $CPACK_PACKAGE_NAME-$CPACK_PACKAGE_VERSION-$CPACK_SYSTEM_NAME
 \end{lstlisting}
 
-这里，CPACK\_SYSTEM\_NAME是目标操作系统的名称;例如，Linux或win32。例如，通过在Debian上执行ZIP生成器，CPack将生成一个名为CPackPackage-1.2.3-Linux.zip的文件。
+CPACK\_SYSTEM\_NAME是目标操作系统的名称;例如，Linux或win32。例如，通过在Debian上执行ZIP生成器，CPack将生成一个名为CPackPackage-1.2.3-Linux.zip的文件。
 
 构建项目之后，可以通过在构建树中运行cpack二进制代码来生成实际的包:
 
@@ -79,14 +79,14 @@ $CPACK_PACKAGE_NAME-$CPACK_PACKAGE_VERSION-$CPACK_SYSTEM_NAME
 cpack [<options>]
 \end{tcblisting}
 
-从技术上讲，CPack能够从当前工作目录中的配置文件中读取所有选项，但可以使用命令行覆盖这些设置:
+CPack能够从当前工作目录中的配置文件中读取所有选项，但可以使用命令行覆盖这些设置:
 
 \begin{itemize}
 \item 
 -G <generators>: 这是一个用分号分隔的包生成器列表。默认值可以在CPackConfig.cmake的CPACK\_GENERATOR变量中指定。
 
 \item 
--C <configs>: 这是一个分号分隔的构建配置(调试、发布)列表，用于为其生成包(多配置构建系统生成器所需)。
+-C <configs>: 这是一个分号分隔的构建配置(Debug、Release)列表，用于为其生成包(多配置构建系统生成器所需)。
 
 \item 
 -D <var>=<value>: 这将使用<value>覆盖CPackConfig.cmake中设置的<var>。
@@ -129,7 +129,7 @@ CPackPackage-1.2.3-Linux.deb
 CPackPackage-1.2.3-Linux.zip
 \end{itemize}
 
-这种格式中，二进制包可以发布到我们项目的网站上，在GitHub版本中，或者发送到包存储库供最终用户使用。
+这种格式的二进制包可以发布到项目网站上，在GitHub中，或者直接发送包到最终用户的邮箱中。
 
 
 
