@@ -6,7 +6,7 @@
 图12.6 配置安装和打包的文件
 \end{center}
 
-这里只需要文件——大部分工作已经在前面的小节中完成了。顶层的列表文件包括一个CMake模块，它将处理这个过程:
+这里只需要文件——大部分工作已经在前面的小节中完成了。顶层的列表文件包括一个CMake模块，将处理这个过程:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/CMakeLists.txt (fragment)
@@ -27,7 +27,7 @@ Calc控制台可执行文件
 
 包定义配置文件将只引入库目标，因为潜在的使用项目不会依赖于可执行文件。
 
-配置安装步骤之后，将继续进行CPack配置。Install模块的高级概述如下:
+配置安装步骤之后，将继续进行CPack配置。Install模块的概述如下:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/Install.cmake (overview)
@@ -38,11 +38,11 @@ Calc控制台可执行文件
 # Configuration of CPack
 \end{lstlisting}
 
-一切都计划好了，所以是时候为库编写一个安装模块了。
+一切都计划好了，所以是时候为库编写安装模块了。
 
 \subsubsubsection{12.6.1\hspace{0.2cm}库的安装}
 
-安装库最好从配置逻辑目标，并为其工件指定目的地开始。为了避免手动提供路径，将使用GNUInstallDirs模块提供的默认值。为了模块化，我们将把构件分组到组件中。默认安装将安装所有文件，可以选择只安装运行时组件，而跳过开发构件:
+安装库最好从配置逻辑目标，并为其工件指定目的地开始。为了避免手动提供路径，将使用GNUInstallDirs模块提供的默认值。为了模块化，将把构件分组到组件中。默认安装将安装所有文件，可以选择只安装运行时组件，而跳过开发构件:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/Install.cmake (fragment)
@@ -59,7 +59,7 @@ install(TARGETS calc_obj calc_shared calc_static
 )
 \end{lstlisting}
 
-安装过程中，我们想用ldconfig注册我们复制的动态库:
+安装过程中，我们想用ldconfig注册复制的动态库:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/Install.cmake (continued)
@@ -71,7 +71,7 @@ if (UNIX)
 endif()
 \end{lstlisting}
 
-准备好这些步骤后，就可以通过将库包装在一个可重用的CMake包中，使它对其他CMake项目可见。需要生成并安装目标导出文件和包含它的配置文件:
+准备好这些步骤后，就可以通过将库包装在可重用的CMake包中，使它对其他CMake项目可见。需要生成并安装目标导出文件和包含它的配置文件:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/Install.cmake (continued)
@@ -109,11 +109,11 @@ install(TARGETS calc_console
 )
 \end{lstlisting}
 
-完成了!让我们转到配置的最后一部分——打包。
+完成了!现在来到了配置的最后一步——打包。
 
 \subsubsubsection{12.6.3\hspace{0.2cm}使用CPack打包}
 
-这时，就可以随心所欲地配置大量受支持的包类型。然而，对于这个项目，基本配置就足够了:
+这时，就可以随心所欲地配置受支持的包类型。然而，对于这个项目，基本配置就足够了:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/Install.cmake (continued)

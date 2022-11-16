@@ -2,7 +2,7 @@ string()命令用于操作字符串。它提供了多种模式，可以对字符
 
 完整的细节可以在在线文档中找到: \url{https://cmake.org/cmake/ help/latest/command/string.html}。
 
-接受<input>参数的String()模式将接受多个<input>值，并在执行命令前将它们连接起来:
+接受<input>参数的String()模式将接受多个<input>值，并在执行命令前将其连接起来:
 
 \begin{lstlisting}[style=styleCMake]
 string(PREPEND myVariable "a" "b" "c")
@@ -24,7 +24,7 @@ string(PREPEND myVariable "abc")
 
 \begin{itemize}
 \item 
-string(FIND <haystack> <pattern> <out> [REVERSE]) 在<haystack>字符串中搜索<pattern>，并将找到的位置作为整数写入<out>变量。若使用REVERSE标志，它将从字符串的末尾搜索到开头。这只适用于ASCII字符串(不提供多字节支持)。
+string(FIND <haystack> <pattern> <out> [REVERSE]) 在<haystack>字符串中搜索<pattern>，并将找到的位置作为整数写入<out>变量。若使用REVERSE标志，将从字符串的末尾搜索到开头。这只适用于ASCII字符串(不提供多字节支持)。
 
 \item 
 string(REPLACE <pattern> <replace> <out> <input>) 用<replace>替换<input>中<pattern>的所有出现，并存储在<out>变量中。
@@ -36,7 +36,7 @@ string(REGEX MATCH <pattern> <out> <input>) 将<input>中<pattern>的第一次�
 string(REGEX MATCHALL <pattern> <out> <input>) 用<replace>匹配<input>中<pattern>的所有出现，并将它们作为逗号分隔的列表存储在<out>变量中。
 
 \item
-string(REGEX REPLACE <pattern> <replace> <out> <input>) 用<replace>表达式替换<input>中<pattern>的所有出现，并将它们存储在<out>变量中。
+string(REGEX REPLACE <pattern> <replace> <out> <input>) 用<replace>表达式替换<input>中<pattern>的所有出现，并存储在<out>变量中。
 \end{itemize}
 
 正则表达式操作遵循标准库<regex>标头中定义的C++语法。可以使用捕获组添加匹配<replace>表达式与数字占位符:\verb|\|\verb|\|1，\verb|\|\verb|\|2…(需要双反斜杠，以便正确解析参数)。
@@ -58,7 +58,7 @@ string(PREPEND <out> <input>) 通过在<input>字符串前面加上前缀，改�
 string(CONCAT <out> <input>) 连接所有提供的<input>字符串并将它们存储在<out>变量中。
 
 \item 
-string(JOIN <glue> <out> <input>) 将所有提供的<input>字符串与<glue>值交错，并将它们作为串联的字符串存储在<out>变量中(不要对列表变量使用此模式)。
+string(JOIN <glue> <out> <input>) 将所有提供的<input>字符串与<glue>值交错，并将其作为串联的字符串存储在<out>变量中(不要对列表变量使用此模式)。
 
 \item
 string(TOLOWER <string> <out>) 将<string>转换为小写并将其存储在<out>变量中。
@@ -90,7 +90,7 @@ string(REPEAT <string> <count> <out>) 生成一个包含<string>的<count>次重
 string(COMPARE <operation> <stringA> <stringB> <out>)
 \end{lstlisting}
 
-<operation>参数是以下参数之一:LESS，GREATER，EQUAL，NOTEQUAL，LESS\_EQUAL或GREATER\_EQUAL。它将用于比较<stringa>与<stringb>，结果(true或false)将存储在<out>变量中。
+<operation>参数是以下参数之一:LESS，GREATER，EQUAL，NOTEQUAL，LESS\_EQUAL或GREATER\_EQUAL。将用于比较<stringa>与<stringb>，结果(true或false)将存储在<out>变量中。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
@@ -102,7 +102,7 @@ string(COMPARE <operation> <stringA> <stringB> <out>)
 string(<algorithm> <out> <string>)
 \end{lstlisting}
 
-它哈希<string>和<algorithm>，并将结果存储在<out>变量中。支持以下算法:
+哈希有两个输入<string>和<algorithm>，并将结果存储在<out>变量中。支持以下算法:
 
 \begin{itemize}
 \item 
@@ -197,7 +197,7 @@ REMOVE <json> <member|index>... 返回使用<member>路径或<index>从<json>字
 SET <json> <member|index>... <value> 使用<member>路径或<index>从<json>字符串中返回<value>上升到一个或多个元素的结果。
 
 \item
-EQUAL <jsonA> <jsonB> 计算<jsona>和<jsonb>是否相等。
+EQUAL <jsonA> <jsonB> 计算<jsonA>和<jsonB>是否相等。
 \end{itemize}
 
 

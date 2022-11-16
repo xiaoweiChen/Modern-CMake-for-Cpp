@@ -12,7 +12,7 @@
 
 \begin{itemize}
 \item 
-file(READ <filename> <out> [OFFSET <o>] [LIMIT <max>] [HEX]) 从<filename>读取文件到<out>变量。读取可选地从偏移量<o>开始，并遵循<max>字节的可选限制。>HEX标志指定输出应该转换为十六进制表示。
+file(READ <filename> <out> [OFFSET <o>] [LIMIT <max>] [HEX]) 从<filename>读取文件到<out>变量。读取可选地从偏移量<o>开始，并遵循<max>字节的可选限制。HEX标志指定输出应该转换为十六进制表示。
 
 \item 
 file(STRINGS <filename> <out>) 从<filename>处的文件读取字符串到<out>变量。
@@ -94,7 +94,7 @@ file(\{CHMOD|CHMOD\_RECURSE\} <files>... <directories>... PERMISSIONS <permissio
 \begin{itemize}
 \item 
 file(REAL\_PATH <path> <out> [BASE\_DIRECTORY <dir>]) 从相对路径计算绝对路径并将其存储在<out>变量中。可选地接受
-<dir>基目录。它从CMake 3.19开始就可以使用了。
+<dir>基目录。从CMake 3.19开始可用。
 
 \item 
 file(RELATIVE\_PATH <out> <directory> <file>) 计算相对于<directory>的<file>路径，并将其存储在<out>变量中。
@@ -131,7 +131,7 @@ file(LOCK <path> [DIRECTORY] [RELEASE]
 	[TIMEOUT <seconds>])
 \end{lstlisting}
 
-该锁可以选择作用域为FUNCTION、FILE或PROCESS，并以<seconds>的超时进行限制。要释放锁，提供release关键字，结果将存储在<out>变量中。
+该锁可以选择作用域为FUNCTION、FILE或PROCESS，并以<seconds>的超时进行限制。要释放锁，需要RELEASE关键字，结果将存储在<out>变量中。
 
 \hspace*{\fill} \\ %插入空行
 \noindent
@@ -146,7 +146,7 @@ file(ARCHIVE_CREATE OUTPUT <destination> PATHS <source>...
 	[MTIME <mtime>] [VERBOSE])
 \end{lstlisting}
 
-它在<destination>路径上创建一个存档文件，其中包含支持的格式之一的<source>文件:7zip、gnutar、pax、paxr、raw或zip (paxr是默认格式)。如果所选格式支持压缩级别，则可以将其提供为一个单位数整数0-9，其中0为默认值。
+它在<destination>路径上创建一个存档文件，其中包含支持的格式之一的<source>文件:7zip、gnutar、pax、paxr、raw或zip (paxr是默认格式)。若所选格式支持压缩级别，则可以将其提供为一个单位数整数0-9，其中0为默认值。
 
 提取模式具有以下签名:
 
@@ -155,7 +155,7 @@ file(ARCHIVE_EXTRACT INPUT <archive> [DESTINATION <dir>]
 	[PATTERNS <patterns>...] [LIST_ONLY] [VERBOSE])
 \end{lstlisting}
 
-它将匹配可选<patterns>值的文件从<archive>提取到目标<dir>。如果提供了LIST\_ONLY关键字，则不会提取文件，而是只列出文件。
+它将匹配可选<patterns>值的文件从<archive>提取到目标<dir>。若有LIST\_ONLY关键字，则不会提取文件，而是只列出文件。
 
 
 

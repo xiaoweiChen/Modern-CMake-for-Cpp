@@ -2,13 +2,13 @@ CMake还支持一些简单的算术操作。详细信息请参见在线文档:
 
 \url{https://cmake.org/cmake/help/latest/command/math.html}
 
-要计算一个数学表达式并将其作为可选<格式>(十六进制或十进制)的字符串存储在<out>变量中，请使用以下签名:
+要计算一个数学表达式并将其作为可选<format>(十六进制或十进制)的字符串存储在<out>变量中，请使用以下签名:
 
 \begin{lstlisting}[style=styleCMake]
 math(EXPR <out> "<expression>" [OUTPUT_FORMAT <format>])
 \end{lstlisting}
 
-<expression>值是一个字符串，它支持C代码中出现的操作符(它们在这里有相同的含义):
+<expression>值是一个字符串，支持C代码中出现的操作符(它们在这里具有相同含义):
 
 \begin{itemize}
 \item 
@@ -21,7 +21,7 @@ math(EXPR <out> "<expression>" [OUTPUT_FORMAT <format>])
 括号 (...)
 \end{itemize}
 
-常量值可以用十进制或十六进制格式提供。
+常量值可以以十进制或十六进制格式提供。
 
 
 

@@ -23,17 +23,17 @@ add_subdirectory(test)
 include(Install)
 \end{lstlisting}
 
-首先提供关键的项目细节，并添加到CMake实用程序模块的路径(项目中的CMake目录)。然后禁用源代码内构建(通过自定义模块)，并包含两个关键目录:
+首先提供关键的项目细节，并添加到CMake实用程序模块的路径(项目中的CMake目录)。然后禁用源内构建(通过自定义模块)，并包含两个关键目录:
 
 \begin{itemize}
 \item 
-src，包含项目源(在构建树中命名为bin)
+src，包含项目源(构建树中命名为bin)
 
 \item 
 test，包含所有测试实用程序
 \end{itemize}
 
-最后，将包含另一个模块，该模块将设置项目的安装。这将在另一节中讨论。同时，来看一看NoInSourceBuilds模块，了解它是如何工作的:
+最后，将包含另一个模块，该模块将设置项目的安装。来看一看NoInSourceBuilds模块，了解它是如何工作的:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/NoInSourceBuilds.cmake
@@ -89,11 +89,11 @@ target_link_libraries(calc_static calc_obj)
 # ... documentation generation
 \end{lstlisting}
 
-我们声明三个目标:
+声明三个目标:
 
 \begin{itemize}
 \item 
-编译calc.cpp实现文件的对象库，并通过PUBLIC\_HEADER属性引用calc.h头文件，该属性可以在配置的include目录中找到(由于生成器表达式为特定模式提供了适当的路径——构建或安装)。通过使用这个库，避免了对其他目标的重复编译，但还需要启用POSITION\_INDEPENDENT\_CODE，以便动态库可以使用生成的目标文件。
+编译calc.cpp实现文件的对象库，并通过PUBLIC\_HEADER属性引用calc.h头文件，该属性可以在配置的include目录中找到(由于生成器表达式为特定模式提供了适当的路径——构建或安装)。通过使用这个库，避免了对其他目标的重复编译，还要启用POSITION\_INDEPENDENT\_CODE，以便动态库可以使用生成的目标文件。
 
 \item 
 calc\_shared，依赖于calc\_obj的动态库。
@@ -102,7 +102,7 @@ calc\_shared，依赖于calc\_obj的动态库。
 calc\_static，依赖于calc\_obj的静态库。
 \end{itemize}
 
-完整起见，这里将添加一个calc库的C++代码:
+这里将添加calc库的C++代码:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter-12/01-full-project/src/calc/include/calc/calc.h
@@ -115,7 +115,7 @@ namespace Calc {
 } // namespace Calc
 \end{lstlisting}
 
-这段代码非常基础:声明了两个包含在Calc命名空间中的全局函数(C++名称空间在库中非常有用，有助于避免名称冲突)。
+这段代码非常基础:声明了两个包含在Calc命名空间中的全局函数(C++命名空间在库中非常有用，有助于避免名称冲突)。
 
 实现文件也非常简单:
 
@@ -135,7 +135,7 @@ int Multiply(int a, int b) {
 
 这结束了src/calc目录中文件的解释。接下来是src/calc\_console，并使用这个库构建控制台计算器的可执行文件。
 
-\subsubsubsection{12.4.2\hspace{0.2cm}构建Calc Console可执行文件}
+\subsubsubsection{12.4.2\hspace{0.2cm}构建Calc终端可执行文件}
 
 calc\_console的源目录包含几个文件:一个列表文件、两个实现文件(业务代码和一个引导程序)和一个头文件。列表文件如下所示:
 
@@ -159,7 +159,7 @@ add_executable(calc_console bootstrap.cpp)
 target_link_libraries(calc_console calc_console_static)
 \end{lstlisting}
 
-列表文件看起来很忙，但是现在，作为有经验的CMake用户，可以很容易地理清里面发生的事情:
+列表文件看起来很多，但作为有经验的CMake用户，可以很容易地理清里面发生的事情:
 
 \begin{itemize}
 \item 
@@ -181,7 +181,7 @@ target_link_libraries(calc_console calc_console_static)
 添加并链接calc\_console引导可执行文件，并提供了入口点。
 \end{itemize}
 
-同样，这里把测试和文档的讨论推迟到本章的适当部分。让我们来看看依赖管理和构建信息生成。
+同样，这里把测试和文档的讨论推迟到本章的后续部分。来看看依赖管理和构建信息生成。
 
 注意，我们更喜欢使用实用程序模块，而不是查找模块来引入FTXUI。这是因为该依赖项不太可能已经存在于系统中。而不是希望找到它，我们将获取并安装它:
 
@@ -200,7 +200,7 @@ option(FTXUI_BUILD_DOCS "" OFF)
 FetchContent_MakeAvailable(FTXTUI)
 \end{lstlisting}
 
-我们使用推荐的FetchContent方法，第7章有详细介绍，唯一不同的添加是对option()指令的调用。其可以跳过FTXUI构建的冗长步骤，并将其安装配置从该项目的安装中分离出来。对于GTest依赖关系也需要同样的操作。option()指令在扩展阅读部分中有引用。
+使用推荐的FetchContent方法，第7章有详细介绍，唯一不同的添加是对option()指令的调用。其可以跳过FTXUI构建的冗长步骤，并将其安装配置从该项目的安装中分离出来。对于GTest依赖关系也需要同样的操作。option()指令在扩展阅读部分中有引用。
 
 calc\_command的列表文件还包含一个与构建相关的自定义实用程序模块:BuildInfo。我们将使用它来记录三个可以在可执行文件中显示的值:
 
@@ -215,7 +215,7 @@ calc\_command的列表文件还包含一个与构建相关的自定义实用程�
 顶层列表文件中指定的项目版本
 \end{itemize}
 
-你可能还记得在第5章中，可以使用CMake来捕获一些构建时的值，并通过模板文件将其提供给C++代码——例如，使用一个C++结构体:
+在第5章中，可以使用CMake来捕获一些构建时的值，并通过模板文件将其提供给C++代码——例如，使用C++结构体:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter-12/01-full-project/cmake/buildinfo.h.in
@@ -230,7 +230,7 @@ struct BuildInfo {
 };
 \end{lstlisting}
 
-为了在配置阶段填充该结构，我们会使用以下代码:
+为了在配置阶段填充该结构，可以使用以下代码:
 
 \begin{lstlisting}[style=styleCMake]
 # chapter-12/01-full-project/cmake/BuildInfo.cmake
@@ -255,9 +255,9 @@ function(BuildInfo target)
 endfunction()
 \end{lstlisting}
 
-包含该模块将设置包含所需要的信息的变量，然后使用configure\_file()来生成buildinfo.h。剩下的就是调用BuildInfo函数，并添加生成文件的目录，以包含所需目标的目录。然后，可以与多个不同的使用者共享该文件。这种情况下，可能需要在列表文件的顶部添加include\_guard(GLOBAL)，以避免对每个目标都运行git命令。
+包含该模块将设置包含所需要的信息的变量，然后使用configure\_file()来生成buildinfo.h。剩下的就是调用BuildInfo函数，并添加生成文件的目录，以包含所需目标的目录。然后，可以与多个不同的使用者共享该文件，并且可能需要在列表文件的顶部添加include\_guard(GLOBAL)，以避免对每个目标都运行git命令。
 
-深入研究控制台计算器的实现之前，不应该过分担心tui.cpp文件的复杂性。要完全理解它，只需要对FXTUI库有一定的了解——这里我们不想太深入。相反，让我们关注突出显示的行:
+深入研究控制台计算器的实现之前，不应该过分担心tui.cpp文件的复杂性。要完全理解它，只需要对FXTUI库有一定的了解——我们不想太深入。相反，让我们关注突出显示的行:
 
 \begin{lstlisting}[style=styleCXX]
 // chapter-12/01-full-project/src/calc_console/tui.cpp
@@ -323,7 +323,7 @@ int main(int argc, char** argv) {
 
 这段简短的代码利用ftxui创建一个交互式控制台屏幕，该屏幕接受getTui()返回的Component对象，使其对用户可见，并在循环中收集键盘事件，创建一个界面，如图12.1所示。同样，理解这一点并不真正重要，因为ftxui的主要目的是为我们提供一个外部依赖项，重要的是其可以使用它来练习CMake技术。
 
-已经介绍了src目录中的所有文件。然后，测试和分析程序的话题。
+已经介绍了src目录中的所有文件。接下来，来看看测试和分析程序。
 
 
 

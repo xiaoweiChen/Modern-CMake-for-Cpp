@@ -73,7 +73,7 @@ list(TRANSFORM <list> <action> [<selector>] [OUTPUT\_VARIABLE <out>]) 对<list>�
 
 默认情况下，该动作应用于所有元素，但可以通过添加<selector>来限制效果。若提供了OUTPUT\_VARIABLE关键字，提供的列表将发生变化(就地更改)，结果将存储在<out>变量中。
 
-以下选择器可用:AT <index>，FOR <start> <stop>[<step>]，以及REGEX <pattern>。操作包括APPEND <string>， PREPEND <string>，TOLOWER，TOUPPER，STRIP，GENEX\_STRIP和REPLACE  <expression>。工作原理与具有相同名称的string()模式完全相同。
+以下选择器可用:AT <index>，FOR <start> <stop>[<step>]，以及REGEX <pattern>。操作包括APPEND <string>，PREPEND <string>，TOLOWER，TOUPPER，STRIP，GENEX\_STRIP和REPLACE <expression>。工作原理与具有相同名称的string()模式相同。
 \end{itemize}
 
 
