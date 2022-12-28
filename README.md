@@ -14,6 +14,8 @@
 >
 > <p align="right"> — 云风，程序员修炼之道第2版译者</p>
 
+PDF可在本库的[Release页面](https://github.com/xiaoweiChen/Modern-CMake-for-Cpp/releases)获取。
+
 ## 本书概述
 
 创建一流的软件非常困难，开发人员很难确定哪些建议是最新的，哪些方法已经可以用更简单、更好的实践所取代。与此同时，大多数在线资源提供的解释有限，也缺乏相应的上下文。
